@@ -1,13 +1,29 @@
 Package: remoteSTAR
-Title: What the Package Does (One Line, Title Case)
+Title: Spatio-temporal Auto-regression for Remote Sensing Data
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    c(person(given = "Clay",
+           family = "Morrow",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+           email = "morrow5@wisc.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+      person(given = "Anthony",
+           family = "Ives",
+           role = c("aut"),
+           email = "arives@wisc.edu",
+           comment = c(ORCID = "...")))
+Description@R: 
+    paste("remoteSTAR is a set of tools for analyzing sets of spatially",
+          "correlated time series data, collected via remote sensing methods.")
+License: GPL-3
 Encoding: UTF-8
-LazyData: true
+LazyData: TRUE
+RoxygenNote: 7.1.0
+Imports: 
+  mvtnorm (>= 1.0.11),
+  geosphere (>= 1.5.10), 
+  mblm (>= 0.12.1),
+  fields (>= 10.3),
+  Matrix (>= 1.2.18),
+  LatticeKrig (>= 8.4),
+  colorspace (>= 1.4.1)
