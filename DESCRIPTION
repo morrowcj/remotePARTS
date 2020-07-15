@@ -27,3 +27,5 @@ Imports:
   Matrix (>= 1.2.18),
   LatticeKrig (>= 8.4),
   colorspace (>= 1.4.1)
+Suggests: 
+    testthat
