@@ -27,7 +27,7 @@ fit_cls <- function(x, t, covars = NULL) {
     fm <- lm(x_t ~ x_t0 + time + Z, data = tmp)
   }
 
-  out <- list(summary = summary(fm)$coef, MSE = summary(fm)$sigma^2)
+  out <- list(summary = summary(fm)$coef, MSE = summary(fm)$sigma^2, resids = resid(fm))
 
   # add Z to output
   if (!is.null(covars) & !missing(covars)){
