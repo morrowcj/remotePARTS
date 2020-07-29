@@ -1,5 +1,7 @@
 // [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::plugins(openmp)]]
 #include <RcppEigen.h>
+#include <omp.h>
 
 using namespace Rcpp;
 using Eigen::Map;
@@ -25,7 +27,7 @@ MatrixXd ftrans_cpp(const NumericMatrix& XX){
  */
 
 // [[Rcpp::export]]
-MatrixXd ftrans_cpp_alt(Map<MatrixXd> X){
+MatrixXd ftrans_cpp_alt(const Map<MatrixXd> X){
   return X.transpose();
 }
 // ftrans_cpp_alt(MatrixXd X) would make a copy of X. the Map<> is a pointer.
