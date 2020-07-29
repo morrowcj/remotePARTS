@@ -24,7 +24,7 @@ taper_sphere <- function(d, beta, cor = NULL){
 
 # scale_dist() ----
 ## calculates a scaled distance matrix
-scale_dist <- function(X, location, scl = 1000){
+scale_dist <- function(location, scl = 1000){
   D <- geosphere::distm(location)/scl
   m = max(D)
   d = D/m
@@ -33,17 +33,17 @@ scale_dist <- function(X, location, scl = 1000){
 }
 
 # fit_spatialcor() ----
-X = Xmat
-location = dat[, c("lng", "lat")]
-t = t.scale
-data = data
-r.start = .1
-fit.n = 100
-dist.scl = 1000
-covars = NULL
-fun = "exp"
-Dist = geosphere::distm(location)
-scale.dist = TRUE
+# X = Xmat
+# location = dat[, c("lng", "lat")]
+# t = t.scale
+# data = data
+# r.start = .1
+# fit.n = 100
+# dist.scl = 1000
+# covars = NULL
+# fun = "exp"
+# Dist = geosphere::distm(location)
+# scale.dist = TRUE
 
 
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
@@ -74,7 +74,7 @@ fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
 
   # scale the distance matrix, if asked
   if (scale.dist) {
-    dist <- scale_dist(X.sub, location[sub.inx, ], scl = dist.scl)
+    dist <- scale_dist(location[sub.inx, ], scl = dist.scl)
     max.d = attr(dist, "max.dist")
   } else {
     dist <- dist[sub.inx, sub.inx]
@@ -129,7 +129,7 @@ fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
   return(list(mod = fit, spatialcor = spatialcor, logLik = logLik(fit)))
 }
 
-## Original code ----
+## Original functions ----
 
 taper.spherical <- function(d, beta) {
   x <- d

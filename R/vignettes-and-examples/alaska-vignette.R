@@ -1,6 +1,7 @@
 ## packages used
 # data.table
 
+set.seed(58)
 
 # prepare data ----
 ## This section is not needed for the user, as *.rda files will be saved
@@ -67,7 +68,7 @@ n = dim(Xmat)[1] # sites
 t.n = dim(Xmat)[2] # time points
 t.scale = ((1:t.n) - min(1))/t.n # scaled time
 
-# test speed and check accuracy
+# test speed and check accuracy:
 if (FALSE) {
   fit <- star <- matrix(NA, 5, 5)
   for (i in 1:5) {
@@ -78,13 +79,14 @@ if (FALSE) {
         "star" = colMeans(star, na.rm = TRUE))[, 1:3]
   tmp1[1:5, ]
   tmp2[1:5, ]
-}
 #       user  sys elapsed
 # #fit  2.862 0   2.864
 # #star 2.794 0   2.796
-
 # note: cls_star() does not loose speed and can handle covariates:
+}
 
+
+# example with covars:
 if (FALSE) {
   # generate some random covariates (just for structure):
   # one covariate
@@ -107,21 +109,83 @@ tmp[, c("lat", "lng")] <- dat[, c("lat", "lng")]
 tmp$rel.stat <-  (tmp$Est/(1 - tmp$x_t0.EST))/tmp$mean # relative CLS statistic
 
 outl = abs(scale(tmp$rel.stat)) > -qnorm(p = 1/nrow(tmp)/10) # outliers
+# # 11 outliers
 
 # plot with outliers
-library(ggplot2)
-ggplot(tmp[!outl, ], aes(x = lng, y = lat, col = rel.stat)) +
-  geom_tile(size = 2) +
-  scale_color_gradient2(low = "red", mid = "grey", high = "green",
-                        midpoint = 0) +
-  geom_tile(data = tmp[outl, ], col = "black", size = 1) # add outliers
-detach("package:ggplot2", unload = TRUE)
+## ggplot way
+if (FALSE) {
+  library(ggplot2)
+  ggplot(tmp[!outl, ], aes(x = lng, y = lat, col = rel.stat)) +
+    geom_tile(size = 2) +
+    scale_color_gradient2(low = "red", mid = "grey", high = "green",
+                          midpoint = 0) +
+    geom_tile(data = tmp[outl, ], col = "black", size = 1) # add outliers
+  detach("package:ggplot2", unload = TRUE)
+}
 
-base.col = ifelse(
-  test = outl,
-  yes = "black",
-  no = colorRampPalette(
-    c("orange", "grey", "darkgreen")
-  )(nrow(tmp))[ordered(tmp$rel.stat)]
+## base R way
+base.col = ifelse(test = outl, yes = "black",
+                  no = colorRampPalette(
+                    c("orange", "grey", "darkgreen")
+                    )(nrow(tmp))[ordered(tmp$rel.stat)]
 )
-plot(dat$lat ~ dat$lng, pch = 15, cex = .7, col = base.col)
+plot(dat$lat ~ dat$lng, pch = 15, cex = .7, col = base.col,
+     xlab = "longitude", ylab = "latitude")
+legend(x = "bottomright", fill = c("darkgreen", "grey","orange"),
+       legend = c("high", "med", "low"), title = "NDVI")
+# # Note that the outliers often occur on borders where data is missing.
+
+## relative to overall distribution
+hist(tmp$mean[outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = "grey",
+     lty = 3, xlab = "site average NDVI", main = "Histogram of NDVI")
+hist(tmp$mean[!outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = NULL,
+     add = TRUE)
+legend("topright", legend = c("TRUE","FALSE"), fill = c("grey", "white"),
+       title = "outlier")
+
+# remove outliers and plot
+# # Do this later...
+# tmp <- tmp[!outl, ]
+
+# GLS ----
+
+# load in functions
+source("R/fitSpatCor.R")
+
+# Distance matrix
+location <- dat[, c("lng","lat")]
+Dist <- geosphere::distm(location)/1000
+
+# Spatial Correlation
+r.est <- fit_spatialcor(X = Xmat, t = t.scale, fit.n = 200 ,
+                        location = location,
+                        fun = "exp-pwr", scale.dist = TRUE,
+                        dist.scl = 1000, plot.fig = FALSE)
+## compare speed
+if (FALSE){ # compare speed
+Old <- NULL
+New <- NULL
+for (j in 1:10){
+old <- system.time({
+  r.est.0 <- spatialcor.fit.data(X = Xmat, data = dat, t.scale = t.scale,
+                             fit.n.sample = 200,
+                             FUN = "taper-spherical", plot.fig = TRUE)
+})
+new <- system.time({
+  r.est <- fit_spatialcor(X = Xmat, t = t.scale, fit.n = 200 ,
+                         location = dat[, c("lng","lat")],
+                         fun = "taper", scale.dist = TRUE,
+                         dist.scl = 1000, plot.fig = TRUE,
+                         )
+})
+Old <- rbind(Old, old)
+New <- rbind(New, new)
+}
+rbind(old = colMeans(Old)[1:3], new = colMeans(New)[1:3])
+#     user.self sys.self elapsed
+# old     0.353    2.281   2.683
+# new     0.320    1.947   2.272
+## new code is a bit faster with every formula
+}
+
+# fit variance matrix
