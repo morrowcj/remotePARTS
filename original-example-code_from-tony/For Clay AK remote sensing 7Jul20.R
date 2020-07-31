@@ -2,7 +2,7 @@ library(Matrix)
 library(geosphere)
 library(colorspace)
 
-source('../original-example-code_from-tony/remote_sensing_tools_8Jul20.R')
+source('original-example-code_from-tony/remote_sensing_tools_8Jul20.R')
 
 ###########################################################
 # just AK(ish)

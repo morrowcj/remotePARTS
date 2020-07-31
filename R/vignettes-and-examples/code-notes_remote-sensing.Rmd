@@ -492,6 +492,61 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL) {
 }
 ```
 
+#### inverse cholesky variance matrix
+
+Based on the GLS formulae from Ives and Zhu (2006):
+
++ $y=X\beta+ε$
+
++	$E[\varepsilon\varepsilon^T ]=\sigma^2V$
+
++	$\hat{\beta} = (X^TV^{-1}X)^{-1}(X^TV^{-1}y)$
+  
+  -	Which means $\hat{\beta}(X^TV^{-1}X) = (X^TV^{-1}y)$
+  
++ $\hat{\sigma}^2 = (y - X\hat{\beta})^T V^{-1} (y - X \hat{\beta}) / (n - 2) $
+
+And so, one of the main points of the code, from my understanding is to calculate the inverse of V:  V^(-1), which is meant to be done by `t(backsolve(chol(V), diag(n)))` in the `GLS.fit()` function, if I understand correctly. 
+
++ $V = U^TU$ where the upper triangle of the Cholesky composition is $U = chol(V)$
+
+  - then $V^{-1}=(U^{-1})(U^{-1})^T$
+
+However, this is not what the code does: 
+
+```
+AA <- crossprod(matrix(1:6, ncol = 2)) # 2x2 pos-def matrix
+cM <- chol(AA) # chol decomp (Upper)
+inv.A <- t(backsolve(cM, diag(2))) # invcholV
+inv.B <- chol2inv(cM) # inverse of AA from chol decomp
+all.equal(inv.A, inv.B) # are they the same??
+[1] FALSE
+t(inv.A) %*% AA # check inverse (identity expected)
+       [,1]   [,2]
+[1,] -33.50 -81.06
+[2,]  16.29  39.21 
+t(inv.A) %*% cM # check if inverse of chol(AA)
+     [,1] [,2]
+[1,]    1    0
+[2,]    0    1
+```
+
+Here `Inv.A` is actually the inverse of the Cholesky decomposition ($U^{-1}$)  of AA and not the inverse of AA through the Cholesky decomposition. Is this what the code is supposed to do? If so, I don’t understand why. In the next line of code you do the following: 
+
+```
+  xx <- invcholV %*% x
+  yy <- invcholV %*% y
+```
+
+which is $(U^{-1})^T X$ and $(U^{-1})^T y$ respectively. And then you use 
+
+```
+coef <- as.numeric(solve(crossprod(xx), crossprod(xx,yy)))
+```
+
+which solves $\hat{\beta} (U^{-1} X^T (U^{-1})^T X) = (U^{-1} X^T (U^{-1})^T y)$. Which seems to be equivalent to the form above from Ives and Zhu. 
+
+
 ### `nugget.fit()`
 
 the function `nugget.fit.funct()` performs `GLS.fit()` using the soultion of 

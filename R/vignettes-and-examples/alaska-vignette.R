@@ -1,7 +1,8 @@
 ## packages used
 # data.table
-
+# microbenchmark
 set.seed(58)
+
 
 # prepare data ----
 ## This section is not needed for the user, as *.rda files will be saved
@@ -18,8 +19,9 @@ land.classes = c("Evergr needle","Evergr broad","Decid needle","Decid broad",
 dtab$land <- factor(dtab$land, labels = land.classes)
 
 # save the rdata file
-saveRDS(dtab, "data/north-america_ndvi.rda")
-
+if(!file.exists("data/north-america_ndvi.rda")){
+  saveRDS(dtab, "data/north-america_ndvi.rda")
+}
 ## Alaska subset
 dataAK <- dtab[dtab$lng < -141, ] #North Am. west of -141 is approx. AK
 
@@ -39,14 +41,18 @@ ord <- c(grep("ndvi", names(dataAK), invert = TRUE), #columns without 'ndvi'
 dataAK <- dataAK[, ..ord] #..x is data.table notation
 
 # save AK data file
-saveRDS(dataAK, "data/alaska_ndvi.rda")
+if(!file.exists("data/alaska_ndvi.rda")){
+  saveRDS(dataAK, "data/alaska_ndvi.rda")
+}
 
 ## subset AK further
 dataAK_small <- dataAK[!dataAK$rare.land, ] # only common land classes
 dataAK_small <- dataAK_small[sample.int(n = nrow(dataAK_small), size = 3000), ] # 3000 pts
 
 # save small AK data file
-saveRDS(dataAK_small, "data/alaska_ndvi_3000pts.rda")
+if(!file.exists("data/alaska_ndvi_3000pts.rda")){
+  saveRDS(dataAK_small, "data/alaska_ndvi_3000pts.rda")
+}
 
 # load data ----
 ##
@@ -55,6 +61,9 @@ rm(list = ls()) # clear all objects from memory
 source("R/lsos.R") # load memory tracking functions
 
 dat <- readRDS("data/alaska_ndvi_3000pts.rda")
+
+library(microbenchmark)
+
 
 # CLS ----
 ##
@@ -151,6 +160,7 @@ legend("topright", legend = c("TRUE","FALSE"), fill = c("grey", "white"),
 
 # load in functions
 source("R/fitSpatCor.R")
+source("R/fitGLS.R")
 
 # Distance matrix
 location <- dat[, c("lng","lat")]
@@ -189,3 +199,60 @@ rbind(old = colMeans(Old)[1:3], new = colMeans(New)[1:3])
 }
 
 # fit variance matrix
+
+(bench <- microbenchmark(
+  new.R = (V <- fitDistVar_R(Dist, r.est$spatialcor, fun = "exp-pwr")),
+  old.R = (tmp <- V.fit(Dist, r.est$spatialcor, FUN = "exponential-power")),
+  times = 1L))
+stopifnot(all.equal(V, tmp))
+# ggplot2::autoplot(bench)
+
+# decomp V
+(bench <- microbenchmark(
+  inv.R = (tmp <- t(backsolve(chol(V), diag(nrow(V))))),
+  inv.Rfunc = (invcholV <- invert_cholR(V)),times = 1L))
+stopifnot(all.equal(invcholV, tmp))
+# ggplot2::autoplot(bench)
+
+(AA <- crossprod(matrix(1:6, ncol = 2)))
+cM <- chol(AA) # cholesky matrix (Upper)
+crossprod(cM) # t(cm) %*% cm = original matrix
+
+
+inv.A <- t(backsolve(cM, diag(2))) # this is the inverse OF the chol matrix
+t(inv.A) %*% AA
+t(inv.A) %*% cM
+
+inv.B <- chol2inv(cM) # this is the inverse of the original matrix through chol
+round(inv.B %*% AA, digits = 4)
+
+inv.C <- solve(AA, diag(2))
+inv.C %*% AA
+
+if(FALSE){
+  solveone <- function(X, y, V){
+    invcholV <- invert_cholR(V)
+    xx <- invcholV %*% X
+    yy <- invcholV %*% y
+    coef <- as.numeric(solve(crossprod(xx), crossprod(xx,yy)))
+  }
+
+  solvetwo <- function(X, y, V){
+    invV <- chol2inv(chol(V))
+    XVX <- t(X) %*% invV %*% X
+    XVY <- t(X) %*% invV %*% y
+    coef <- as.numeric(solve(XVX, XVY))
+  }
+
+  y <- rnorm(nrow(Xmat))
+
+  (microbenchmark(OG = (beta <- solveone(Xmat, y, V)), new = (beta.new <- solvetwo(Xmat, y , V)), times = 1L))
+  ## solveone is WAY faster.
+  stopifnot(all.equal(beta, beta.new))
+}
+
+
+# fit GLS
+
+# fit nugget (re-fit GLS)
+
