@@ -26,7 +26,7 @@ Rcpp::sourceCpp("Cpp/GLS_Chol.cpp")
 
 GLS_chol(X.small, V.small, y.small, 1)
 
-solveone <- function(X, y, V){
+solvebeta <- function(X, y, V){
   invcholV <- invert_cholR(V)
   xx <- invcholV %*% X
   yy <- invcholV %*% y
@@ -34,7 +34,7 @@ solveone <- function(X, y, V){
 }
 
 (bench <- microbenchmark::microbenchmark(
-  R = (beta.R <- solveone(X.small, y.small, V.small)),
+  R = (beta.R <- solvebeta(X.small, y.small, V.small)),
   Cpp = (beta.C <- GLS_chol(X.small, V.small, y.small)),
   Cpp.5 = (beta.C5 <- GLS_chol(X.small, V.small, y.small, threads = 5)),
                                times = 1000L))
@@ -42,7 +42,7 @@ stopifnot(all.equal(beta.R, beta.C, beta.C5))
 ggplot2::autoplot(bench)
 
 (bigBench <- microbenchmark::microbenchmark(
-  R = (beta.R <- solveone(Xmat, y, V)),
+  R = (beta.R <- solvebeta(Xmat, y, V)),
   Cpp = (beta.C <- GLS_chol(Xmat, V, y)),
   Cpp.5 = (beta.C5 <- GLS_chol(Xmat, V, y, threads = 5)), times = 10L
 ))
