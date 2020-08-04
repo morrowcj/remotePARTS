@@ -496,15 +496,15 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL) {
 
 Based on the GLS formulae from Ives and Zhu (2006):
 
-+ $y=X\beta+ε$
+- $y=X\beta+ε$
 
-+	$E[\varepsilon\varepsilon^T ]=\sigma^2V$
+-	$E[\varepsilon\varepsilon^T ]=\sigma^2V$
 
-+	$\hat{\beta} = (X^TV^{-1}X)^{-1}(X^TV^{-1}y)$
+-	$\hat{\beta} = (X^TV^{-1}X)^{-1}(X^TV^{-1}y)$
   
-  -	Which means $\hat{\beta}(X^TV^{-1}X) = (X^TV^{-1}y)$
+  +	Which means $\hat{\beta}(X^TV^{-1}X) = (X^TV^{-1}y)$
   
-+ $\hat{\sigma}^2 = (y - X\hat{\beta})^T V^{-1} (y - X \hat{\beta}) / (n - 2) $
+- $\hat\sigma^2 = (y - X \hat{\beta})^{T} V^{-1} (y - X \hat{\beta}) / (n-2)$
 
 And so, one of the main points of the code, from my understanding is to calculate the inverse of V:  V^(-1), which is meant to be done by `t(backsolve(chol(V), diag(n)))` in the `GLS.fit()` function, if I understand correctly. 
 

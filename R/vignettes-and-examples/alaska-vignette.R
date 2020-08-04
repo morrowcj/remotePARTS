@@ -246,7 +246,10 @@ if(FALSE){
 
   y <- rnorm(nrow(Xmat))
 
-  (microbenchmark(OG = (beta <- solveone(Xmat, y, V)), new = (beta.new <- solvetwo(Xmat, y , V)), times = 1L))
+  (microbenchmark(
+    OG = (beta <- solveone(Xmat, y, V)),
+    new = (beta.new <- solvetwo(Xmat, y , V)),
+    times = 1L))
   ## solveone is WAY faster.
   stopifnot(all.equal(beta, beta.new))
 }
