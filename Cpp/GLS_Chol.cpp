@@ -16,12 +16,14 @@ using Eigen::MatrixXd;
 using Eigen::MatrixXi;
 using Eigen::Upper;
 using Eigen::VectorXd;
+using Eigen::VectorXi;
 
 typedef Map<MatrixXd> MapMatd;
 typedef Map<MatrixXi> MapMati;
 typedef Map<VectorXd> MapVecd;
 
-/* AtA(A)
+//==============================================================================
+/* AtA(A) ----
  * inline code that computes t(A) %*% A
  */
 
@@ -32,6 +34,16 @@ inline MatrixXd AtA(const MatrixXd& A) {
                       .rankUpdate(A.adjoint());
 }
 
+//==============================================================================
+/* solve_cpp(A, B) ----
+ * solves Ax = B for x.
+ */
+
+// [[Rcpp:export]]
+inline MatrixXd solve_cpp(const MatrixXd& A, const MatrixXd& B){
+  return A.colPivHouseholderQr().solve(B);
+}
+
 /***R
 ## Test the inline function AtA()
 M <- matrix(as.double(1:6), ncol = 2)
@@ -39,25 +51,7 @@ crossprod(M) # native R
 AtA(M) # cpp way
 */
 
-/* cholCpp()
- * Example directly RcppEigen that computes chol(crossprod(A))
- * directly uses the AtA() function
- */
-
-// [[Rcpp::export]]
-List cholCpp(NumericMatrix& AA){
-  const LLT<MatrixXd> llt(AtA(as<MapMatd>(AA)));
-
-  return List::create(Named("L") = MatrixXd(llt.matrixL()),
-                      Named("R") = MatrixXd(llt.matrixU()));
-}
-
-/***R
-## Test the RcppEigen cholCpp() function
-chol(crossprod(M)) # native R
-cholCpp(M) # cpp
-*/
-
+//==============================================================================
 /* tinvchol_cpp(V, nugget = 0)
  * computes the choleskey decomposition upper triangle (U) of V
  * and then returns the transpose: t(U)
@@ -67,11 +61,7 @@ cholCpp(M) # cpp
 
 // [[Rcpp::export]]
 MatrixXd tinvchol_cpp(const MapMatd& V, int nugget = 0){
-  // const MapMatd V(as<MapMatd>(VV)); //map V
   const int n = V.rows(); //dim of V
-
-  // test
-  // const MatrixXd ata(AtA(V));
 
   if (nugget == 0) {
     // no nugget case
@@ -103,17 +93,21 @@ t(backsolve(chol(Vn), diag(nrow(Vn)))) # R
 tinvchol_cpp(Vn, nug) # cpp
 */
 
+//==============================================================================
+/* fitGLS_cpp(X, V, y, X0, nugget = 0, threads = 1) ----
+ *
+ */
+
 // [[Rcpp::export]]
 List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& V,
                 const MapMatd& y,
-                const Nullable<NumericMatrix> X0_ = R_NilValue,
-                const Nullable<NumericVector> y0_ = R_NilValue,
+                const MapMatd& X0,
                 int nugget = 0,
                 const int threads = 1){
 
   const int nX = X.rows(), pX = X.cols(); // dimensions of X
-  const MatrixXd tUinv = tinvchol_cpp(V); // transpose of chol(V) = t(inv(U))
+  const MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
   const MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
   const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
   const MatrixXd varX = AtA(xx); // crossprod(xx)
@@ -127,10 +121,12 @@ List fitGLS_cpp(const MapMatd& X,
   int dft = nX - xx.cols();
   const VectorXd SSE = AtA(yy - xx * betahat); // SSE
   const VectorXd MSE = SSE/dft; // MSE
-  const MatrixXd varXinv = varX.colPivHouseholderQr().solve(MatrixXd::Identity(varX.rows(), varX.cols()));
+  const MatrixXd varXinv = varX.colPivHouseholderQr().solve(
+    MatrixXd::Identity(varX.rows(), varX.cols()));
   const MatrixXd varcov = varXinv.array() * MSE.array()[0];
   // cout << "\ndiag(vcov):\n" << varcov.matrix().diagonal() << endl; // this works
 
+  // Vectorized operations
   VectorXd se = varcov.matrix().diagonal();
   for (int i = 0; i < se.size(); i++){
     se[i] = std::sqrt(se[i]);
@@ -147,38 +143,33 @@ List fitGLS_cpp(const MapMatd& X,
   }
   logDetV *= -2;
 
-  double logLik = -0.5 * (nX * log(2 * M_PI) + nX * log(dft * MSE.array()[0]/nX) + logDetV + nX);
+  double logLik = -0.5 * (nX * log(2 * M_PI) + nX *
+                          log(dft * MSE.array()[0]/nX) + logDetV + nX);
 
-  /*
-   * Null Model
+  /* Null Model ----
+   * The presence/absence of X0 should be handled entirely by R.
+   * fitGLS_cpp() REQUIRES an X0 input.
    */
-  // if (y0_.isNotNull()){
-  //   const MapVecd y0(as<MapVecd>(y0_));
-  // } else {
-  //
-  // }
 
-  const MatrixXd X0;
-  if (X0_.isNotNull()){
-    const MapMatd X0(as<MapMatd>(X0_));
-  } else {
-    const MatrixXd X0 = MatrixXd(nX,1).setOnes();
-  }
   const MatrixXd xx0 = tUinv * X0;
-  const MatrixXd varX0 = AtA(xx); // crossprod(xx0)
+  const MatrixXd varX0 = AtA(xx0); // crossprod(xx0)
   const MatrixXd X0tY(xx0.adjoint() * yy); // crossprod(xx0, yy)
-  // const VectorXd betahat0(varX0.colPivHouseholderQr().solve(X0tY)); // This line is breaking it
-  // int df0 = betahat0.size();
-  // const VectorXd SSE0 = AtA(yy - xx0 * betahat0); // SSE
-  // double MSE0 = SSE0.array()[0]/(nX - xx.cols()); // MSE
-  // double MSR = (SSE0.array()[0] - SSE.array()[0])/(xx.cols() - xx0.cols());
-  // double logLik0 = -0.5 * (nX * log(2 * M_PI) + nX * log(dft * MSE0/nX) + logDetV + nX);
+  const VectorXd betahat0(solve_cpp(varX0, X0tY));
+  int df0 = betahat0.size();
+  const VectorXd SSE0 = AtA(yy - xx0 * betahat0); // SSE
+  double MSE0 = SSE0.array()[0]/(nX - xx.cols()); // MSE
+  double MSR = (SSE0.array()[0] - SSE.array()[0])/(xx.cols() - xx0.cols());
+  double logLik0 = -0.5 * (nX * log(2 * M_PI) + nX * log((nX - df0) * MSE0/nX) +
+                           logDetV + nX);
 
-  // cout <<"\nsqrt(diag(vcov)):\n"<< se << endl;
-
-  // se = vec1.sqrt();
-  // const VectorXd se = sediag.sqrt();
-  // const VectorXd tstat = betahat.array() / se.array()[0];
+  /* F test ----
+   *
+   */
+  const double FF = (nX - xx.cols())/(xx.cols() - xx0.cols()) *
+    (SSE0.array()[0] - SSE.array()[0]) / SSE.array()[0];
+  VectorXi dfF(2);
+  dfF(0) = xx.cols() - xx0.cols();
+  dfF(1) = nX - xx.cols();
 
   // return a list of all needed values
   return List::create(Named("betahat") = betahat,
@@ -188,24 +179,29 @@ List fitGLS_cpp(const MapMatd& X,
                       Named("varcov") = varcov.matrix(),
                       Named("SE") = se,
                       Named("tstat") = tstat,
+                      Named("pval.t") = NA_REAL,
                       Named("dft") = dft,
                       Named("logDetV") = logDetV,
-                      Named("logLik") = logLik
-                      // Named("betahat0") = betahat0,
-                      // Named("SSE0") = SSE0,
-                      // Named("MSE0") = MSE0,
-                      // Named("MSR") = MSR,
-                      // Named("df0") = df0
-                      // Named("df0") = logLik0
+                      Named("logLik") = logLik,
+                      Named("betahat0") = betahat0,
+                      Named("SSE0") = SSE0,
+                      Named("MSE0") = MSE0,
+                      Named("MSR") = MSR,
+                      Named("df0") = df0,
+                      Named("logLik0") = logLik0,
+                      Named("Fstat") = FF,
+                      Named("pval.F") = NA_REAL,
+                      Named("df.F") = dfF
                       );
 }
 
 /*** R
 ## test fitGLS_cpp()
 load("../R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
+Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
 source("../R/fitGLS.R")
 
-tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small)
+tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
 
 tmp.R <- fitGLS(X.small, V.small, y.small)
 
@@ -215,7 +211,8 @@ check.equal <- function(string){
 }
 
 sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
-         "df.t", "logDetV", "logLik"),
+         "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
+         "df0", "logLik0", "FF", "df.F"),
        check.equal)
 
 */
