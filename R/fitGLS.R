@@ -1,12 +1,12 @@
 ## invert_choldec ----
 
-invert_cholR <- function(M, nugget = NULL){
+invert_cholR <- function(M, nugget = 0){
   stopifnot(nrow(M) == ncol(M))
 
   n = nrow(M)
 
   # handle nugget
-  if(!missing(nugget) & !is.null(nugget)){
+  if(nugget == 0){
     print("using nugget")
     M <- (1 - nugget) * M + nugget * diag(n)
   }
@@ -19,10 +19,10 @@ invert_cholR <- function(M, nugget = NULL){
 ## fitGLS ----
 ## This function calls invert_choldec()
 
-fitGLS <- function(X, V, y, X0 = NULL){
+fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
   stopifnot(all.equal(nrow(X), ncol(V), nrow(V), length(y)))
   n <- nrow(X)
-  invcholV <- invert_cholR(V)
+  invcholV <- invert_cholR(V, nugget)
   xx <- invcholV %*% X
   yy <- invcholV %*% y
   varX <- crossprod(xx)
@@ -70,6 +70,30 @@ fitGLS <- function(X, V, y, X0 = NULL){
               MSR = MSR, df0 = df0, logLik0 = logLik0, Fstat = FF, pval.F = p.F,
               df.F = df.F
               ))
+}
+
+fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
+  N.opt <- optimize(f = function(nug){return(fitGLS(X, V, y, nugget = nug)$logLik)},
+           interval = int, tol = tol, maximum = TRUE)
+  if(N.opt$maximum < tol){
+    N0.LL <- fitGLS(X, V, y, nugget = 0)$logLik
+    if(N0.LL > N.opt$objective){
+      N.opt$maximum <- 0
+    }
+  }
+  return(N.opt$maximum)
+}
+
+fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
+  N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(X, V, y, nugget = nug))},
+                    interval = int, tol = tol, maximum = TRUE)
+  if(N.opt$maximum < tol){
+    N0.LL <- LogLikGLS_cpp(X, V, y, nugget = 0)
+    if(N0.LL > N.opt$objective){
+      N.opt$maximum <- 0
+    }
+  }
+  return(N.opt$maximum)
 }
 
 # Rcpp::sourceCpp("Cpp/GLS_Chol.cpp")
@@ -127,7 +151,9 @@ nugget.fit.funct <- function(nugget, formula, data, V, verbose = FALSE) {
 
 nugget.fit <- function(formula, data, V, nugget.tol = 0.00001,
                        interval = c(0, 1), verbose = FALSE) {
-  opt.nugget <- optimize(nugget.fit.funct, formula, data = data, V = V, interval = interval, maximum = T, tol = nugget.tol, verbose = verbose)
+  opt.nugget <- optimize(nugget.fit.funct, formula, data = data, V = V,
+                         interval = interval, maximum = T, tol = nugget.tol,
+                         verbose = verbose)
   # check at the zero boundary
   if(opt.nugget$maximum < nugget.tol){
     nugget0.fit <- nugget.fit.funct(0, formula, data, V)

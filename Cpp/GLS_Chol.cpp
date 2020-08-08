@@ -196,25 +196,138 @@ List fitGLS_cpp(const MapMatd& X,
 }
 
 /*** R
-## test fitGLS_cpp()
+# ## test fitGLS_cpp()
 load("../R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
 Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
-source("../R/fitGLS.R")
-
-tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
-
-tmp.R <- fitGLS(X.small, V.small, y.small)
-
-## compare results
-check.equal <- function(string){
-  all.equal(unlist(unname(tmp.R[[string]])), unlist(tmp.cpp[[string]]))
-}
-
-sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
-         "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
-         "df0", "logLik0", "FF", "df.F"),
-       check.equal)
+# source("../R/fitGLS.R")
+#
+# tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
+#
+# tmp.R <- fitGLS(X.small, V.small, y.small)
+#
+# ## compare results
+# check.equal <- function(string){
+#   all.equal(unlist(unname(tmp.R[[string]])), unlist(tmp.cpp[[string]]))
+# }
+#
+# sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
+#          "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
+#          "df0", "logLik0", "FF", "df.F"),
+#        check.equal)
 
 */
 
 
+//==============================================================================
+/* LogLikGLS(XX, V, y, nugget)
+ *
+ */
+
+// [[Rcpp::export]]
+inline double LogLikGLS_cpp(const MapMatd& X,
+                        const MapMatd& V,
+                        const MapVecd& y,
+                        int nugget = 0){
+
+  int n = X.rows();
+
+  const MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
+  const MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
+  const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
+  const MatrixXd varX = AtA(xx); // crossprod(xx)
+  const MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
+
+  // solve for betahat (using one specific solver - there are others)
+  const VectorXd bhat(varX.colPivHouseholderQr().solve(XtY));
+
+  int df = n - xx.cols();
+  const VectorXd SSE = AtA(yy - xx * bhat); // SSE
+  const double MSE = SSE.array()[1]/df; // MSE
+
+  // Log(Det(Vn))
+  double logDetV = 0;
+  for (int i = 0; i < tUinv.rows(); i++){
+    logDetV += log(tUinv.diagonal()[i]);
+  }
+  logDetV *= -2;
+
+  double logLik = -0.5*(n * log(2*M_PI) + n * log(df*MSE/n) + logDetV + n);
+
+  return logLik;
+}
+
+/* Optimizer function
+ * Currently uses the golden section search:
+ *   https://chemicalstatistician.wordpress.com/2013/04/22/using-r-to-implement-the-golden-bisection-method/
+ * However, the algorithm used by optimize() is faster:
+ *   http://www.netlib.org/fmm/fmin.f
+ * I should try and implement this algorithm instead
+ */
+
+// [[Rcpp::export]]
+inline double nugOptim_cpp(const MapMatd& X,
+                const MapMatd& V,
+                const MapVecd& y,
+                double lower = 0,
+                double upper = 1,
+                double tol = 0.00001){
+  double mx; // declare x which maximise f(x)
+
+  // golden ratio value
+  double GR = 2/sqrt(5) + 1;
+
+  // test bounds
+  double x1 = upper - GR*(upper - lower);
+  double x2 = lower + GR*(upper - lower);
+
+  // current f() bounds
+  double f1 = LogLikGLS_cpp(X, V, y, x1);
+  double f2 = LogLikGLS_cpp(X, V, y, x2);
+
+  int i = 0;
+  while (abs(upper - lower ) > tol){
+    i += 1;
+    // cout << "current interval: [" << lower << ", " << upper << "]" << endl;
+    if (f2 < f1) { // then the maximum is closer to x2
+      // recycle new values according to the GR rule
+      upper = x2;
+      x2 = x1;
+      f2 = f1;
+      // calculate new values
+      x1 = upper - GR*(upper - lower);
+      f2 = LogLikGLS_cpp(X, V, y, x2);
+    } else { // the maximum is closer to x1
+      lower = x1;
+      x1 = x2;
+      f1 = f2;
+
+      x2 = lower + GR*(upper - lower);
+      f2 = LogLikGLS_cpp(X, V, y, x2);
+    }
+  }
+  cout << "number of iterations: " << i << endl;
+
+  mx = (upper + lower)/2;
+
+  if(mx < tol){
+    double f0 = LogLikGLS_cpp(X, V, y, 0);
+    double fmx = LogLikGLS_cpp(X, V, y, mx);
+    if (f0 > fmx){
+      mx = 0;
+    }
+  }
+
+  if(mx > 1 - tol){
+    double f0 = LogLikGLS_cpp(X, V, y, 1);
+    double fmx = LogLikGLS_cpp(X, V, y, mx);
+    if (f0 > fmx){
+      mx = 1;
+    }
+  }
+
+  return mx;
+}
+
+/***R
+# nugOptim_cpp(X.small, V.small, y.small, 0, 1, .00001) # much slower than using R's optimizer
+*/
