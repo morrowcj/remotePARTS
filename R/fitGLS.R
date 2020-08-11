@@ -1,13 +1,13 @@
 ## invert_choldec ----
 
-invert_cholR <- function(M, nugget = 0){
+invert_cholR <- function(M, nugget = 0, debug = FALSE){
   stopifnot(nrow(M) == ncol(M))
 
   n = nrow(M)
 
   # handle nugget
-  if(nugget == 0){
-    print("using nugget")
+  if(nugget != 0){
+    if (debug) {print("using nugget")}
     M <- (1 - nugget) * M + nugget * diag(n)
   }
 
@@ -85,10 +85,10 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
 }
 
 fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
-  N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(X, V, y, nugget = nug))},
+  N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(nugget = nug, X, V, y))},
                     interval = int, tol = tol, maximum = TRUE)
   if(N.opt$maximum < tol){
-    N0.LL <- LogLikGLS_cpp(X, V, y, nugget = 0)
+    N0.LL <- LogLikGLS_cpp(nugget = 0, X, V, y)
     if(N0.LL > N.opt$objective){
       N.opt$maximum <- 0
     }

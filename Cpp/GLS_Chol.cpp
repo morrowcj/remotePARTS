@@ -60,19 +60,20 @@ AtA(M) # cpp way
  */
 
 // [[Rcpp::export]]
-MatrixXd tinvchol_cpp(const MapMatd& V, int nugget = 0){
-  const int n = V.rows(); //dim of V
+MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
 
-  if (nugget == 0) {
-    // no nugget case
-    const LLT<MatrixXd> llt(V); //chol decomp of V: (U)
-    const MatrixXd tUinv = llt.matrixU().solve(MatrixXd::Identity(n, n)).adjoint();
-    return tUinv;
-  } else {
+  double n = V.rows(); //dim of V
+
+  if (abs(nugget) > 0) {
     // with nugget
     const MatrixXd M = (1 - nugget) * V.array() + nugget * MatrixXd::Identity(n,n).array();
     const MatrixXd Mn = M.matrix();
     const LLT<MatrixXd> llt(Mn);
+    const MatrixXd tUinv = llt.matrixU().solve(MatrixXd::Identity(n, n)).adjoint();
+    return tUinv;
+  } else {
+    // no nugget case
+    const LLT<MatrixXd> llt(V); //chol decomp of V: (U)
     const MatrixXd tUinv = llt.matrixU().solve(MatrixXd::Identity(n, n)).adjoint();
     return tUinv;
   }
@@ -103,7 +104,7 @@ List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& V,
                 const MapMatd& y,
                 const MapMatd& X0,
-                int nugget = 0,
+                double nugget = 0.,
                 const int threads = 1){
 
   const int nX = X.rows(), pX = X.cols(); // dimensions of X
@@ -112,7 +113,6 @@ List fitGLS_cpp(const MapMatd& X,
   const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
   const MatrixXd varX = AtA(xx); // crossprod(xx)
   const MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
-
 
   // solve for betahat (using one specific solver - there are others)
   const VectorXd betahat(varX.colPivHouseholderQr().solve(XtY));
@@ -199,22 +199,21 @@ List fitGLS_cpp(const MapMatd& X,
 # ## test fitGLS_cpp()
 load("../R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
 Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
-# source("../R/fitGLS.R")
-#
-# tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
-#
-# tmp.R <- fitGLS(X.small, V.small, y.small)
-#
-# ## compare results
-# check.equal <- function(string){
-#   all.equal(unlist(unname(tmp.R[[string]])), unlist(tmp.cpp[[string]]))
-# }
-#
-# sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
-#          "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
-#          "df0", "logLik0", "FF", "df.F"),
-#        check.equal)
+source("../R/fitGLS.R")
 
+tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
+
+tmp.R <- fitGLS(X.small, V.small, y.small)
+
+## compare results
+check.equal <- function(string){
+  all.equal(unlist(unname(tmp.R[[string]])), unlist(tmp.cpp[[string]]))
+}
+
+sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
+         "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
+         "df0", "logLik0", "FF", "df.F"),
+       check.equal)
 */
 
 
@@ -224,13 +223,12 @@ Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
  */
 
 // [[Rcpp::export]]
-inline double LogLikGLS_cpp(const MapMatd& X,
+inline double LogLikGLS_cpp(double nugget,
+                        const MapMatd& X,
                         const MapMatd& V,
-                        const MapVecd& y,
-                        int nugget = 0){
+                        const MapVecd& y){
 
-  int n = X.rows();
-
+  const int nX = X.rows(); // dimensions of X
   const MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
   const MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
   const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
@@ -238,96 +236,175 @@ inline double LogLikGLS_cpp(const MapMatd& X,
   const MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
 
   // solve for betahat (using one specific solver - there are others)
-  const VectorXd bhat(varX.colPivHouseholderQr().solve(XtY));
+  const VectorXd betahat(varX.colPivHouseholderQr().solve(XtY));
 
-  int df = n - xx.cols();
-  const VectorXd SSE = AtA(yy - xx * bhat); // SSE
-  const double MSE = SSE.array()[1]/df; // MSE
-
-  // Log(Det(Vn))
+  // calculate some statistics
+  int dft = nX - xx.cols();
+  const VectorXd SSE = AtA(yy - xx * betahat); // SSE
+  const VectorXd MSE = SSE/dft; // MSE
   double logDetV = 0;
   for (int i = 0; i < tUinv.rows(); i++){
     logDetV += log(tUinv.diagonal()[i]);
   }
   logDetV *= -2;
 
-  double logLik = -0.5*(n * log(2*M_PI) + n * log(df*MSE/n) + logDetV + n);
+  double logLik = -0.5 * (nX * log(2 * M_PI) + nX *
+                          log(dft * MSE.array()[0]/nX) + logDetV + nX);
 
   return logLik;
 }
 
 /* Optimizer function
- * Currently uses the golden section search:
- *   https://chemicalstatistician.wordpress.com/2013/04/22/using-r-to-implement-the-golden-bisection-method/
- * However, the algorithm used by optimize() is faster:
- *   http://www.netlib.org/fmm/fmin.f
- * I should try and implement this algorithm instead
+ * Currently this function uses the same algorithm that optimize() derived from.
+ * This code is a translation of the fortran fmin algorithm:
+ * http://www.netlib.org/fmm/fmin.f
  */
 
 // [[Rcpp::export]]
-inline double nugOptim_cpp(const MapMatd& X,
-                const MapMatd& V,
-                const MapVecd& y,
-                double lower = 0,
-                double upper = 1,
-                double tol = 0.00001){
-  double mx; // declare x which maximise f(x)
+double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapVecd &y,
+                          double lower = 0, double upper = 1, double tol = .00001,
+                          bool debug = false){
 
-  // golden ratio value
-  double GR = 2/sqrt(5) + 1;
+  // varible declaration
+  double ax = lower;
+  double bx = upper;
+  double a,b,c,d,e,eps,xm,p,q,r,tol1,tol2,u,v,w;
+  double fu,fv,fw,fx,x, f_min;
 
-  // test bounds
-  double x1 = upper - GR*(upper - lower);
-  double x2 = lower + GR*(upper - lower);
+  // c is the squared inverse of the golden ratio
+  c = 0.5*(3. - sqrt(5.));
 
-  // current f() bounds
-  double f1 = LogLikGLS_cpp(X, V, y, x1);
-  double f2 = LogLikGLS_cpp(X, V, y, x2);
+  // eps is approximately sqrt of machine precision
+  // eps = std::numeric_limits<double>::epsilon();
+  // eps = sqrt(eps);
+  // cout << "eps_std = "<<eps<<endl;
+
+  eps = 1.;
+  lab0:
+    eps = eps/2.;
+    tol1 = 1. + eps;
+    if (tol1 > 1.) {goto lab0;}
+    eps = sqrt(eps);
+    // cout << "eps =" << eps<< endl;
+
+  // initialization
+  a = ax;
+  b = bx;
+  v = a + c*(b - a);
+  w = v;
+  x = v;
+  e = 0.;
+  fx = -LogLikGLS_cpp(x, X, V, y); //invert function to minimize
+  fv = fx;
+  fw = fx;
 
   int i = 0;
-  while (abs(upper - lower ) > tol){
+  // main loop start
+  lab1:
+    // cout << "Loop Start (lab1): iteration " <<i<<endl;
+    if (debug) {
     i += 1;
-    // cout << "current interval: [" << lower << ", " << upper << "]" << endl;
-    if (f2 < f1) { // then the maximum is closer to x2
-      // recycle new values according to the GR rule
-      upper = x2;
-      x2 = x1;
-      f2 = f1;
-      // calculate new values
-      x1 = upper - GR*(upper - lower);
-      f2 = LogLikGLS_cpp(X, V, y, x2);
-    } else { // the maximum is closer to x1
-      lower = x1;
-      x1 = x2;
-      f1 = f2;
-
-      x2 = lower + GR*(upper - lower);
-      f2 = LogLikGLS_cpp(X, V, y, x2);
+      if (i >= 10) {
+        cout << "breaking loop, too many iterations"<<endl;
+        goto lab8;
+      }
     }
-  }
-  cout << "number of iterations: " << i << endl;
-
-  mx = (upper + lower)/2;
-
-  if(mx < tol){
-    double f0 = LogLikGLS_cpp(X, V, y, 0);
-    double fmx = LogLikGLS_cpp(X, V, y, mx);
-    if (f0 > fmx){
-      mx = 0;
+    xm = 0.5*(a + b);
+    tol1 = eps*abs(x) + tol/3.;
+    tol2 = 2.*tol1;
+    // check stoping criteria
+    if (abs(x - xm) <= (tol2 - 0.5*(b - a))) {goto lab8;}
+    // cout << "stop crit. not met: "<<abs(x-xm)<<" > "<<tol2-.5*(b-a)<<endl;
+    // is golden section necessary?
+    if (abs(e) <= tol1) {goto lab3;}
+    // fit parabola
+    r = (x - w)*(fx - fv);
+    q = (x - v)*(fx - fw);
+    p = (x - v)*q - (x - w)*r;
+    q = 2.*(q - r);
+    if (q > 0.) {p = -p;}
+    q =  abs(q);
+    r = e;
+    e = d;
+  lab2:
+    // cout << "check parabola (lab2)" << endl;
+    // is parabola acceptable?
+    if (abs(p) >= abs(0.5*q*r)) {goto lab3;}
+    if (p <= q*(a - x)) goto lab3;
+    if (p >= q*(b - x)) goto lab3;
+    // parabolic interpolation step
+    d = p/q;
+    u = x + d;
+    // f must not be evaluated too close to ax or bx
+    if ((u - a) < tol2) {d = copysign(tol1, xm - x);}
+    if ((b - u) < tol2) {d = copysign(tol1, xm - x);}
+    goto lab4;
+  lab3:
+    // cout << "golden section step (lab3)" <<endl;
+    // golden section step
+    if (x >= xm) {e = a - x;}
+    if (x < xm) {e = b - x;}
+    d = c*e;
+  lab4:
+    // cout << "check tolerance and update vars (lab4)" << endl;
+    //f must not be evaluated too close to x
+    if (abs(d) >= tol1) {u = x + d;}
+    if (abs(d) < tol1) {u = x + copysign(tol1, d);}
+    fu = -LogLikGLS_cpp(u, X, V, y);
+    //update  a, b, v, w, and x
+    if (fu > fx) {goto lab5;}
+    if (u >= x) {a = x;}
+    if (u < x) {b = x;}
+    v = w;
+    fv = fw;
+    w = x;
+    fw = fx;
+    x = u;
+    fx = fu;
+    goto lab1;
+  lab5:
+    // cout << "conditional variable reset (lab5)" << endl;
+    if (u < x) {a = u;}
+    if (u >= x) {b = u;}
+    if (fu <= fw) {goto lab6;}
+    if (w == x) {goto lab6;}
+    if (fu <= fv) {goto lab7;}
+    if (v == x) {goto lab7;}
+    if (v == w) {goto lab7;}
+    goto lab1;
+  lab6:
+    // cout << "update function results (lab6)" << endl;
+    v = w;
+    fv = fw;
+    w = u;
+    fw = fu;
+    goto lab1;
+  lab7:
+    // cout << "update function results alterante (lab7)" << endl;
+    v = u;
+    fv = fu;
+    goto lab1;
+  // end of main loop
+  lab8:
+    // cout << "return statement (lab8)" << endl;
+    f_min = x;
+    if (ax + tol >= f_min){
+      if (fx <= -LogLikGLS_cpp(f_min, X, V, y)){
+        return ax;
+      }
     }
-  }
-
-  if(mx > 1 - tol){
-    double f0 = LogLikGLS_cpp(X, V, y, 1);
-    double fmx = LogLikGLS_cpp(X, V, y, mx);
-    if (f0 > fmx){
-      mx = 1;
-    }
-  }
-
-  return mx;
+    return f_min;
 }
 
 /***R
-# nugOptim_cpp(X.small, V.small, y.small, 0, 1, .00001) # much slower than using R's optimizer
+tol <- .00001
+system.time(tmp1 <- fitNugget(X.small, V.small, y.small, c(0, 1), tol))
+system.time(tmp2 <- optimizeNugget_cpp(X.small, V.small, y.small, 0, 1, tol))
+system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
+
+(vals <- c(tmp1, tmp2, tmp3))
+xs <- seq(0, 1, length.out = 20)
+fxs <- sapply(xs, function(x){LogLikGLS_cpp(x, X.small, V.small, y.small)})
+plot(fxs ~ xs);abline(v = vals, col = c("red", "green", "blue"), lty = 1:3)
+
 */
