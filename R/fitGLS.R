@@ -50,6 +50,10 @@ fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
   MSR <- (SSE0 - SSE)/(ncol(xx) - ncol(xx0))
   logLik0 <- -0.5 * (n * log(2 * pi) + n * log((n-df0)*MSE0/n) + logdetV + n)
 
+  varX0 <- t(xx0) %*% xx0
+  varcov0 <- MSE0 * solve(varX0)
+  se0 <- diag(varcov0)^0.5
+
   if (ncol(xx) > 1) { # when/why would ncol(xx) == 1 ever ?
     FF <- (n - ncol(xx))/(ncol(xx) - ncol(xx0)) * (SSE0 - SSE)/SSE
     df1.F <- ncol(xx) - ncol(xx0)
@@ -66,34 +70,10 @@ fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
 
   return(list(betahat = beta, VarX = varX, SSE = SSE, MSE = MSE, varcov = varcov,
               SE = se, tstat = t, pval.t = p.t, dft = df.t, logDetV = logdetV,
-              logLik = logLik, betahat0 = betahat0, SSE0 = SSE0, MSE0 = MSE0,
-              MSR = MSR, df0 = df0, logLik0 = logLik0, Fstat = FF, pval.F = p.F,
-              df.F = df.F
+              logLik = logLik, betahat0 = betahat0, SE0 = se0, SSE0 = SSE0,
+              SSR = SSE0 - SSE, MSE0 = MSE0, MSR = MSR, df0 = df0,
+              logLik0 = logLik0, Fstat = FF, pval.F = p.F, df.F = df.F
               ))
-}
-
-fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
-  N.opt <- optimize(f = function(nug){return(fitGLS(X, V, y, nugget = nug)$logLik)},
-           interval = int, tol = tol, maximum = TRUE)
-  if(N.opt$maximum < tol){
-    N0.LL <- fitGLS(X, V, y, nugget = 0)$logLik
-    if(N0.LL > N.opt$objective){
-      N.opt$maximum <- 0
-    }
-  }
-  return(N.opt$maximum)
-}
-
-fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
-  N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(nugget = nug, X, V, y))},
-                    interval = int, tol = tol, maximum = TRUE)
-  if(N.opt$maximum < tol){
-    N0.LL <- LogLikGLS_cpp(nugget = 0, X, V, y)
-    if(N0.LL > N.opt$objective){
-      N.opt$maximum <- 0
-    }
-  }
-  return(N.opt$maximum)
 }
 
 # Rcpp::sourceCpp("Cpp/GLS_Chol.cpp")
@@ -125,6 +105,79 @@ fitDistVar_R <- function(Dist, spatialcor, fun = "exponential"){
 
 ## fitNugget ----
 ## This function calls fitGLS() and invert_choldec()
+
+fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
+  N.opt <- optimize(f = function(nug){return(fitGLS(X, V, y, nugget = nug)$logLik)},
+                    interval = int, tol = tol, maximum = TRUE)
+  if(N.opt$maximum < tol){
+    N0.LL <- fitGLS(X, V, y, nugget = 0)$logLik
+    if(N0.LL > N.opt$objective){
+      N.opt$maximum <- 0
+    }
+  }
+  return(N.opt$maximum)
+}
+
+fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
+  N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(nugget = nug, X, V, y))},
+                    interval = int, tol = tol, maximum = TRUE)
+  if(N.opt$maximum < tol){
+    N0.LL <- LogLikGLS_cpp(nugget = 0, X, V, y)
+    if(N0.LL > N.opt$objective){
+      N.opt$maximum <- 0
+    }
+  }
+  return(N.opt$maximum)
+}
+
+## Partitioned GLS ----
+fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
+                             nug.int = c(0, 1), nug.tol = 0.00001){
+  ## Select random subsets according to the number of partitions
+  n <- nrow(data) # full data n
+  nn <- n - (n%%npart) # n divisible by npart
+  n.p <- nn/npart # size of each partition
+  shuff <- sample(n)[1:nn] # shuffled rows
+  # shuff.mat <- matrix(shuff, nrow = npart)
+    ## TBA: handle user-defined partitions?
+
+  ## calculate degrees of freedom
+  df2 <- n.p - (ncol(X) - 1)
+  df0 <- n.p - (ncol(X) - 1)
+  df1 <- df0 - df2
+
+  ## adjust the minimum number of crossed partitions
+  if(mincross > npart | is.na(mincross)|is.null(mincross) | missing(mincross)){
+    mincross <- npart
+  }
+
+  ## loop through each partition and gather results
+  # for(partition in seq_len(npart)){ ## lapply is better for now
+  results <- lapply(seq_len(npart), function(partition){
+    ## subset the full data according to the partion
+    subset <- (partition - 1)*n.p + (seq_len(n.p))
+    tmp <- fitGLS(X = X[subset, ], V = V[subset, subset], y = y[subset],
+                  X0 = X0[subset, ], nugget = nugget)
+
+      ## TBA: fit V matrix to individual partitions
+      ## TBA: allow for non-fixed nugget
+
+    out <- tmp[[c("SSR", "SSE", "SSE0","betahat", "betahat0", "SE", "SE0",
+                      "Fstat", "pval.F", "logLik", "logLik0")]]
+
+    ## include incvhol, xx, and xx0 for the first few subsets
+    if(!is.na(mincross) && partition <= mincross){
+      out$invcholV <- invert_cholR(V[subset, subset], nugget = nugget)
+      out$xx <- tmp$xx
+      out$xx0 <- tmp$xx0
+    } else{
+      out$invcholV <- NULL
+      out$xx <- NULL
+      out$xx0 <- NULL
+    }
+    return(out)})
+
+}
 
 ## Original Code ----
 
@@ -249,7 +302,12 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL,
 
   if(!save.invcholV) invcholV <- NULL
 
-  return(list(coef = coef, se = se, t = t, df.t = df.t, p.t = p.t, F = FF, df1.F = df1.F, df2.F = df2.F, p.F = p.F, logLik = logLik, logLik0 = logLik0, MSE = MSE, MSE0 = MSE0, MSR = MSR, SSE = SSE, SSE0 = SSE0, SSR = SSE0 - SSE, coef0 = coef0, se0 = se0, varX = varX, varcov = varcov, varcov0 = varcov0, invcholV = invcholV, xx=xx, xx0=xx0, yy=yy))
+  return(list(coef = coef, se = se, t = t, df.t = df.t, p.t = p.t, F = FF,
+              df1.F = df1.F, df2.F = df2.F, p.F = p.F, logLik = logLik,
+              logLik0 = logLik0, MSE = MSE, MSE0 = MSE0, MSR = MSR, SSE = SSE,
+              SSE0 = SSE0, SSR = SSE0 - SSE, coef0 = coef0, se0 = se0,
+              varX = varX, varcov = varcov, varcov0 = varcov0,
+              invcholV = invcholV, xx=xx, xx0=xx0, yy=yy))
 }
 
 GLS.partition.data <- function(formula, formula0 = NULL, data,

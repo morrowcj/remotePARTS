@@ -162,6 +162,15 @@ List fitGLS_cpp(const MapMatd& X,
   double logLik0 = -0.5 * (nX * log(2 * M_PI) + nX * log((nX - df0) * MSE0/nX) +
                            logDetV + nX);
 
+  const MatrixXd varX0inv = varX0.colPivHouseholderQr().solve(
+    MatrixXd::Identity(varX0.rows(), varX0.cols()));
+  const MatrixXd varcov0 = MSE0 * varX0inv.array()
+
+  VectorXd se0 = varcov0.matrix().diagonal();
+  for (int i = 0; i < se0.size(); i++){
+    se0[i] = std::sqrt(se0[i]);
+  }
+
   /* F test ----
    *
    */
@@ -184,7 +193,9 @@ List fitGLS_cpp(const MapMatd& X,
                       Named("logDetV") = logDetV,
                       Named("logLik") = logLik,
                       Named("betahat0") = betahat0,
+                      Named("SE0") = se0,
                       Named("SSE0") = SSE0,
+                      Named("SSR") = SSE0 - SSE,
                       Named("MSE0") = MSE0,
                       Named("MSR") = MSR,
                       Named("df0") = df0,
@@ -403,8 +414,8 @@ system.time(tmp2 <- optimizeNugget_cpp(X.small, V.small, y.small, 0, 1, tol))
 system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
 
 (vals <- c(tmp1, tmp2, tmp3))
-xs <- seq(0, 1, length.out = 20)
-fxs <- sapply(xs, function(x){LogLikGLS_cpp(x, X.small, V.small, y.small)})
-plot(fxs ~ xs);abline(v = vals, col = c("red", "green", "blue"), lty = 1:3)
+# xs <- seq(0, 1, length.out = 20)
+# fxs <- sapply(xs, function(x){LogLikGLS_cpp(x, X.small, V.small, y.small)})
+# plot(fxs ~ xs);abline(v = vals, col = c("red", "green", "blue"), lty = 1:3)
 
 */
