@@ -17,6 +17,7 @@ using Eigen::MatrixXi;
 using Eigen::Upper;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
+// using Eigen::seq;
 
 typedef Map<MatrixXd> MapMatd;
 typedef Map<MatrixXi> MapMati;
@@ -34,6 +35,13 @@ inline MatrixXd AtA(const MatrixXd& A) {
                       .rankUpdate(A.adjoint());
 }
 
+// [[Rcpp::export]]
+inline MatrixXd AAt(const MatrixXd& A) {
+  int m(A.rows());
+  return MatrixXd(m,m).setZero().selfadjointView<Lower>()
+                      .rankUpdate(A);
+}
+
 //==============================================================================
 /* solve_cpp(A, B) ----
  * solves Ax = B for x.
@@ -42,6 +50,12 @@ inline MatrixXd AtA(const MatrixXd& A) {
 // [[Rcpp:export]]
 inline MatrixXd solve_cpp(const MatrixXd& A, const MatrixXd& B){
   return A.colPivHouseholderQr().solve(B);
+}
+
+// [[Rcpp:export]]
+inline MatrixXd solve_ident_cpp(const MatrixXd& A){
+  MatrixXd I = MatrixXd::Identity(A.rows(),A.cols());
+  return A.colPivHouseholderQr().solve(I);
 }
 
 /***R
@@ -105,25 +119,26 @@ List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& y,
                 const MapMatd& X0,
                 double nugget = 0.,
+                bool save_xx = false,
                 const int threads = 1){
 
-  const int nX = X.rows(), pX = X.cols(); // dimensions of X
-  const MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
-  const MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
-  const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
-  const MatrixXd varX = AtA(xx); // crossprod(xx)
-  const MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
+  int nX = X.rows(), pX = X.cols(); // dimensions of X
+  MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
+  MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
+  MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
+  MatrixXd varX = AtA(xx); // crossprod(xx)
+  MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
 
   // solve for betahat (using one specific solver - there are others)
-  const VectorXd betahat(varX.colPivHouseholderQr().solve(XtY));
+  VectorXd betahat(varX.colPivHouseholderQr().solve(XtY));
 
   // calculate some statistics
   int dft = nX - xx.cols();
-  const VectorXd SSE = AtA(yy - xx * betahat); // SSE
-  const VectorXd MSE = SSE/dft; // MSE
-  const MatrixXd varXinv = varX.colPivHouseholderQr().solve(
+  VectorXd SSE = AtA(yy - xx * betahat); // SSE
+  VectorXd MSE = SSE/dft; // MSE
+  MatrixXd varXinv = varX.colPivHouseholderQr().solve(
     MatrixXd::Identity(varX.rows(), varX.cols()));
-  const MatrixXd varcov = varXinv.array() * MSE.array()[0];
+  MatrixXd varcov = varXinv.array() * MSE.array()[0];
   // cout << "\ndiag(vcov):\n" << varcov.matrix().diagonal() << endl; // this works
 
   // Vectorized operations
@@ -164,13 +179,14 @@ List fitGLS_cpp(const MapMatd& X,
 
   const MatrixXd varX0inv = varX0.colPivHouseholderQr().solve(
     MatrixXd::Identity(varX0.rows(), varX0.cols()));
-  const MatrixXd varcov0 = MSE0 * varX0inv.array()
+  const MatrixXd varcov0 = MSE0 * varX0inv.array();
 
   VectorXd se0 = varcov0.matrix().diagonal();
   for (int i = 0; i < se0.size(); i++){
     se0[i] = std::sqrt(se0[i]);
   }
 
+  double SSR = SSE0.array()[1] - SSE.array()[1];
   /* F test ----
    *
    */
@@ -181,29 +197,37 @@ List fitGLS_cpp(const MapMatd& X,
   dfF(1) = nX - xx.cols();
 
   // return a list of all needed values
-  return List::create(Named("betahat") = betahat,
-                      Named("VarX") = varX,
-                      Named("SSE") = SSE,
-                      Named("MSE") = MSE,
-                      Named("varcov") = varcov.matrix(),
-                      Named("SE") = se,
-                      Named("tstat") = tstat,
-                      Named("pval.t") = NA_REAL,
-                      Named("dft") = dft,
-                      Named("logDetV") = logDetV,
-                      Named("logLik") = logLik,
-                      Named("betahat0") = betahat0,
-                      Named("SE0") = se0,
-                      Named("SSE0") = SSE0,
-                      Named("SSR") = SSE0 - SSE,
-                      Named("MSE0") = MSE0,
-                      Named("MSR") = MSR,
-                      Named("df0") = df0,
-                      Named("logLik0") = logLik0,
-                      Named("Fstat") = FF,
-                      Named("pval.F") = NA_REAL,
-                      Named("df.F") = dfF
-                      );
+  List res_list = List::create(Named("betahat") = betahat,
+                               Named("SSE") = SSE,
+                               Named("MSE") = MSE,
+                               Named("SE") = se,
+                               Named("dft") = dft,
+                               Named("tstat") = tstat,
+                               Named("pval.t") = NA_REAL,
+                               Named("logLik") = logLik,
+                               Named("betahat0") = betahat0,
+                               Named("SSE0") = SSE0,
+                               Named("MSE0") = MSE0,
+                               Named("SE0") = se0,
+                               Named("MSR") = MSR,
+                               Named("df0") = df0,
+                               Named("logLik0") = logLik0,
+                               Named("df.F") = dfF,
+                               Named("Fstat") = FF,
+                               Named("pval.F") = NA_REAL);
+
+  // handle the conditional return of large matrices
+  if (save_xx){
+    res_list.push_back(xx, "xx");
+    res_list.push_back(xx0, "xx0");
+    res_list.push_back(tUinv, "tInvCholV");
+  } else{
+    res_list.push_back(NA_REAL, "xx");
+    res_list.push_back(NA_REAL, "xx0");
+    res_list.push_back(NA_REAL, "tInvCholV");
+  }
+
+  return res_list;
 }
 
 /*** R
@@ -237,7 +261,7 @@ sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
 inline double LogLikGLS_cpp(double nugget,
                         const MapMatd& X,
                         const MapMatd& V,
-                        const MapVecd& y){
+                        const MapMatd& y){
 
   const int nX = X.rows(); // dimensions of X
   const MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
@@ -272,7 +296,7 @@ inline double LogLikGLS_cpp(double nugget,
  */
 
 // [[Rcpp::export]]
-double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapVecd &y,
+double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd &y,
                           double lower = 0, double upper = 1, double tol = .00001,
                           bool debug = false){
 
@@ -419,3 +443,84 @@ system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
 # plot(fxs ~ xs);abline(v = vals, col = c("red", "green", "blue"), lty = 1:3)
 
 */
+
+/* GLS_worker_cpp()
+ * This function will perform the GLS operations on each subset of X
+ * For now, V_i needs to be provided with each X_i and y_i
+ * because Vfit() is currently not implemented in C++. This is largely
+ * due to the fact that since distGeo() needs to be done externally as well.
+ */
+
+// [[Rcpp::export]]
+List GLS_worker_cpp(const MapMatd& y,
+                    const MapMatd& X,
+                    const MapMatd& V,
+                    const MapMatd& X0,
+                    bool save_xx = false){
+
+  // Estimate the nugget
+  double nug = optimizeNugget_cpp(X, V, y);
+  // run GLS
+  List x_gls = fitGLS_cpp(X, V, y, X0, nug, save_xx, 1);
+  // add the nugget to the output
+  x_gls.push_back(nug, "nugget");
+
+  return x_gls;
+}
+
+
+// [[Rcpp::export]]
+List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
+                          int df1, int df2){
+  int np = Vij.cols()/2;
+
+  // extract the nuggets and rescale them if they aren't 0
+  double nug_i = Li["nugget"];
+  nug_i = nug_i == 0. ? 0. : (1. - nug_i) / nug_i;
+  double nug_j = Lj["nugget"];
+  nug_j = nug_j == 0. ? 0. : (1. - nug_j) / nug_j;
+  // create a vector to hold the nugget diagonal
+  VectorXd nugvec(Vij.cols());
+  // replicate the nuggets n/2 times
+  VectorXd Ni = VectorXd::Constant(np, nug_i);
+  VectorXd Nj = VectorXd::Constant(np, nug_j);
+  // fill the vector with the nugget values
+  nugvec << Ni, Nj;
+  // add them to the diagonal
+  MatrixXd Vn = Vij.diagonal() + nugvec;
+
+  MatrixXd xxi = Li["xx"];
+  MatrixXd xxi0 = Li["xx0"];
+  MatrixXd xxj = Lj["xx"];
+  MatrixXd xxj0 = Lj["xx0"];
+
+  MatrixXd tUinv_i = Li["tInvCholV"];
+  MatrixXd tUinv_j = Lj["tInvCholV"];
+
+  MatrixXd Vsub = Vn.matrix().block(1, np + 1, np, 2 * np);
+
+  MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
+
+  MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
+  MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
+
+  MatrixXd Hi0 = xxi0 * solve_ident_cpp(xxi0.adjoint() * xxi0) * xxi0.adjoint();
+  MatrixXd Hj0 = xxj0 * solve_ident_cpp(xxj0.adjoint() * xxj0) * xxj0.adjoint();
+
+  MatrixXd SiR = Hi - Hi0;
+  MatrixXd SjR = Hj - Hj0;
+
+  MatrixXd npDiag = Ni.asDiagonal();
+  MatrixXd SiE = npDiag - Hi;
+  MatrixXd SjE = npDiag - Hj;
+
+  MatrixXd tmp_ij = SiR * (Rij * SjR * Rij.adjoint());
+  MatrixXd rSSRij = tmp_ij.array()/df1;
+  MatrixXd rSSEij = tmp_ij.array()/df2;
+
+  List out_lst = List::create(Named("rSSRij") = rSSRij,
+                              Named("rSSEij") = rSSEij);
+
+  return out_lst;
+  // return 0;
+}

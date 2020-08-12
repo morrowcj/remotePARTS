@@ -255,7 +255,48 @@ if(FALSE){
 }
 
 
-# fit GLS
+# fit GLS partiion
+
+source('D:/morrowcj/Documents/Projects/remoteSTAR/R/fitGLS.R', echo=TRUE)
+source("R/fitSpatCor.R")
+load(file = "R/vignettes-and-examples/test-gls.rda")
+data <- readRDS("data/alaska_ndvi_3000pts.rda")
+
+n.p = 50; npart = 2
+partition <- matrix(sample(1:nrow(data), size = n.p * npart), ncol = npart)
+
+
+## For now, I'm going to explore the distributed computing option
+
+### partition 1
+y1 <- rnorm(n.p)
+X1 <- as.matrix(data[partition[,1], -c(1:6)])
+loc1 <- data[partition[, 1], c("lat","lng")]
+V1 <- V.fit(Dist[partition[,1], partition[,1]],
+            spatialcor = r.est$spatialcor, FUN = "exponential-power")
+### partition 2
+y2 <- rnorm(n.p)
+X2 <- as.matrix(data[partition[,2], -c(1:6)])
+loc2 <- data[partition[, 2], c("lat","lng")]
+V2 <- V.fit(Dist[partition[,1], partition[,1]],
+            spatialcor = r.est$spatialcor, FUN = "exponential-power")
+
+V12 <- V.fit(Dist[as.vector(partition), as.vector(partition)],
+             spatialcor = r.est$spatialcor, FUN = "exponential-power")
+Xnull <- matrix(1, nrow = nrow(X1))
+
+df2 <- n.p - (ncol(X1) - 1)
+df0 <- n.p - (ncol(Xnull) - 1)
+df1 <- df0 - df2
+
+out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE)
+out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE)
+
+# out.cross <- crosspart_worker_cpp(out1, out2, V12, df1, df2) # not working yet
+
+# fitGLS.partition(X = Xmat, V = V, y = rnorm(nrow(Xmat)),
+#                  X0 = matrix(1, nrow = nrow(Xmat)), nugget = 0,
+#                  npart = 2, mincross = 2)
 
 # fit nugget (re-fit GLS)
 

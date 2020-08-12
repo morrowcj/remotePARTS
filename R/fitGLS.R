@@ -143,7 +143,7 @@ fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
 
   ## calculate degrees of freedom
   df2 <- n.p - (ncol(X) - 1)
-  df0 <- n.p - (ncol(X) - 1)
+  df0 <- n.p - (ncol(X0) - 1)
   df1 <- df0 - df2
 
   ## adjust the minimum number of crossed partitions
@@ -162,8 +162,8 @@ fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
       ## TBA: fit V matrix to individual partitions
       ## TBA: allow for non-fixed nugget
 
-    out <- tmp[[c("SSR", "SSE", "SSE0","betahat", "betahat0", "SE", "SE0",
-                      "Fstat", "pval.F", "logLik", "logLik0")]]
+    out <- tmp[c("SSR", "SSE", "SSE0","betahat", "betahat0", "SE", "SE0",
+                      "Fstat", "pval.F", "logLik", "logLik0")]
 
     ## include incvhol, xx, and xx0 for the first few subsets
     if(!is.na(mincross) && partition <= mincross){
@@ -176,6 +176,9 @@ fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
       out$xx0 <- NULL
     }
     return(out)})
+
+  ## Calculate pairwise cross-partition statistics
+return(results)
 
 }
 
@@ -318,7 +321,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data,
                                nugget.tol = 0.00001, min.num.cross.part = 5,
                                verbose = F, rm.spatial.autocorrelation = F) {
 
-  n <- nrow(data)
+  {n <- nrow(data)
   if (!is.null(partition)) {
     npart <- nrow(partition)
     nn <- n - (n%%npart)
@@ -328,20 +331,20 @@ GLS.partition.data <- function(formula, formula0 = NULL, data,
     nn <- n - (n%%npart)
     n.p <- nn/npart
     pick <- matrix(sample(n)[1:nn], nrow = npart)
-  }
+  }}
 
-  mf <- model.frame(formula = formula, data = data)
+  {mf <- model.frame(formula = formula, data = data)
   df2 <- n.p - (ncol(model.matrix(attr(mf, "terms"), data = mf)) - 1)
   mf0 <- model.frame(formula = formula0, data = data)
   df0 <- n.p - (ncol(model.matrix(attr(mf0, "terms"), data = mf0)) - 1)
-  df1 <- df0 - df2
+  df1 <- df0 - df2}
 
   if(min.num.cross.part > npart) min.num.cross.part <- npart
   if(ncol(mf) <= 1){
     min.num.cross.part <- NA
   }
 
-  SSR.part <- NULL
+  {SSR.part <- NULL
   SSE.part <- NULL
   SSE0.part <- NULL
   coef.part <- NULL
@@ -355,7 +358,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data,
   nugget.part <- NULL
   invcholV.part <- list(NULL)
   xx.part <- list(NULL)
-  xx0.part <- list(NULL)
+  xx0.part <- list(NULL)}
   for (i in 1:npart) {
 
     data.part <- data[pick[i,],]
