@@ -182,6 +182,53 @@ return(results)
 
 }
 
+fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
+                                  Vfit.fun = "exponential-power",
+                                  npart = 5, mincross = 4,
+                                  nug.int = c(0, 1), nug.tol = .00001){
+
+  ## Select random subsets according to the number of partitions
+  n <- nrow(data) # full data n
+  nn <- n - (n%%npart) # n divisible by npart
+  n.p <- nn/npart # size of each partition
+  shuff <- sample(n)[1:nn] # shuffled rows
+  partition <- matrix(shuff, nrow = npart)
+  # shuff.mat <- matrix(shuff, nrow = npart)
+  ## TBA: handle user-defined partitions?
+
+  ## calculate degrees of freedom
+  df2 <- n.p - (ncol(X) - 1)
+  df0 <- n.p - (ncol(X0) - 1)
+  df1 <- df0 - df2
+
+  ## adjust the minimum number of crossed partitions
+  if(mincross > npart | is.na(mincross)|is.null(mincross) | missing(mincross)){
+    mincross <- npart
+  }
+
+  out = lapply(seq_len(npart), function(i){
+    yi <- y[partition[, i]]
+    Xi <- as.matrix(X[partition[,i], ])
+    Xi0 <- as.matrix(X0[partition[, i]])
+    # loci <- loc[partition[, i], ]
+    Vi <- V.fit(Dist[partition[, i], partition[, i]],
+                spatialcor = spatcor, FUN = Vfit.fun)
+    save_xx = ifelse(i <= mincross, TRUE, FALSE)
+    return(GLS_worker_cpp(yi, Xi, Vi, Xi0, save_xx = save_xx))
+  })
+
+  out.cross = lapply(seq_len(mincross - 1), function(x){
+    i = x; j = x+1
+    Xij = as.matrix(X[partition[, c(i,j)], ])
+    # locij = loc[X[partition[, c(i,j)], ]
+    Vij <- V.fit(Dist[partition, c(i,j), partition, c(i,j)], spatialcor = spatcor,
+                 FUN = Vfit.fun)
+    Li <- out[[i]]; Lj = out[[j]]
+    res = crosspart_worker_cpp(Li, Lj, Vij, df1, df2)
+  })
+  return(list("part_results" = out, "crosspart_results" = out.cross))
+}
+
 ## Original Code ----
 
 V.fit <- function(Dist, spatialcor, FUN = "exponential") {

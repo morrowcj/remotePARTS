@@ -257,7 +257,7 @@ if(FALSE){
 
 # fit GLS partiion
 
-source('D:/morrowcj/Documents/Projects/remoteSTAR/R/fitGLS.R', echo=TRUE)
+source('R/fitGLS.R', echo=TRUE)
 source("R/fitSpatCor.R")
 load(file = "R/vignettes-and-examples/test-gls.rda")
 data <- readRDS("data/alaska_ndvi_3000pts.rda")
@@ -292,8 +292,10 @@ df1 <- df0 - df2
 out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE)
 out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE)
 
-# out.cross <- crosspart_worker_cpp(out1, out2, V12, df1, df2) # not working yet
+out.cross <- crosspart_worker_cpp(out1, out2, V12, df1, df2) # not working yet
 
+## Now I'll do the whole thing..
+fitGLS.partition_rcpp(X = X, y = rnorm(nrow(X)), X0 = matrix(1, nrow = nrow(X)), Dist = Dist, spatcor = r.est$spatialcor, nugget = 0)
 # fitGLS.partition(X = Xmat, V = V, y = rnorm(nrow(Xmat)),
 #                  X0 = matrix(1, nrow = nrow(Xmat)), nugget = 0,
 #                  npart = 2, mincross = 2)

@@ -1,12 +1,15 @@
 // [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::plugins(openmp)]]
 #include <iostream>
+#include "Eigen/Core"
 #include <RcppEigen.h>
 #include <math.h>
 // #include <omp.h>
 
+
 using namespace std;
 using namespace Rcpp;
+// using Rcpp::as;
 
 // using Rcpp::as;
 using Eigen::LLT;
@@ -473,12 +476,14 @@ List GLS_worker_cpp(const MapMatd& y,
 List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
                           int df1, int df2){
   int np = Vij.cols()/2;
+  // cout << "n: " << np << endl;
 
   // extract the nuggets and rescale them if they aren't 0
   double nug_i = Li["nugget"];
   nug_i = nug_i == 0. ? 0. : (1. - nug_i) / nug_i;
   double nug_j = Lj["nugget"];
   nug_j = nug_j == 0. ? 0. : (1. - nug_j) / nug_j;
+  // cout << "nuggets = ("<<nug_i<<", "<<nug_j<<")"<<endl;
   // create a vector to hold the nugget diagonal
   VectorXd nugvec(Vij.cols());
   // replicate the nuggets n/2 times
@@ -486,9 +491,13 @@ List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
   VectorXd Nj = VectorXd::Constant(np, nug_j);
   // fill the vector with the nugget values
   nugvec << Ni, Nj;
+  // cout << "nugvec: " << nugvec <<endl;
   // add them to the diagonal
-  MatrixXd Vn = Vij.diagonal() + nugvec;
-
+  // Eigen::DiagonalMatrix<double> nugDiag(np*2);
+  // nugDiag.diagonal() = nugvec;
+  MatrixXd nugDiag = nugvec.asDiagonal();
+  MatrixXd Vn = Vij + nugDiag;
+  // cout << "Vn: \n" <<Vn <<endl;
   MatrixXd xxi = Li["xx"];
   MatrixXd xxi0 = Li["xx0"];
   MatrixXd xxj = Lj["xx"];
@@ -497,9 +506,12 @@ List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
   MatrixXd tUinv_i = Li["tInvCholV"];
   MatrixXd tUinv_j = Lj["tInvCholV"];
 
-  MatrixXd Vsub = Vn.matrix().block(1, np + 1, np, 2 * np);
+  MatrixXd Vsub = Vn.block(1, np + 1, np, np);
+  // MatrixXd Vsub = Vn(Eigen::seq(1, np), Eigen::seq(np+1, np*2));
+  // cout << "Vsub:\n" << Vsub << endl;
 
   MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
+  // cout << "Rij:\n" << Rij << endl; // has nan, -nan, and inf where Vsub = 0
 
   MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
   MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
@@ -510,7 +522,7 @@ List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
   MatrixXd SiR = Hi - Hi0;
   MatrixXd SjR = Hj - Hj0;
 
-  MatrixXd npDiag = Ni.asDiagonal();
+  MatrixXd npDiag = MatrixXd::Identity(np, np);
   MatrixXd SiE = npDiag - Hi;
   MatrixXd SjE = npDiag - Hj;
 
@@ -518,7 +530,22 @@ List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
   MatrixXd rSSRij = tmp_ij.array()/df1;
   MatrixXd rSSEij = tmp_ij.array()/df2;
 
-  List out_lst = List::create(Named("rSSRij") = rSSRij,
+  List out_lst = List::create(Named("nugvec") = nugvec,
+                              Named("Vn") = Vn.matrix(),
+                              Named("Vsub") = Vsub,
+                              Named("tUinv_i") = tUinv_i,
+                              Named("tUinv_j") = tUinv_j,
+                              Named("Rij") = Rij,
+                              Named("Hi") = Hi,
+                              Named("Hj") = Hj,
+                              Named("Hi0") = Hi0,
+                              Named("Hj0") = Hj0,
+                              Named("SiR") = SiR,
+                              Named("SjR") = SjR,
+                              Named("SiE") = SiE,
+                              Named("SjE") = SjE,
+                              Named("tmp_ij") = tmp_ij,
+                              Named("rSSRij") = rSSRij,
                               Named("rSSEij") = rSSEij);
 
   return out_lst;
