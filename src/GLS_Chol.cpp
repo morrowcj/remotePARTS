@@ -1,40 +1,16 @@
 // [[Rcpp::depends(RcppEigen)]]
 #include <iostream>
-// #include <Eigen/Core>
-// #include <Eigen/Dense>
-// #include <RcppEigen.h>
 #include <math.h>
 #include "remoteSTAR_types.h"
-// #include "geodesic.h"
-
-// #include <GeographicLib/Geodesic.hpp>
-// #include <GeographicLib/Math.hpp>
-// #include <GeographicLib/Constants.hpp>
 
 // // [[Rcpp::plugins(openmp)]]
 // #include <omp.h>
 
 // using namespace Eigen;
-// using namespace GeographicLib;
 // using Rcpp::as;
 
 using namespace std;
 using namespace Rcpp;
-
-// using Rcpp::as;
-// using Eigen::LLT;
-// using Eigen::Lower;
-// using Eigen::Map;
-// using Eigen::MatrixXd;
-// using Eigen::MatrixXi;
-// using Eigen::Upper;
-// using Eigen::VectorXd;
-// using Eigen::VectorXi;
-// using Eigen::seq;
-
-// typedef Map<MatrixXd> MapMatd;
-// typedef Map<MatrixXi> MapMati;
-// typedef Map<VectorXd> MapVecd;
 
 //==============================================================================
 /* DistGeo() ----
@@ -46,9 +22,11 @@ using namespace Rcpp;
  *
  * It may be best to use header files from another Rcpp package such as nngeo:
  * https://github.com/michaeldorman/nngeo/
+ *
+ * Check out this link for haversine great-circle distances instead:
+ * https://www.btskinner.io/rworkshop/modules/hp_rcpp.html
  */
 
-// // [[Rcpp::export]]
 // MatrixXd DistGeo_cpp(const MapMatd& loc){
 //   // Initialize locaiton objects
 //   int n = loc.rows();
@@ -76,7 +54,6 @@ using namespace Rcpp;
 //   return D;
 // }
 
-// // [[Rcpp::export]]
 // MatrixXd DistGeo_cpp(const MapMatd& loc){
 //   int n;
 //   n = loc.rows();
@@ -84,7 +61,8 @@ using namespace Rcpp;
 //   int i, j;
 //   i = 1, j = 2;
 //   // Geodesic geod()
-//   Math::real lati, latj, loni, lonj;
+//   // Math::real lati, latj, loni, lonj;
+//   double lati, latj, loni, lonj;
 //   lati = loc(i, 1);
 //   loni = loc(i, 2);
 //   latj = loc(j, 1);
