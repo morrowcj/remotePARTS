@@ -1,12 +1,18 @@
 // [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::plugins(openmp)]]
 #include <iostream>
-#include "Eigen/Core"
+// #include <Eigen/Core>
+// #include <Eigen/Dense>
 #include <RcppEigen.h>
 #include <math.h>
+#include <GeographicLib/Geodesic.hpp>
+#include <GeographicLib/Math.hpp>
+#include <GeographicLib/Constants.hpp>
+
 // #include <omp.h>
 
-
+// using namespace Eigen;
+using namespace GeographicLib;
 using namespace std;
 using namespace Rcpp;
 // using Rcpp::as;
@@ -25,6 +31,39 @@ using Eigen::VectorXi;
 typedef Map<MatrixXd> MapMatd;
 typedef Map<MatrixXi> MapMati;
 typedef Map<VectorXd> MapVecd;
+
+//==============================================================================
+/* DistGeo() ----
+ * calculate geographic distance matrix
+ *
+ * So far, this isn't working. I think it is becaus Rcpp::sourceCpp() doesn't
+ * like that I'm using the external GeographicLib library.
+ * https://stackoverflow.com/questions/50354302/rcpp-sourcecpp-undefined-symbol
+ *
+ * It may be best to use header files from another Rcpp package such as nngeo:
+ * https://github.com/michaeldorman/nngeo/
+ */
+
+// [[Rcpp::export]]
+// MatrixXd DistGeo_cpp(const MapMatd& loc){
+//   int n;
+//   n = loc.rows();
+//   MatrixXd D = MatrixXd::Identity(n, n); // start with n x n Idnet. matrix
+//   int i, j;
+//   i = 1, j = 2;
+//   // Geodesic geod()
+//   Math::real lati, latj, loni, lonj;
+//   lati = loc(i, 1);
+//   loni = loc(i, 2);
+//   latj = loc(j, 1);
+//   lonj = loc(j, 2);
+//   Geodesic geod(Constants::WGS84_a(), Constants::WGS84_f());
+//   double s12;
+//   geod.Inverse(lati, loni, latj, lonj, s12);
+//   // Math::real distance = GeographicLib::Geodesic::Inverse(lati, loni, latj, lonj, s12);
+//   D(i, j) = s12;
+//   return D;
+// }
 
 //==============================================================================
 /* AtA(A) ----
@@ -253,7 +292,6 @@ sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
          "df0", "logLik0", "FF", "df.F"),
        check.equal)
 */
-
 
 //==============================================================================
 /* LogLikGLS(XX, V, y, nugget)
