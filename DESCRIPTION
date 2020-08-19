@@ -18,7 +18,7 @@ Description@R:
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports: 
   mvtnorm (>= 1.0.11),
   geosphere (>= 1.5.10), 
@@ -26,6 +26,10 @@ Imports:
   fields (>= 10.3),
   Matrix (>= 1.2.18),
   LatticeKrig (>= 8.4),
-  colorspace (>= 1.4.1)
+  colorspace (>= 1.4.1),
+  Rcpp (>= 1.0.5), 
+  RcppEigen (>= 0.3.3.7.0),
+  dplyr (>= 1.0.0)
 Suggests: 
     testthat
+LinkingTo: Rcpp, RcppEigen
