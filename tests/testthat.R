@@ -1,4 +1,4 @@
 library(testthat)
 library(remoteSTAR)
 
-test_check("remoteSTAR")
+# test_check("remoteSTAR")

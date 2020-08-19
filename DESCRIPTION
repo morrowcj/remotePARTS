@@ -12,13 +12,13 @@ Authors@R:
            role = c("aut"),
            email = "arives@wisc.edu",
            comment = c(ORCID = "...")))
-Description@R: 
-    paste("remoteSTAR is a set of tools for analyzing sets of spatially",
-          "correlated time series data, collected via remote sensing methods.")
+Description: "remoteSTAR is a set of tools for analyzing sets of spatially 
+  correlated time series data, collected via remote sensing methods."
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
 RoxygenNote: 7.1.1
+Depends: R (>= 3.5.0)
 Imports: 
   mvtnorm (>= 1.0.11),
   geosphere (>= 1.5.10), 
