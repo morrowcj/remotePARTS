@@ -9,7 +9,7 @@ library(ggplot2);library(microbenchmark)
 
 # matrix transformation ----
 
-sourceCpp("Cpp/ftrans.cpp") # contains C++ transform functions
+sourceCpp("code/Cpp/ftrans.cpp") # contains C++ transform functions
 
 ## Create test Matrix
 nr = 1000; nc = 1000
@@ -35,7 +35,7 @@ leverage <- function(X) {
   diag(X %*% solve(t(X) %*% X) %*% t(X))
 }
 ## C++ version
-sourceCpp("Cpp/CppSamp.cpp") # contains C++ leverage and coretest functions
+sourceCpp("code/Cpp/CppSamp.cpp") # contains C++ leverage and coretest functions
 
 ## Load some test data
 data("attitude", package = "datasets")

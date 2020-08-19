@@ -5,7 +5,7 @@ set.seed(58)
 
 
 # prepare data ----
-## This section is not needed for the user, as *.rda files will be saved
+## This section is not needed for the user, as *.rds files will be saved
 
 ## Full data
 # read in the data
@@ -19,8 +19,8 @@ land.classes = c("Evergr needle","Evergr broad","Decid needle","Decid broad",
 dtab$land <- factor(dtab$land, labels = land.classes)
 
 # save the rdata file
-if(!file.exists("data/north-america_ndvi.rda")){
-  saveRDS(dtab, "data/north-america_ndvi.rda")
+if(!file.exists("data/north-america_ndvi.rds")){
+  saveRDS(dtab, "data/north-america_ndvi.rds")
 }
 ## Alaska subset
 dataAK <- dtab[dtab$lng < -141, ] #North Am. west of -141 is approx. AK
@@ -41,8 +41,8 @@ ord <- c(grep("ndvi", names(dataAK), invert = TRUE), #columns without 'ndvi'
 dataAK <- dataAK[, ..ord] #..x is data.table notation
 
 # save AK data file
-if(!file.exists("data/alaska_ndvi.rda")){
-  saveRDS(dataAK, "data/alaska_ndvi.rda")
+if(!file.exists("data/alaska_ndvi.rds")){
+  saveRDS(dataAK, "data/alaska_ndvi.rds")
 }
 
 ## subset AK further
@@ -50,8 +50,8 @@ dataAK_small <- dataAK[!dataAK$rare.land, ] # only common land classes
 dataAK_small <- dataAK_small[sample.int(n = nrow(dataAK_small), size = 3000), ] # 3000 pts
 
 # save small AK data file
-if(!file.exists("data/alaska_ndvi_3000pts.rda")){
-  saveRDS(dataAK_small, "data/alaska_ndvi_3000pts.rda")
+if(!file.exists("data/alaska_ndvi_3000pts.rds")){
+  saveRDS(dataAK_small, "data/alaska_ndvi_3000pts.rds")
 }
 
 # load data ----
@@ -60,7 +60,7 @@ if(!file.exists("data/alaska_ndvi_3000pts.rda")){
 rm(list = ls()) # clear all objects from memory
 source("R/lsos.R") # load memory tracking functions
 
-dat <- readRDS("data/alaska_ndvi_3000pts.rda")
+dat <- readRDS("data/alaska_ndvi_3000pts.rds")
 
 library(microbenchmark)
 
@@ -259,8 +259,8 @@ if(FALSE){
 
 source('R/fitGLS.R', echo=TRUE)
 source("R/fitSpatCor.R")
-load(file = "R/vignettes-and-examples/test-gls.rda")
-data <- readRDS("data/alaska_ndvi_3000pts.rda")
+load(file = "R/vignettes-and-examples/test-gls.rds")
+data <- readRDS("data/alaska_ndvi_3000pts.rds")
 
 n.p = 50; npart = 2
 partition <- matrix(sample(1:nrow(data), size = n.p * npart), ncol = npart)
