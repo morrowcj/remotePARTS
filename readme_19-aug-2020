@@ -30,3 +30,6 @@ example_Rpackage, etc.
 
 It seems that I need to remove anything that is not going to be necessary for
 the package in the remoteSTAR directory and reformat a few things. 
+
+It should be noted, however, that the "Install and Restart" functionallity 
+worked perfectly well and the package is usable locally. 
