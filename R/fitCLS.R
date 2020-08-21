@@ -1,24 +1,33 @@
-# fit_cls ----
-## fit a cls to a timeseries
-#' Title
+# fitCLS ----
+#' Fit a CLS regression to a time series
 #'
-#' @param x
-#' @param t
-#' @param covars
+#' @description see `?cls_star()`
 #'
-#' @return
+#' @param x numeric vector of length p containing remote sensing data
+#' @param t numeric vector of length p containing the values for time. Recommended:
+#' `scale(1:ncol(X))`
+#' @param Z (optional) a numeric vector/matrix with p columns and q rows. Each
+#' row contains a different covariate measured at the same site as x at the same
+#' p time points.
+#'
+#' @return a list of 3 or 4 elements:
+#' `coef` the model coefficients from `summary(lm(...))$coef`
+#' `MSE` means squared error of the regression model
+#' `resids` the residual errors of the model
+#'
 #' @export
 #'
 #' @examples
-fit_cls <- function(x, t, covars = NULL) {
+
+fitCLS <- function(x, t, Z = NULL) {
   # variables
   t_n = length(t)
 
   # covar handling
-  if (is.null(covars) | missing(covars)) {
+  if (is.null(Z) | missing(Z)) {
     Z = NA
   } else {
-    Z = as.matrix(covars)
+    Z = as.matrix(Z)
     stopifnot(dim(Z)[1] == t_n)
     Z = Z[2:t_n, ]
   }
@@ -31,48 +40,71 @@ fit_cls <- function(x, t, covars = NULL) {
     Z = Z)
 
   # fit the model
-  if(is.null(covars) | missing(covars)){
+  if(is.null(Z) | missing(Z)){
     fm <- lm(x_t ~ x_t0 + time, data = tmp)
   } else {
     fm <- lm(x_t ~ x_t0 + time + Z, data = tmp)
   }
 
-  out <- list(summary = summary(fm)$coef, MSE = summary(fm)$sigma^2,
+  out <- list(coef = summary(fm)$coef, MSE = summary(fm)$sigma^2,
               resids = resid(fm))
 
   # add Z to output
-  if (!is.null(covars) & !missing(covars)){
-    out$Z <- summary(fm)$coef[-c(1:3), ]
-  }
+  # if (!is.null(Z) & !missing(Z)){
+  #   out$Z <- summary(fm)$coef[-c(1:3), ]
+  # }
 
   return(out)
 }
 
 # cls_star ----
-## this is a multi-site wrapper for fit_cls
-#' Title
+#' CLS regression of remote sensing data
 #'
-#' @param X
-#' @param t
-#' @param covar.list
+#' @description
+#' Fit a constrained linear regression model to remote sensing data `X`, testing
+#' the effects of time `t`, `x_{i, t-1}`, and, optionally `z_{i, t-1}` on
+#' `x_{i, t}`.
 #'
-#' @return
+#' @details
+#' This function is a wrapper that calls the single-site function `fitCLS()`
+#' for each site. At present, matrices `X` and `Z` must not contain any `NA`s.
+#'
+#' @param X n x p numeric matrix of observations taken from n sites (rows) and p time
+#' points (columns).
+#' @param t numeric vector of length p containing the values for time. Recommended:
+#' `scale(1:ncol(X))`.
+#' @param Z.list Optional list with q elements. Each element of this list
+#' should be an n x p numeric matrix (`z_{i, t}`) with values corresponding to a
+#' covariate measured at each site:time combination.
+#'
+#' @return an n x 8 matrix with the following columns:
+#' `site` the site number from 1-n
+#' `mean` the site average of `x_{i}` (i.e. `rowMeans(X)`)
+#' `Est` the coefficient estimate for the effect of time
+#' `SE` standard error of the coefficient estimate
+#' `t` student's t-test statistic for the effect of time
+#' `p` p-value of the two-tailed t test for the effect of time
+#' `MSE` site-specific mean squared error
+#' `x_t0.EST` the coefficient estimate for the effect of x_{i, t-1} on x_{i, t}
+#'
 #' @export
 #'
 #' @examples
-cls_star <- function(X, t, covar.list = NULL){
+#'
+
+cls_star <- function(X, t, Z.list = NULL){
   # data to fill
   tmp <- data.frame(site = 1:nrow(X), mean = rowMeans(X),
                   Est = NA, SE = NA, t = NA, p = NA, MSE = NA,
                   x_t0.EST = NA)
 
   for (i in 1:nrow(X)) {
-    if (is.null(covar.list) | missing(covar.list)) {
-      fit <- fit_cls(X[i, ], t, covars = NULL)
+    if (is.null(Z.list) | missing(Z.list)) {
+      fit <- fitCLS(X[i, ], t, Z = NULL)
     } else {
-      stopifnot(sapply(covar.list, function(Y)dim(Y)==dim(X)))
-      z <-  as.matrix(dplyr::bind_cols(lapply(covar.list, function(Y){Y[i, ]})))
-      fit <- fit_cls(X[i, ], t, z)
+      stopifnot(sapply(Z.list, function(Y)dim(Y)==dim(X)))
+      z <-  as.matrix(dplyr::bind_cols(lapply(Z.list, function(Y){Y[i, ]})))
+      fit <- fitCLS(X[i, ], t, z)
     }
     # d[i, "mean"] <- mean(X[i, ])
     tmp[i, 3:6] <-  fit$summary[3, ]
