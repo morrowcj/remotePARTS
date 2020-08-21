@@ -25,11 +25,11 @@ fitCLS <- function(x, t, Z = NULL) {
 
   # covar handling
   if (is.null(Z) | missing(Z)) {
-    Z = NA
+    Zs = NA
   } else {
-    Z = as.matrix(Z)
+    Zs = as.matrix(Z)
     stopifnot(dim(Z)[1] == t_n)
-    Z = Z[2:t_n, ]
+    Zs = Zs[2:t_n, ]
   }
 
   # data frame for the model
@@ -37,7 +37,7 @@ fitCLS <- function(x, t, Z = NULL) {
     x_t = x[2:t_n], #X_{t}
     x_t0 = x[1:(t_n - 1)], #X_{t-1}
     time = t[2:t_n], #T_{t}
-    Z = Z)
+    Z = Zs)
 
   # fit the model
   if(is.null(Z) | missing(Z)){
@@ -90,7 +90,17 @@ fitCLS <- function(x, t, Z = NULL) {
 #' @export
 #'
 #' @examples
+#' # starting parameters
+#' n = 25; p = 20; beta = .2
 #'
+#' # simulate data
+#' time = scale(1:p)
+#' X = matrix(rnorm(n*p), ncol = p) # X without time effect
+#' # effect of time from 1 - p
+#' betaT = matrix(rep(time, each = n) * beta, ncol = p)
+#'
+#' # fit the model
+#' cls_star(X*betaT, time)
 
 cls_star <- function(X, t, Z.list = NULL){
   # data to fill
@@ -107,9 +117,9 @@ cls_star <- function(X, t, Z.list = NULL){
       fit <- fitCLS(X[i, ], t, z)
     }
     # d[i, "mean"] <- mean(X[i, ])
-    tmp[i, 3:6] <-  fit$summary[3, ]
+    tmp[i, 3:6] <-  fit$coef[3, ]
     tmp[i, "MSE"] <- fit$MSE
-    tmp[i, "x_t0.EST"] <- fit$summary[2, 1]
+    tmp[i, "x_t0.EST"] <- fit$coef[2, 1]
   }
   return(tmp)
 }

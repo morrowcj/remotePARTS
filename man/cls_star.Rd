@@ -2,16 +2,50 @@
 % Please edit documentation in R/fitCLS.R
 \name{cls_star}
 \alias{cls_star}
-\title{Title}
+\title{CLS regression of remote sensing data}
 \usage{
-cls_star(X, t, covar.list = NULL)
+cls_star(X, t, Z.list = NULL)
 }
 \arguments{
-\item{covar.list}{}
+\item{X}{n x p numeric matrix of observations taken from n sites (rows) and p time
+points (columns).}
+
+\item{t}{numeric vector of length p containing the values for time. Recommended:
+`scale(1:ncol(X))`.}
+
+\item{Z.list}{Optional list with q elements. Each element of this list
+should be an n x p numeric matrix (`z_{i, t}`) with values corresponding to a
+covariate measured at each site:time combination.}
 }
 \value{
-
+an n x 8 matrix with the following columns:
+`site` the site number from 1-n
+`mean` the site average of `x_{i}` (i.e. `rowMeans(X)`)
+`Est` the coefficient estimate for the effect of time
+`SE` standard error of the coefficient estimate
+`t` student's t-test statistic for the effect of time
+`p` p-value of the two-tailed t test for the effect of time
+`MSE` site-specific mean squared error
+`x_t0.EST` the coefficient estimate for the effect of x_{i, t-1} on x_{i, t}
 }
 \description{
-Title
+Fit a constrained linear regression model to remote sensing data `X`, testing
+the effects of time `t`, `x_{i, t-1}`, and, optionally `z_{i, t-1}` on
+`x_{i, t}`.
+}
+\details{
+This function is a wrapper that calls the single-site function `fitCLS()`
+for each site. At present, matrices `X` and `Z` must not contain any `NA`s.
+}
+\examples{
+# starting parameters
+n = 25; p = 20; beta = .2
+
+# simulate data
+time = scale(1:p)
+X = matrix(rnorm(n*p), ncol = p) # X without time effect
+betaT = matrix(rep(time, each = n) * beta, ncol = p) # effect of time
+
+# fit the model
+cls_star(X*betaT, time)
 }
