@@ -2,16 +2,26 @@
 % Please edit documentation in R/fitGLS.R
 \name{invert_cholR}
 \alias{invert_cholR}
-\title{Title}
+\title{inverted cholesky decomposition of a matrix M}
 \usage{
 invert_cholR(M, nugget = 0, debug = FALSE)
 }
 \arguments{
-\item{debug}{}
+\item{M}{numeric matrix for which the inverse cholesky matrix is to be
+obtained.}
+
+\item{nugget}{a length 1 numeric vector containing the nugget that should
+be added to the var-cov matrix. Default is 0.}
+
+\item{debug}{logical: debug mode (print additional info)?}
 }
 \value{
-
+the inverse (lower triangle only) of the cholesky decomposition of M
 }
 \description{
-Title
+Note: this should not be confused with the inverse of M derived from the
+cholesky decomposition (i.e. `chol2inv(M)`)
+}
+\examples{
+TBA
 }

@@ -7,8 +7,8 @@
 cls_star(X, t, Z.list = NULL)
 }
 \arguments{
-\item{X}{n x p numeric matrix of observations taken from n sites (rows) and p time
-points (columns).}
+\item{X}{n x p numeric matrix (usually of of remote sensing observations)
+taken from n sites (rows) and p time points (columns).}
 
 \item{t}{numeric vector of length p containing the values for time. Recommended:
 `scale(1:ncol(X))`.}
@@ -44,7 +44,8 @@ n = 25; p = 20; beta = .2
 # simulate data
 time = scale(1:p)
 X = matrix(rnorm(n*p), ncol = p) # X without time effect
-betaT = matrix(rep(time, each = n) * beta, ncol = p) # effect of time
+# effect of time from 1 - p
+betaT = matrix(rep(time, each = n) * beta, ncol = p)
 
 # fit the model
 cls_star(X*betaT, time)

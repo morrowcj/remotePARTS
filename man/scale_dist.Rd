@@ -2,16 +2,29 @@
 % Please edit documentation in R/fitSpatCor.R
 \name{scale_dist}
 \alias{scale_dist}
-\title{Title}
+\title{Scale a distance matrix by its maximum value}
 \usage{
 scale_dist(location, scl = 1000)
 }
 \arguments{
-\item{scl}{}
+\item{location}{n x 2 numeric matrix with latitude and longitude
+(respectively) for sites (rows)}
+
+\item{scl}{scalar by which to divide the initial distance matrix. This
+determines the units of the `max.dist` attribute. `scl = 1000` (default)
+corresponds to distances in km.}
 }
 \value{
-
+a scaled distance matrix with a `max.dist` attribute containing
+the maximum distance by which the initial values were divided.
 }
 \description{
-Title
+Scale a distance matrix by its maximum value
+}
+\details{
+a distance matrix is fit using `geosphere::distm()` and then divided
+by itKs maximum distance.
+}
+\examples{
+TBA
 }

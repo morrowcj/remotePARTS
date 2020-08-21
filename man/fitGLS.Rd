@@ -7,11 +7,25 @@
 fitGLS(X, V, y, X0 = NULL, nugget = 0)
 }
 \arguments{
-\item{nugget}{}
+\item{X}{n x p numeric design matrix for predictor variables}
+
+\item{V}{n x n numeric covariance matrix}
+
+\item{y}{length n numeric resposne vector}
+
+\item{X0}{n x p0 null numeric design matrix}
+
+\item{nugget}{nugget to be added to variance matrix. see `?invert_cholR()`}
 }
 \value{
+list containing relevant output paramters from model fit
 
+Note: this output should be converted to an S3 class and values should be
+extracted by defining `print.method()` and other methods.
 }
 \description{
 Title
+}
+\examples{
+TBA
 }

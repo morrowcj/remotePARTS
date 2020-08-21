@@ -2,16 +2,23 @@
 % Please edit documentation in R/fitSpatCor.R
 \name{taper_sphere}
 \alias{taper_sphere}
-\title{Title}
+\title{Taper-spherical transformation of distance matrix}
 \usage{
 taper_sphere(d, beta, cor = NULL)
 }
 \arguments{
-\item{cor}{}
+\item{d}{a numeric distance matrix or vector}
+
+\item{beta}{beta parameter}
+
+\item{cor}{optional correlation parameter to be used to calculate Delta d}
 }
 \value{
-
+taper-spherical transformation of d
 }
 \description{
-Title
+Note: this documentation is incomplete - arguments need better documenting
+}
+\examples{
+TBA
 }

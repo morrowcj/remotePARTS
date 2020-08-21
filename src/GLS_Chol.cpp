@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::interfaces(r, cpp)]]
 #include <iostream>
 #include <math.h>
 #include "remoteSTAR_types.h"

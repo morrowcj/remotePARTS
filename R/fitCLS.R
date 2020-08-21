@@ -14,6 +14,7 @@
 #' `coef` the model coefficients from `summary(lm(...))$coef`
 #' `MSE` means squared error of the regression model
 #' `resids` the residual errors of the model
+#' `Z` the coefficients for optional covariates
 #'
 #' @export
 #'
@@ -50,9 +51,9 @@ fitCLS <- function(x, t, Z = NULL) {
               resids = resid(fm))
 
   # add Z to output
-  # if (!is.null(Z) & !missing(Z)){
-  #   out$Z <- summary(fm)$coef[-c(1:3), ]
-  # }
+  if (!is.null(Z) & !missing(Z)){
+    out$Z <- summary(fm)$coef[-c(1:3), ]
+  } else {out$Z <-  NULL}
 
   return(out)
 }

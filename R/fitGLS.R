@@ -1,15 +1,22 @@
 ## invert_choldec ----
 
-#' Title
+#' inverted cholesky decomposition of a matrix M
 #'
-#' @param M
-#' @param nugget
-#' @param debug
+#' @description
 #'
-#' @return
+#' Note: this should not be confused with the inverse of M derived from the
+#' cholesky decomposition (i.e. `chol2inv(M)`)
+#'
+#' @param M numeric matrix for which the inverse cholesky matrix is to be
+#' obtained.
+#' @param nugget a length 1 numeric vector containing the nugget that should
+#' be added to the var-cov matrix. Default is 0.
+#' @param debug logical: debug mode (print additional info)?
+#'
+#' @return the inverse (lower triangle only) of the cholesky decomposition of M
 #' @export
 #'
-#' @examples
+#' @examples TBA
 invert_cholR <- function(M, nugget = 0, debug = FALSE){
   stopifnot(nrow(M) == ncol(M))
 
@@ -27,20 +34,24 @@ invert_cholR <- function(M, nugget = 0, debug = FALSE){
 
 
 ## fitGLS ----
-## This function calls invert_choldec()
+## This function calls invert_cholR()
 
-#' Title
+#' fit GLS to remote sensing data
 #'
-#' @param X
-#' @param V
-#' @param y
-#' @param X0
-#' @param nugget
+#' @param X n x p numeric design matrix for predictor variables
+#' @param V n x n numeric covariance matrix
+#' @param y length n numeric resposne vector
+#' @param X0 n x p0 null numeric design matrix
+#' @param nugget nugget to be added to variance matrix. see `?invert_cholR()`
 #'
-#' @return
+#' @return list containing relevant output paramters from model fit
+#'
+#' Note: this output should be converted to an S3 class and values should be
+#' extracted by defining `print.method()` and other methods.
+#'
 #' @export
 #'
-#' @examples
+#' @examples TBA
 fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
   stopifnot(all.equal(nrow(X), ncol(V), nrow(V), length(y)))
   n <- nrow(X)
@@ -100,12 +111,20 @@ fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
 
 # Rcpp::sourceCpp("Cpp/GLS_Chol.cpp")
 ## This function can be depracated if I implement t-test and F-test in C++
-#' Title
+
+#' wrapper for fitGLS_cpp
 #'
-#' @param X
-#' @param V
-#' @param y
-#' @param X0
+#' @details at present, the C++ implementations cannot calculate pvalues from
+#' t tests or F tests. This function is meant to add them after the fact
+#'
+#' Note: this function should be deprecated and instead an S3 class and a
+#' `coef.method()` should be created to obtain the p values from any `starmod.gls`
+#' objects
+#'
+#' @param X n x p numeric design matrix for predictor variables
+#' @param V n x n numeric covariance matrix
+#' @param y length n numeric resposne vector
+#' @param X0 n x p0 null numeric design matrix
 #'
 #' @return
 #' @export
@@ -121,20 +140,26 @@ wrap_glscpp <- function(X, V, y, X0 = NULL){
   out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
 }
 
-## fitDistVar ----
+## fitV ----
 
 
-#' Title
+#' Fit varcov matrix from distance matrix
 #'
-#' @param Dist
-#' @param spatialcor
-#' @param fun
+#' @details
 #'
-#' @return
+#' Note: currently the "exponential" version yields a non-positive definitive
+#' (and therefore invalid) V matrix.
+#'
+#' @param Dist n x n numeric distance matrix
+#' @param spatialcor spatial correlation parameter(s)
+#' @param fun function with which to transform the distance matrix into the
+#' varcov matrix
+#'
+#' @return n x n varcov matrix
 #' @export
 #'
-#' @examples
-fitDistVar_R <- function(Dist, spatialcor, fun = "exponential"){
+#' @examples TBA
+fitV <- function(Dist, spatialcor, fun = "exponential"){
   switch(fun,
          # exponential (with alias)
          "exponential" = exp(-Dist/spatialcor), ## This version yeilds non positive-definitive matrix!!!
@@ -148,14 +173,23 @@ fitDistVar_R <- function(Dist, spatialcor, fun = "exponential"){
          "sphr" = taper_sphere(Dist, spatialcor))
 }
 
-#' Title
+#' Fit varcov matrix from distance matrix
 #'
-#' @param Dist
-#' @param spatialcor
-#' @param FUN
+#' @details
+#'
+#' Note: currently the "exponential" version yields a non-positive definitive
+#' (and therefore invalid) V matrix.
+#'
+#' Additionally, V.fit() is functionally identical to fitV() however, fitV()
+#' should be used instead. This function should be phased out
+#'
+#' @param Dist n x n numeric distance matrix
+#' @param spatialcor spatial correlation parameter(s)
+#' @param fun function with which to transform the distance matrix into the
+#' varcov matrix
 #'
 #' @return
-#' @export
+# @export ## Don't export this function - it is the same as fitV
 #'
 #' @examples
 V.fit <- function(Dist, spatialcor, FUN = "exponential") {
@@ -174,15 +208,18 @@ V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 ## fitNugget ----
 ## This function calls fitGLS() and invert_choldec()
 
-#' Title
+#' Obtain the maximum likelihood nugget estimate from a `starmod.gls` model
 #'
-#' @param X
-#' @param V
-#' @param y
-#' @param int
-#' @param tol
+#' @param X n x p numeric design matrix for predictor variables
+#' @param V n x n numeric covariance matrix
+#' @param y length n numeric resposne vector
+#' @param X0 n x p0 null numeric design matrix
+#' @param int length 2 numeric vector specifying the inverval over which to
+#' search of the MLE estimator. Default = `c(0, 1)`.
+#' @param tol the desired accuracy of the mathematical optimization.
+#' see `?optimize()`.
 #'
-#' @return
+#' @return maximum likelihood estimate of the nugget
 #' @export
 #'
 #' @examples
@@ -198,15 +235,22 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
   return(N.opt$maximum)
 }
 
-#' Title
+#' Obtain the maximum likelihood nugget estimate from a `starmod.gls.cpp` model
 #'
-#' @param X
-#' @param V
-#' @param y
-#' @param int
-#' @param tol
+#' @details this function is a wrapper that calls the C++ version of fitGLS()
+#' and can be faster than fitNugget(). However, this functionallity is also
+#' available in the C++ version of fitGLS()
 #'
-#' @return
+#' @param X n x p numeric design matrix for predictor variables
+#' @param V n x n numeric covariance matrix
+#' @param y length n numeric resposne vector
+#' @param X0 n x p0 null numeric design matrix
+#' @param int length 2 numeric vector specifying the inverval over which to
+#' search of the MLE estimator. Default = `c(0, 1)`.
+#' @param tol the desired accuracy of the mathematical optimization.
+#' see `?optimize()`.
+#'
+#' @return maximum likelihood estimate of the nugget
 #' @export
 #'
 #' @examples
