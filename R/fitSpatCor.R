@@ -2,13 +2,17 @@
 ## performs a taper-spherical transofrmation of d
 ## if a correlation 'cor' is given, the transformation is subtracted from cor
 
-#' Title
+#' Taper-spherical transformation of distance matrix
 #'
-#' @param d
-#' @param beta
-#' @param cor
+#' @description
 #'
-#' @return
+#' Note: this documentation is incomplete - arguments need better documenting
+#'
+#' @param d a numeric distance matrix or vector
+#' @param beta \beta parameter
+#' @param cor optional correlation parameter to be used to calculate \Delta d
+#'
+#' @return taper-spherical transformation of d
 #' @export
 #'
 #' @examples
@@ -36,12 +40,21 @@ taper_sphere <- function(d, beta, cor = NULL){
 # scale_dist() ----
 ## calculates a scaled distance matrix
 
-#' Title
+#' Scale a distance matrix by its maximum value
 #'
-#' @param location
-#' @param scl
+#' @details a distance matrix is fit using `geosphere::distm()` and then divided
+#' by itKs maximum distance.
 #'
-#' @return
+#' @param location n x 2 numeric matrix with latitude and longitude
+#' (respectively) for sites (rows)
+#'
+#' @param scl scalar by which to divide the initial distance matrix. This
+#' determines the units of the `max.dist` attribute. `scl = 1000` (default)
+#' corresponds to distances in km.
+#'
+#' @return a scaled distance matrix with a `max.dist` attribute containing
+#' the maximum distance by which the initial values were divided.
+#'
 #' @export
 #'
 #' @examples
@@ -54,26 +67,16 @@ scale_dist <- function(location, scl = 1000){
 }
 
 # fit_spatialcor() ----
-# X = Xmat
-# location = dat[, c("lng", "lat")]
-# t = t.scale
-# data = data
-# r.start = .1
-# fit.n = 100
-# dist.scl = 1000
-# covars = NULL
-# fun = "exp"
-# Dist = geosphere::distm(location)
-# scale.dist = TRUE
-
 
 #' Title
 #'
-#' @param X
-#' @param t
-#' @param r.start
-#' @param a.start
-#' @param fit.n
+#' @param X n x p numeric matrix (usually of of remote sensing observations)
+#'  taken from n sites (rows) and p time points (columns).
+#' @param t numeric vector of length p containing the values for time. Recommended:
+#' `scale(1:ncol(X))`.
+#' @param r.start starting point for r parameter which is mathematically optimized
+#' @param a.start starting point for a parameter
+#' @param fit.n size of the random subset of X rows that is used in the estimates.
 #' @param fun
 #' @param dist
 #' @param location
@@ -104,14 +107,6 @@ fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
     x <- X.sub[i, ]
     lm(x[2:length(x)] ~ x[1:(length(x) - 1)] + t[2:length(x)])$resid
   })
-
-  # resids <- matrix(0, ncol = fit.n, nrow = ncol(X.sub) - 1)
-  # for (i in 1:fit.n) {
-  #   x <- X.sub[i, ]
-  #   resids[, i] <- lm(x[2:length(x)] ~ x[1:(length(x) - 1)] + t[2:length(x)])$resid
-  #   # resids[, i] <- z.CLS$resid
-  # }
-  # cor.resids <- cor(resids)
 
   cor.resids <- cor(resids) # correlation of residuals
 

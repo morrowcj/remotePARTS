@@ -69,8 +69,8 @@ fitCLS <- function(x, t, Z = NULL) {
 #' This function is a wrapper that calls the single-site function `fitCLS()`
 #' for each site. At present, matrices `X` and `Z` must not contain any `NA`s.
 #'
-#' @param X n x p numeric matrix of observations taken from n sites (rows) and p time
-#' points (columns).
+#' @param X n x p numeric matrix (usually of of remote sensing observations)
+#'  taken from n sites (rows) and p time points (columns).
 #' @param t numeric vector of length p containing the values for time. Recommended:
 #' `scale(1:ncol(X))`.
 #' @param Z.list Optional list with q elements. Each element of this list
