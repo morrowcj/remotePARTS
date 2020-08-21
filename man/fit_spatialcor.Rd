@@ -23,11 +23,54 @@ fit_spatialcor(
 )
 }
 \arguments{
-\item{...}{}
+\item{X}{n x p numeric matrix (usually of of remote sensing observations)
+taken from n sites (rows) and p time points (columns).}
+
+\item{t}{numeric vector of length p containing the values for time. Recommended:
+`scale(1:ncol(X))`.}
+
+\item{r.start}{numeric starting point for r parameter which is mathematically optimized}
+
+\item{a.start}{numeric starting point for a parameter}
+
+\item{fit.n}{integer signifying the size of the random subset of X rows to be
+used in the estimation.}
+
+\item{fun}{character string indicating which function to use. Currently the available options are
+"exponential", "exponential-power", and "taper-spherical".
+
+Note: Currently, only "exponential-power" is working properly. I'm not sure why. - morrowcj}
+
+\item{dist}{n x n numeric distance matrix}
+
+\item{location}{n x 2 numeric matrix containing latitude and longitude respectively}
+
+\item{scale.dist}{logical: should the distance matrix be scaled?}
+
+\item{dist.scl}{if `scale.dist == TRUE`, `scl` see `?scale.dist()`.}
+
+\item{U}{CURRENTLY UNUSED ARGUMENT}
+
+\item{covars}{CURRENTLY UNUSED ARGUMENT}
+
+\item{plot.fig}{logical: should a figure be plotted displaying results?
+
+Note: this functionality should be replaced by defining a `plot.method()`
+for an appropriate S3 class.}
+
+\item{cols.plot}{optional vector of colors to use in the plot (size n)}
+
+\item{...}{additional arguments passed to `nls()`}
 }
 \value{
-
+a list containing
+mod: the nls() fit object
+spatialcor: the maximum likelihood spatial coefficient parameter(s)
+logLik: the log-likelihood of the fit
 }
 \description{
 Title
+}
+\examples{
+TBA
 }

@@ -21,6 +21,7 @@ a list of 3 or 4 elements:
 `coef` the model coefficients from `summary(lm(...))$coef`
 `MSE` means squared error of the regression model
 `resids` the residual errors of the model
+`Z` the coefficients for optional covariates
 }
 \description{
 see `?cls_star()`

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fitGLS.R
 \name{fitGLS.partition_rcpp}
 \alias{fitGLS.partition_rcpp}
-\title{Title}
+\title{fit GLS model by partitioning remote sensing data via Rcpp}
 \usage{
 fitGLS.partition_rcpp(
   X,
@@ -18,11 +18,33 @@ fitGLS.partition_rcpp(
 )
 }
 \arguments{
-\item{nug.tol}{}
+\item{X}{n x p numeric design matrix for predictor variables}
+
+\item{y}{length n numeric resposne vector}
+
+\item{X0}{n x p0 null numeric design matrix}
+
+\item{Dist}{distance matrix}
+
+\item{spatcor}{spatial correlation parameter(s)}
+
+\item{Vfit.fun}{function to use for Vfit() calculation}
+
+\item{npart}{number of partitions}
+
+\item{mincross}{minimum number of parition pairs from which to calculate
+statistics}
+
+\item{nug.int}{interval of nugget search}
+
+\item{nug.tol}{accuracy of nugget estimate}
 }
 \value{
-
+list of GLS statistics
 }
 \description{
-Title
+fit GLS model by partitioning remote sensing data via Rcpp
+}
+\examples{
+TBA
 }

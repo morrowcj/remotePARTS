@@ -9,13 +9,13 @@
 #' Note: this documentation is incomplete - arguments need better documenting
 #'
 #' @param d a numeric distance matrix or vector
-#' @param beta \beta parameter
-#' @param cor optional correlation parameter to be used to calculate \Delta d
+#' @param beta beta parameter
+#' @param cor optional correlation parameter to be used to calculate Delta d
 #'
 #' @return taper-spherical transformation of d
 #' @export
 #'
-#' @examples
+#' @examples TBA
 taper_sphere <- function(d, beta, cor = NULL){
 
   ## conditional beta
@@ -57,7 +57,7 @@ taper_sphere <- function(d, beta, cor = NULL){
 #'
 #' @export
 #'
-#' @examples
+#' @examples TBA
 scale_dist <- function(location, scl = 1000){
   D <- geosphere::distm(location)/scl
   m = max(D)
@@ -74,24 +74,36 @@ scale_dist <- function(location, scl = 1000){
 #'  taken from n sites (rows) and p time points (columns).
 #' @param t numeric vector of length p containing the values for time. Recommended:
 #' `scale(1:ncol(X))`.
-#' @param r.start starting point for r parameter which is mathematically optimized
-#' @param a.start starting point for a parameter
-#' @param fit.n size of the random subset of X rows that is used in the estimates.
-#' @param fun
-#' @param dist
-#' @param location
-#' @param scale.dist
-#' @param dist.scl
-#' @param U
-#' @param covars
-#' @param plot.fig
-#' @param cols.plot
-#' @param ...
+#' @param r.start numeric starting point for r parameter which is mathematically optimized
+#' @param a.start numeric starting point for a parameter
+#' @param fit.n integer signifying the size of the random subset of X rows to be
+#' used in the estimation.
+#' @param fun character string indicating which function to use. Currently the available options are
+#' "exponential", "exponential-power", and "taper-spherical".
 #'
-#' @return
+#' Note: Currently, only "exponential-power" is working properly. I'm not sure why. - morrowcj
+#'
+#' @param dist n x n numeric distance matrix
+#' @param location n x 2 numeric matrix containing latitude and longitude respectively
+#' @param scale.dist logical: should the distance matrix be scaled?
+#' @param dist.scl if `scale.dist == TRUE`, `scl` see `?scale.dist()`.
+#' @param U CURRENTLY UNUSED ARGUMENT
+#' @param covars CURRENTLY UNUSED ARGUMENT
+#' @param plot.fig logical: should a figure be plotted displaying results?
+#'
+#' Note: this functionality should be replaced by defining a `plot.method()`
+#' for an appropriate S3 class.
+#'
+#' @param cols.plot optional vector of colors to use in the plot (size n)
+#' @param ... additional arguments passed to `nls()`
+#'
+#' @return a list containing
+#' mod: the nls() fit object
+#' spatialcor: the maximum likelihood spatial coefficient parameter(s)
+#' logLik: the log-likelihood of the fit
 #' @export
 #'
-#' @examples
+#' @examples TBA
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
                            fit.n = 100, fun = "exp",
                            dist, location,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fitGLS.R
 \name{fitGLS.partition}
 \alias{fitGLS.partition}
-\title{Title}
+\title{fit GLS model by partitioning remote sensing data}
 \usage{
 fitGLS.partition(
   X,
@@ -17,11 +17,34 @@ fitGLS.partition(
 )
 }
 \arguments{
-\item{nug.tol}{}
+\item{X}{n x p numeric design matrix for predictor variables}
+
+\item{V}{n x n numeric covariance matrix}
+
+\item{y}{length n numeric resposne vector}
+
+\item{X0}{n x p0 null numeric design matrix}
+
+\item{nugget}{nugget to be added to variance matrix. see `?invert_cholR()`}
+
+\item{npart}{integer: number of of partitions to divide the data into}
+
+\item{mincross}{intiger: minimum number of partition pairs from which to
+calculate statistics (i.e. )}
+
+\item{nug.int}{interval of nugget passed to fitGLS()}
+
+\item{nug.tol}{accuracy of nugget calculation passed to fitGLS()}
 }
 \value{
-
+list of GLS statistics
 }
 \description{
-Title
+fit GLS model by partitioning remote sensing data
+}
+\details{
+Note: This function is not complete yet. Use the C++ version instead
+}
+\examples{
+TBA
 }

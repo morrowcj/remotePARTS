@@ -2,16 +2,33 @@
 % Please edit documentation in R/fitGLS.R
 \name{wrap_glscpp}
 \alias{wrap_glscpp}
-\title{Title}
+\title{wrapper for fitGLS_cpp}
 \usage{
 wrap_glscpp(X, V, y, X0 = NULL)
 }
 \arguments{
-\item{X0}{}
+\item{X}{n x p numeric design matrix for predictor variables}
+
+\item{V}{n x n numeric covariance matrix}
+
+\item{y}{length n numeric resposne vector}
+
+\item{X0}{n x p0 null numeric design matrix}
 }
 \value{
 
 }
 \description{
-Title
+wrapper for fitGLS_cpp
+}
+\details{
+at present, the C++ implementations cannot calculate pvalues from
+t tests or F tests. This function is meant to add them after the fact
+
+Note: this function should be deprecated and instead an S3 class and a
+`coef.method()` should be created to obtain the p values from any `starmod.gls`
+objects
+}
+\examples{
+TBA
 }

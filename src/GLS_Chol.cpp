@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::interfaces(r, cpp)]]
 #include <iostream>
 #include <math.h>
 #include "remoteSTAR_types.h"
@@ -80,6 +81,13 @@ using namespace Rcpp;
  * inline code that computes t(A) %*% A
  */
 
+
+//' Compute A' %*% A in C++
+//'
+//' @details this is equivalent to crossprod(A) in R
+//'
+//' @param A a numeric (double) matrix
+//' @export
 // [[Rcpp::export]]
 inline Eigen::MatrixXd AtA(const MatrixXd& A) {
   int n(A.cols());

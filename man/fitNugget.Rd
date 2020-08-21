@@ -2,16 +2,28 @@
 % Please edit documentation in R/fitGLS.R
 \name{fitNugget}
 \alias{fitNugget}
-\title{Title}
+\title{Obtain the maximum likelihood nugget estimate from a `starmod.gls` model}
 \usage{
 fitNugget(X, V, y, int = c(0, 1), tol = 1e-05)
 }
 \arguments{
-\item{tol}{}
+\item{X}{n x p numeric design matrix for predictor variables}
+
+\item{V}{n x n numeric covariance matrix}
+
+\item{y}{length n numeric resposne vector}
+
+\item{int}{length 2 numeric vector specifying the inverval over which to
+search of the MLE estimator. Default = `c(0, 1)`.}
+
+\item{tol}{the desired accuracy of the mathematical optimization.
+see `?optimize()`.}
+
+\item{X0}{n x p0 null numeric design matrix}
 }
 \value{
-
+maximum likelihood estimate of the nugget
 }
 \description{
-Title
+Obtain the maximum likelihood nugget estimate from a `starmod.gls` model
 }
