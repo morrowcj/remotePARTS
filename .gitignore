@@ -6,3 +6,5 @@ data-raw
 *.html
 *.o*
 *.dll
+.*.so
+NAMESPACE_backup
