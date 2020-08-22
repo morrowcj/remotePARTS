@@ -29,3 +29,6 @@ fit GLS to remote sensing data
 \examples{
 TBA
 }
+\examples{
+TBA
+}
