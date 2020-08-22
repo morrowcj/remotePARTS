@@ -1,2 +1,7 @@
 ^remoteSTAR\.Rproj$
 ^\.Rproj\.user$
+
+NAMESPACE_backup
+code/
+.*Rpackage/
+data-raw/
