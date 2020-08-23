@@ -38,6 +38,7 @@ This function is a wrapper that calls the single-site function `fitCLS()`
 for each site. At present, matrices `X` and `Z` must not contain any `NA`s.
 }
 \examples{
+#TBA
 # starting parameters
 n = 25; p = 20; beta = .2
 

@@ -27,3 +27,6 @@ maximum likelihood estimate of the nugget
 \description{
 Obtain the maximum likelihood nugget estimate from a `starmod.gls` model
 }
+\examples{
+#TBA
+}

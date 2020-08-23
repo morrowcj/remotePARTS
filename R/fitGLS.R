@@ -16,7 +16,7 @@
 #' @return the inverse (lower triangle only) of the cholesky decomposition of M
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 invert_cholR <- function(M, nugget = 0, debug = FALSE){
   stopifnot(nrow(M) == ncol(M))
 
@@ -51,7 +51,7 @@ invert_cholR <- function(M, nugget = 0, debug = FALSE){
 #'
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
   stopifnot(all.equal(nrow(X), ncol(V), nrow(V), length(y)))
   n <- nrow(X)
@@ -129,7 +129,7 @@ fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
 #' @return
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 wrap_glscpp <- function(X, V, y, X0 = NULL){
   if(is.null(X0) | missing(X0)){
     X0 <- matrix(as.double(1), nrow = nrow(X), ncol = 1)
@@ -158,7 +158,7 @@ wrap_glscpp <- function(X, V, y, X0 = NULL){
 #' @return n x n varcov matrix
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fitV <- function(Dist, spatialcor, fun = "exponential"){
   switch(fun,
          # exponential (with alias)
@@ -191,7 +191,7 @@ fitV <- function(Dist, spatialcor, fun = "exponential"){
 #' @return
 # @export ## Don't export this function - it is the same as fitV
 #'
-#' @examples TBA
+#' @examples #TBA
 V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 
   if (FUN == "exponential")
@@ -222,7 +222,7 @@ V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 #' @return maximum likelihood estimate of the nugget
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
   N.opt <- optimize(f = function(nug){return(fitGLS(X, V, y, nugget = nug)$logLik)},
                     interval = int, tol = tol, maximum = TRUE)
@@ -253,7 +253,7 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
 #' @return maximum likelihood estimate of the nugget
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
   N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(nugget = nug, X, V, y))},
                     interval = int, tol = tol, maximum = TRUE)
@@ -287,7 +287,7 @@ fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
 #' @return list of GLS statistics
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
                              nug.int = c(0, 1), nug.tol = 0.00001){
   ## Select random subsets according to the number of partitions
@@ -356,7 +356,7 @@ return(results)
 #' @return list of GLS statistics
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
                                   Vfit.fun = "exponential-power",
                                   npart = 5, mincross = 4,

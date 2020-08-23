@@ -26,3 +26,6 @@ a list of 3 or 4 elements:
 \description{
 see `?cls_star()`
 }
+\examples{
+#TBA
+}

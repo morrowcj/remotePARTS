@@ -20,5 +20,5 @@ taper-spherical transformation of d
 Note: this documentation is incomplete - arguments need better documenting
 }
 \examples{
-TBA
+#TBA
 }

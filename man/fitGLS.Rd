@@ -27,8 +27,5 @@ extracted by defining `print.method()` and other methods.
 fit GLS to remote sensing data
 }
 \examples{
-TBA
-}
-\examples{
-TBA
+#TBA
 }

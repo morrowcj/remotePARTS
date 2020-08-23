@@ -23,5 +23,5 @@ Note: this should not be confused with the inverse of M derived from the
 cholesky decomposition (i.e. `chol2inv(M)`)
 }
 \examples{
-TBA
+#TBA
 }

@@ -72,5 +72,5 @@ logLik: the log-likelihood of the fit
 Title
 }
 \examples{
-TBA
+#TBA
 }

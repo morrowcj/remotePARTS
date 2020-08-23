@@ -32,3 +32,6 @@ this function is a wrapper that calls the C++ version of fitGLS()
 and can be faster than fitNugget(). However, this functionallity is also
 available in the C++ version of fitGLS()
 }
+\examples{
+#TBA
+}
