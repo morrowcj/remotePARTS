@@ -1,8 +1,9 @@
 ^remoteSTAR\.Rproj$
 ^\.Rproj\.user$
 
-NAMESPACE_backup
+NAMESPACE_.*
 code/
 .*Rpackage/
 data-raw/
 readme_19-aug-2020
+Readme.Rmd

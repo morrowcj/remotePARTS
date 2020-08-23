@@ -169,12 +169,12 @@ Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
     const MatrixXd M = (1 - nugget) * V.array() + nugget * MatrixXd::Identity(n,n).array();
     const MatrixXd Mn = M.matrix();
     const LLT<MatrixXd> llt(Mn);
-    const MatrixXd tUinv = llt.matrixU().solve(MatrixXd::Identity(n, n)).adjoint();
+    const MatrixXd tUinv = llt.matrixL().solve(MatrixXd::Identity(n, n));
     return tUinv;
   } else {
     // no nugget case
     const LLT<MatrixXd> llt(V); //chol decomp of V: (U)
-    const MatrixXd tUinv = llt.matrixU().solve(MatrixXd::Identity(n, n)).adjoint();
+    const MatrixXd tUinv = llt.matrixL().solve(MatrixXd::Identity(n, n));
     return tUinv;
   }
 }

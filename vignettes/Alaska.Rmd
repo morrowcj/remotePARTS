@@ -1,0 +1,253 @@
+---
+title: "Alaska"
+subtitle: "NDVI analysis {remoteSTAR}"
+author: "Clay Morrow"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Alaska}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+library(knitr)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  fig.width = 5, fig.asp = 1,
+  cache.extra = rand_seed # attempt to cache random seed for reproduction 
+)
+```
+
+```{r setup}
+library(remoteSTAR)
+```
+
+```{r random seed}
+set.seed(58) # set the random seed for this document
+```
+
+```{r data setup, echo = FALSE, eval = FALSE}
+## Full data ----
+# read in the data
+ndvi <- data.table::fread(file = "../data-raw/north_america_checked.csv")
+
+# convert $land column to a factor
+land.classes = c("Evergr needle","Evergr broad","Decid needle","Decid broad",
+                 "Mixed forest","Shrubland","Savanna","Grassland","Cropland",
+                 "Cropland mosaics") # all land classes (in order of lvs)
+
+ndvi$land <- factor(ndvi$land, labels = land.classes)
+
+# save the rdata file
+if(!file.exists("../data/ndvi.RData")){
+  save(ndvi, file =  "../data/ndvi.RData")
+}
+
+## Alaska subset ----
+ndvi_AK <- ndvi[ndvi$lng < -141, ] #North Am. west of -141 is approx. AK
+
+# relative contirbution of each land class to AK
+tmp <- aggregate(
+  x = ndvi_AK$land,
+  by = list(landclass = ndvi_AK$land),
+  FUN = function(x)length(x)/nrow(ndvi_AK)
+)
+
+# any land class that occurs less than 2% is rare
+ndvi_AK$rare.land <- tmp[match(ndvi_AK$land, tmp$landclass), "x"] <= 0.02
+
+# reorder columns so ndvi are all at the end
+ord <- c(grep("ndvi", names(ndvi_AK), invert = TRUE), #columns without 'ndvi'
+         grep("ndvi", names(ndvi_AK))) # cols with ndvi
+ndvi_AK <- ndvi_AK[, ..ord] #..x is data.table notation
+
+# save AK data file
+if(!file.exists("../data/ndvi_AK.RData")){
+  save(ndvi_AK, file = "../data/ndvi_AK.RData")
+}
+
+## subset AK further
+ndvi_AK3000 <- ndvi_AK[!ndvi_AK$rare.land, ] # only common land classes
+ndvi_AK3000 <- ndvi_AK3000[sample.int(n = nrow(ndvi_AK3000), size = 3000), ] # 3000 pts
+
+# save small AK data file
+if(!file.exists("../data/ndvi_AK3000.RData")){
+  save(ndvi_AK3000, file = "../data/ndvi_AK3000.RData")
+}
+```
+
+## Alaska 3000
+
+The `ndvi_AK3000` data set contains NDVI remote sensing data for Alaska from a 
+random 3000 pixels over the time period of 1982 through 2013 as a `data.table`.
+
+**More info TBD**
+
+```{r ndvi_AK3000 data}
+# load the dataset
+data("ndvi_AK3000")
+
+# remove rare land classes
+ndvi_AK3000 <- ndvi_AK3000[!ndvi_AK3000$rare.land, ]
+# extract some info
+X <- as.matrix(ndvi_AK3000[, -c(1:6)]) # columns containing NDVI measurements
+n = nrow(X); p = ncol(X) # dimensions of X
+location = ndvi_AK3000[, c("lng", "lat")] # geographic location of each site
+time.int = 1:p # time points as standard integers
+```
+
+### Analysis of NDVI at the pixel level
+
+```{r cls_star AK3000}
+# perform time series analysis for each site (no intercept)
+fm.cls <- cls_star(X, t = time.int) # can be slow
+rel.est <- with(fm.cls, (Est/(1 - x_t0.EST))/mean) # relative estimate
+
+knitr::kable(head(fm.cls), digits = 4) # show results
+```
+
+For example, we can see that site 1 has an average NDVI of 
+`r round(fm.cls[1, "mean"], 2)` over the `r p` year time period. We can also 
+see that, on average, NDVI decreased by `r round(abs(fm.cls[1, "Est"]), 2)` 
+(`Est`) with a standard error of `r round(fm.cls[1, "SE"], 2)` (`SE`). The 
+t-test statistic and associated two-tailed p-value (`t` and `p`) indicate that
+this change is significantly different from 0. Finally, we can see that an 
+increase in NDVI of 1 in the previous year is estimated to increase NDVI in 
+the current year by `r round(fm.cls[1, "x_t0.EST"], 2)` at site 1 (`x_t0.EST`).
+
+#### Check for outliers
+
+```{r plot AK3000 outl map}
+# index of outliers
+outl <- abs(scale(rel.est)) > -qnorm(p = 1/n/10)
+
+# define color of points low NDVI = orange, high NDVI = green
+base.col = ifelse(test = outl, yes = "black",
+                  no = colorRampPalette(
+                    c("orange", "grey", "darkgreen")
+                    )(nrow(fm.cls))[ordered(rel.est)]
+)
+plot(ndvi_AK3000$lat ~ ndvi_AK3000$lng, pch = 15, cex = .5, col = base.col,
+     xlab = "longitude", ylab = "latitude")
+legend(x = "bottomright", fill = c("darkgreen", "grey","orange", "black"),
+       legend = c("high", "med", "low", "outl"), title = "NDVI")
+```
+
+We can see from the above figure that outliers almost always occur at the edges of
+the map - adjacent to missing data. 
+
+```{r}
+## value of outliers relative to overall distribution
+hist(fm.cls$mean[outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = "grey",
+     lty = 3, xlab = "site average NDVI", main = "Histogram of NDVI")
+hist(fm.cls$mean[!outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = NULL,
+     add = TRUE)
+legend("topright", legend = c("TRUE","FALSE"), fill = c("grey", "white"),
+       title = "outlier")
+```
+
+and the histogram shows that these points are almost always associated with low NDVI values. 
+
+This indicates the removal of these sites would be justified (**TBA**). 
+
+
+### Using GLS regression
+
+```{r fit_spatialcor}
+# calculate distance matrix (km)
+D = geosphere::distm(location)/1000
+meth = "exponential-power" # transformation method
+
+# estimate spatial correlation
+(r.est <- fit_spatialcor(X, time.int, location = location, 
+                         fun = meth)) #calculates D internally
+```
+
+```{r GLS}
+## Fit variance matrix
+V <- fitV(D, spatialcor = r.est$spatialcor, fun = meth)
+
+## inverse of the chol decomp of V
+tInvCholV <- tinvchol_cpp(V, nugget = 0)
+
+mod.mat <- cbind("Intercept" = 1, X) # add an intercept
+X0 <- matrix(rep(1, n), ncol = 1) # null model matrix
+tolr = .00001
+
+
+## estimate maximum likelihood nugget
+nugget.ml <- optimizeNugget_cpp(X = mod.mat, V = V, y = rel.est,
+                                lower = 0, upper = 1, tol = tolr)
+
+## fit GLS 
+fm.gls <- fitGLS_cpp(X = mod.mat, V = V, y = rel.est, X0 = X0,
+                     nugget = nugget.ml)
+
+## add in pvalues (this will eventually be done with classes)
+  # t-test
+fm.gls$pval.t <- sapply(fm.gls$tstat, function(x){
+  2 * pt(abs(x), df = fm.gls$dft, lower.tail = F)
+})
+names(fm.gls$pval.t) <- colnames(mod.mat)
+  # F-test
+fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], lower.tail = F)
+
+## print p-values
+# t-test ## H0: No difference in NDVI among sites at given time
+round(fm.gls$pval.t, 4) 
+
+# F-test ## H0: no change in NDVI over time for all of AK3000
+round(fm.gls$pval.F, 4) # reject H0
+```
+
+I'm still working on the partitioned version - bugs keep popping up
+
+```{r GLS_partition, eval = FALSE}
+n.p = 100; n.part = 5 ## stops working when n.p is larger than 100... 
+partition <- matrix(sample(1:nrow(ndvi_AK3000), size = n.p * n.part), ncol = n.part)
+
+## For now, I'm going to explore the distributed computing option
+
+### partition 1
+y1 <- rnorm(n.p)
+X1 <- as.matrix(ndvi_AK3000[partition[,1], -c(1:6)])
+loc1 <- ndvi_AK3000[partition[, 1], c("lat","lng")]
+V1 <- fitV(D[partition[,1], partition[,1]],
+            spatialcor = r.est$spatialcor, fun = "exponential-power")
+
+### partition 2
+y2 <- rnorm(n.p)
+X2 <- as.matrix(ndvi_AK3000[partition[,2], -c(1:6)])
+loc2 <- ndvi_AK3000[partition[, 2], c("lat","lng")]
+V2 <- fitV(D[partition[,1], partition[,1]],
+            spatialcor = r.est$spatialcor, fun = "exponential-power")
+
+## cross partition
+V12 <- fitV(D[as.vector(partition), as.vector(partition)],
+             spatialcor = r.est$spatialcor, fun = "exponential-power")
+Xnull <- matrix(1, nrow = nrow(X1))
+
+df2 <- n.p - (ncol(X1) - 1)
+df0 <- n.p - (ncol(Xnull) - 1)
+df1 <- df0 - df2
+
+## results
+out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE)
+out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE)
+
+## The cross-partition step is where it breaks down
+out.cross <- crosspart_worker_cpp(out1, out2, V12, df1, df2) # not working yet
+
+## function
+# tmp <- fitGLS.partition_rcpp(X, rel.est, X0, D, r.est$spatialcor, Vfit.fun = meth, npart = 5, mincross = 4, nug.int = c(0,1), nug.tol = tolr)
+
+## could it be a memory issue? MB is the size of out.cross with different n.p values
+curve = data.frame(n.p = c(100, 80, 60), MB = c(3.5, 2.2, 1.2))
+fm <- lm(curve$MB ~ curve$n.p)
+plot(curve$MB ~ curve$n.p); abline(fm)
+pred <- function(np){(np * coef(fm)[2]) + coef(fm)[1]}
+pred(c(150, 300, 600))
+```
+

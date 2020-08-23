@@ -363,7 +363,7 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
                                   nug.int = c(0, 1), nug.tol = .00001){
 
   ## Select random subsets according to the number of partitions
-  n <- nrow(data) # full data n
+  n <- nrow(X) # full data n
   nn <- n - (n%%npart) # n divisible by npart
   n.p <- nn/npart # size of each partition
   shuff <- sample(n)[1:nn] # shuffled rows
@@ -386,8 +386,8 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
     Xi <- as.matrix(X[partition[,i], ])
     Xi0 <- as.matrix(X0[partition[, i]])
     # loci <- loc[partition[, i], ]
-    Vi <- V.fit(Dist[partition[, i], partition[, i]],
-                spatialcor = spatcor, FUN = Vfit.fun)
+    Vi <- fitV(Dist[partition[, i], partition[, i]],
+                spatialcor = spatcor, fun = Vfit.fun)
     save_xx = ifelse(i <= mincross, TRUE, FALSE)
     return(GLS_worker_cpp(yi, Xi, Vi, Xi0, save_xx = save_xx))
   })
@@ -396,8 +396,8 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
     i = x; j = x+1
     Xij = as.matrix(X[partition[, c(i,j)], ])
     # locij = loc[X[partition[, c(i,j)], ]
-    Vij <- V.fit(Dist[partition, c(i,j), partition, c(i,j)], spatialcor = spatcor,
-                 FUN = Vfit.fun)
+    Vij <- fitV(Dist[partition[, c(i,j)], partition[, c(i,j)]], spatialcor = spatcor,
+                 fun = Vfit.fun)
     Li <- out[[i]]; Lj = out[[j]]
     res = crosspart_worker_cpp(Li, Lj, Vij, df1, df2)
   })

@@ -31,5 +31,9 @@ Imports:
   RcppEigen (>= 0.3.3.7.0),
   dplyr (>= 1.0.0)
 Suggests: 
-    testthat
+    data.table,
+    testthat,
+    knitr,
+    rmarkdown
 LinkingTo: Rcpp, RcppEigen
+VignetteBuilder: knitr
