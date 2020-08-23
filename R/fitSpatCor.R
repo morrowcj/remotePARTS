@@ -15,7 +15,7 @@
 #' @return taper-spherical transformation of d
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 taper_sphere <- function(d, beta, cor = NULL){
 
   ## conditional beta
@@ -57,7 +57,7 @@ taper_sphere <- function(d, beta, cor = NULL){
 #'
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 scale_dist <- function(location, scl = 1000){
   D <- geosphere::distm(location)/scl
   m = max(D)
@@ -103,7 +103,7 @@ scale_dist <- function(location, scl = 1000){
 #' logLik: the log-likelihood of the fit
 #' @export
 #'
-#' @examples TBA
+#' @examples #TBA
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
                            fit.n = 100, fun = "exp",
                            dist, location,

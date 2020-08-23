@@ -30,5 +30,5 @@ Note: this function should be deprecated and instead an S3 class and a
 objects
 }
 \examples{
-TBA
+#TBA
 }

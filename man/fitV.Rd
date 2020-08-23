@@ -25,5 +25,5 @@ Note: currently the "exponential" version yields a non-positive definitive
 (and therefore invalid) V matrix.
 }
 \examples{
-TBA
+#TBA
 }

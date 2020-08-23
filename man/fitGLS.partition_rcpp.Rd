@@ -46,5 +46,5 @@ list of GLS statistics
 fit GLS model by partitioning remote sensing data via Rcpp
 }
 \examples{
-TBA
+#TBA
 }

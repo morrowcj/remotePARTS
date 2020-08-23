@@ -4,85 +4,61 @@
 #include "remoteSTAR_types.h"
 #include <RcppEigen.h>
 #include <Rcpp.h>
-#include <string>
-#include <set>
 
 using namespace Rcpp;
 
 // AtA
 inline Eigen::MatrixXd AtA(const MatrixXd& A);
-static SEXP _remoteSTAR_AtA_try(SEXP ASEXP) {
+RcppExport SEXP _remoteSTAR_AtA(SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const MatrixXd& >::type A(ASEXP);
     rcpp_result_gen = Rcpp::wrap(AtA(A));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
+END_RCPP
 }
-RcppExport SEXP _remoteSTAR_AtA(SEXP ASEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_AtA_try(ASEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
+// solve_cpp
+Eigen::MatrixXd solve_cpp(const MatrixXd& A, const MatrixXd& B);
+RcppExport SEXP _remoteSTAR_solve_cpp(SEXP ASEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const MatrixXd& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const MatrixXd& >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(solve_cpp(A, B));
     return rcpp_result_gen;
+END_RCPP
+}
+// solve_ident_cpp
+Eigen::MatrixXd solve_ident_cpp(const MatrixXd& A);
+RcppExport SEXP _remoteSTAR_solve_ident_cpp(SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const MatrixXd& >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(solve_ident_cpp(A));
+    return rcpp_result_gen;
+END_RCPP
 }
 // tinvchol_cpp
 Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget);
-static SEXP _remoteSTAR_tinvchol_cpp_try(SEXP VSEXP, SEXP nuggetSEXP) {
+RcppExport SEXP _remoteSTAR_tinvchol_cpp(SEXP VSEXP, SEXP nuggetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
     Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
     rcpp_result_gen = Rcpp::wrap(tinvchol_cpp(V, nugget));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remoteSTAR_tinvchol_cpp(SEXP VSEXP, SEXP nuggetSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_tinvchol_cpp_try(VSEXP, nuggetSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
+END_RCPP
 }
 // fitGLS_cpp
 List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, const int threads);
-static SEXP _remoteSTAR_fitGLS_cpp_try(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
+RcppExport SEXP _remoteSTAR_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
@@ -92,74 +68,28 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type threads(threadsSEXP);
     rcpp_result_gen = Rcpp::wrap(fitGLS_cpp(X, V, y, X0, nugget, save_xx, threads));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remoteSTAR_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_fitGLS_cpp_try(XSEXP, VSEXP, ySEXP, X0SEXP, nuggetSEXP, save_xxSEXP, threadsSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
+END_RCPP
 }
 // LogLikGLS_cpp
 inline double LogLikGLS_cpp(double nugget, const MapMatd& X, const MapMatd& V, const MapMatd& y);
-static SEXP _remoteSTAR_LogLikGLS_cpp_try(SEXP nuggetSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP) {
+RcppExport SEXP _remoteSTAR_LogLikGLS_cpp(SEXP nuggetSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(LogLikGLS_cpp(nugget, X, V, y));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remoteSTAR_LogLikGLS_cpp(SEXP nuggetSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_LogLikGLS_cpp_try(nuggetSEXP, XSEXP, VSEXP, ySEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
+END_RCPP
 }
 // optimizeNugget_cpp
 double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, double lower, double upper, double tol, bool debug);
-static SEXP _remoteSTAR_optimizeNugget_cpp_try(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP tolSEXP, SEXP debugSEXP) {
+RcppExport SEXP _remoteSTAR_optimizeNugget_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP tolSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
@@ -169,37 +99,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
     rcpp_result_gen = Rcpp::wrap(optimizeNugget_cpp(X, V, y, lower, upper, tol, debug));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remoteSTAR_optimizeNugget_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP tolSEXP, SEXP debugSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_optimizeNugget_cpp_try(XSEXP, VSEXP, ySEXP, lowerSEXP, upperSEXP, tolSEXP, debugSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
+END_RCPP
 }
 // GLS_worker_cpp
 List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V, const MapMatd& X0, bool save_xx);
-static SEXP _remoteSTAR_GLS_worker_cpp_try(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP save_xxSEXP) {
+RcppExport SEXP _remoteSTAR_GLS_worker_cpp(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP save_xxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
@@ -207,37 +114,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type save_xx(save_xxSEXP);
     rcpp_result_gen = Rcpp::wrap(GLS_worker_cpp(y, X, V, X0, save_xx));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remoteSTAR_GLS_worker_cpp(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP save_xxSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_GLS_worker_cpp_try(ySEXP, XSEXP, VSEXP, X0SEXP, save_xxSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
+END_RCPP
 }
 // crosspart_worker_cpp
 List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij, int df1, int df2);
-static SEXP _remoteSTAR_crosspart_worker_cpp_try(SEXP LiSEXP, SEXP LjSEXP, SEXP VijSEXP, SEXP df1SEXP, SEXP df2SEXP) {
+RcppExport SEXP _remoteSTAR_crosspart_worker_cpp(SEXP LiSEXP, SEXP LjSEXP, SEXP VijSEXP, SEXP df1SEXP, SEXP df2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const List >::type Li(LiSEXP);
     Rcpp::traits::input_parameter< const List >::type Lj(LjSEXP);
     Rcpp::traits::input_parameter< const MatrixXd >::type Vij(VijSEXP);
@@ -245,70 +129,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type df2(df2SEXP);
     rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(Li, Lj, Vij, df1, df2));
     return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remoteSTAR_crosspart_worker_cpp(SEXP LiSEXP, SEXP LjSEXP, SEXP VijSEXP, SEXP df1SEXP, SEXP df2SEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remoteSTAR_crosspart_worker_cpp_try(LiSEXP, LjSEXP, VijSEXP, df1SEXP, df2SEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-
-// validate (ensure exported C++ functions exist before calling them)
-static int _remoteSTAR_RcppExport_validate(const char* sig) { 
-    static std::set<std::string> signatures;
-    if (signatures.empty()) {
-        signatures.insert("inline Eigen::MatrixXd(*AtA)(const MatrixXd&)");
-        signatures.insert("Eigen::MatrixXd(*tinvchol_cpp)(const MapMatd&,double)");
-        signatures.insert("List(*fitGLS_cpp)(const MapMatd&,const MapMatd&,const MapMatd&,const MapMatd&,double,bool,const int)");
-        signatures.insert("inline double(*LogLikGLS_cpp)(double,const MapMatd&,const MapMatd&,const MapMatd&)");
-        signatures.insert("double(*optimizeNugget_cpp)(const MapMatd&,const MapMatd&,const MapMatd&,double,double,double,bool)");
-        signatures.insert("List(*GLS_worker_cpp)(const MapMatd&,const MapMatd&,const MapMatd&,const MapMatd&,bool)");
-        signatures.insert("List(*crosspart_worker_cpp)(const List,const List,const MatrixXd,int,int)");
-    }
-    return signatures.find(sig) != signatures.end();
-}
-
-// registerCCallable (register entry points for exported C++ functions)
-RcppExport SEXP _remoteSTAR_RcppExport_registerCCallable() { 
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_AtA", (DL_FUNC)_remoteSTAR_AtA_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_tinvchol_cpp", (DL_FUNC)_remoteSTAR_tinvchol_cpp_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_fitGLS_cpp", (DL_FUNC)_remoteSTAR_fitGLS_cpp_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_LogLikGLS_cpp", (DL_FUNC)_remoteSTAR_LogLikGLS_cpp_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_optimizeNugget_cpp", (DL_FUNC)_remoteSTAR_optimizeNugget_cpp_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_GLS_worker_cpp", (DL_FUNC)_remoteSTAR_GLS_worker_cpp_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_crosspart_worker_cpp", (DL_FUNC)_remoteSTAR_crosspart_worker_cpp_try);
-    R_RegisterCCallable("remoteSTAR", "_remoteSTAR_RcppExport_validate", (DL_FUNC)_remoteSTAR_RcppExport_validate);
-    return R_NilValue;
+END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_remoteSTAR_AtA", (DL_FUNC) &_remoteSTAR_AtA, 1},
+    {"_remoteSTAR_solve_cpp", (DL_FUNC) &_remoteSTAR_solve_cpp, 2},
+    {"_remoteSTAR_solve_ident_cpp", (DL_FUNC) &_remoteSTAR_solve_ident_cpp, 1},
     {"_remoteSTAR_tinvchol_cpp", (DL_FUNC) &_remoteSTAR_tinvchol_cpp, 2},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
     {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
     {"_remoteSTAR_optimizeNugget_cpp", (DL_FUNC) &_remoteSTAR_optimizeNugget_cpp, 7},
     {"_remoteSTAR_GLS_worker_cpp", (DL_FUNC) &_remoteSTAR_GLS_worker_cpp, 5},
     {"_remoteSTAR_crosspart_worker_cpp", (DL_FUNC) &_remoteSTAR_crosspart_worker_cpp, 5},
-    {"_remoteSTAR_RcppExport_registerCCallable", (DL_FUNC) &_remoteSTAR_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
 

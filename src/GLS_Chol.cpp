@@ -1,8 +1,23 @@
 // [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::interfaces(r, cpp)]]
+// // [[Rcpp::interfaces(r, cpp)]]
 #include <iostream>
 #include <math.h>
-#include "remoteSTAR_types.h"
+
+// #include "remoteSTAR_types.h"
+#include <RcppEigen.h>
+
+using Eigen::LLT;
+using Eigen::Lower;
+using Eigen::Map;
+using Eigen::MatrixXd;
+using Eigen::MatrixXi;
+using Eigen::Upper;
+using Eigen::VectorXd;
+using Eigen::VectorXi;
+
+typedef Map<MatrixXd> MapMatd;
+typedef Map<MatrixXi> MapMati;
+typedef Map<VectorXd> MapVecd;
 
 // // [[Rcpp::plugins(openmp)]]
 // #include <omp.h>
@@ -81,13 +96,6 @@ using namespace Rcpp;
  * inline code that computes t(A) %*% A
  */
 
-
-//' Compute A' %*% A in C++
-//'
-//' @details this is equivalent to crossprod(A) in R
-//'
-//' @param A a numeric (double) matrix
-//' @export
 // [[Rcpp::export]]
 inline Eigen::MatrixXd AtA(const MatrixXd& A) {
   int n(A.cols());
@@ -107,13 +115,23 @@ inline Eigen::MatrixXd AtA(const MatrixXd& A) {
  * solves Ax = B for x.
  */
 
-// [[Rcpp:export]]
-inline Eigen::MatrixXd solve_cpp(const MatrixXd& A, const MatrixXd& B){
+//' solve Ax = B
+//'
+//' @param A numeric matrix
+//' @param B numeric matrix
+//'
+//' @export
+// [[Rcpp::export]]
+Eigen::MatrixXd solve_cpp(const MatrixXd& A, const MatrixXd& B){
   return A.colPivHouseholderQr().solve(B);
 }
 
-// [[Rcpp:export]]
-inline Eigen::MatrixXd solve_ident_cpp(const MatrixXd& A){
+//' solve Ax = I
+//'
+//' @param A numeric matrix
+//' @export
+// [[Rcpp::export]]
+Eigen::MatrixXd solve_ident_cpp(const MatrixXd& A){
   MatrixXd I = MatrixXd::Identity(A.rows(),A.cols());
   return A.colPivHouseholderQr().solve(I);
 }
@@ -133,6 +151,14 @@ AtA(M) # cpp way
  * if a nugget is included... (nothing yet)
  */
 
+//' Find the transposed inverse cholesky decomposition of V
+//'
+//' @param V numeric matrix
+//' @param nugget numeric nugget to add to variance matrix
+//'
+//' @export
+//'
+//' @examples #TBA
 // [[Rcpp::export]]
 Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
 
@@ -173,6 +199,24 @@ tinvchol_cpp(Vn, nug) # cpp
  *
  */
 
+//' Fit GLS to remote sensing data
+//'
+//' @details see `fitGLS()`
+//'
+//' @param X numeric matrix
+//' @param V numeric matrix
+//' @param y numeric vector
+//' @param X0 numeric matrix
+//' @param nugget numeric nugget to add to V
+//' @param save_xx logical: should xx, xx0, and tInvCholV be returned? This
+//' functionality is meant for use with the partitioned GLS whereby these
+//' values are used to calculate cross-partition statistics.
+//' @param threads integer indicating the number of threads to use. This current
+//' version does not have multi-thread functionality so this argument does
+//' nothing yet.
+//'
+//' @export
+//' @examples #TBA
 // [[Rcpp::export]]
 List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& V,
@@ -316,6 +360,21 @@ sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
  *
  */
 
+//' Caculate log-liklihood of GLS model
+//'
+//' @details this function is mostly meant to optimize the nugget for a paritular
+//' set of data.
+//'
+//' Note: this function should be deprecated and simply added as functionality
+//' to `fitGLS_cpp()`.
+//'
+//' @param nugget the nugget to add to V
+//' @param X numeric matrix
+//' @param V numeric matrix
+//' @param y numeric vector
+//'
+//' @export
+//' @examples #TBA
 // [[Rcpp::export]]
 inline double LogLikGLS_cpp(double nugget,
                         const MapMatd& X,
@@ -354,8 +413,26 @@ inline double LogLikGLS_cpp(double nugget,
  * http://www.netlib.org/fmm/fmin.f
  */
 
+//' Find the maximum likelihood estimate of the nugget
+//'
+//' @details this is the C++ version of `optimize()` which is specific to
+//' finding the nugget value that maximizes the log-liklihood of `fitGLS_cpp()`
+//'
+//' Note: this function actually uses `LogLikGLS_cpp()` which should be swapped
+//' for `fitGLS_cpp()` once the correct funcionality is added.
+//'
+//' @param X numeric matrix
+//' @param V numeric matrix
+//' @param y numeric vector
+//' @param lower lower boundary for nugget search
+//' @param upper upper boundary for nugget search
+//' @param tol desired accuracy of nugget search
+//' @param debug logical: debug mode?
+//'
+//' @export
+//' @examples #TBA
 // [[Rcpp::export]]
-double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd &y,
+double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
                           double lower = 0, double upper = 1, double tol = .00001,
                           bool debug = false){
 
@@ -510,6 +587,19 @@ system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
  * due to the fact that since distGeo() needs to be done externally as well.
  */
 
+//' worker function 1 for paritioned GLS
+//'
+//' @details this function will eventually be used to perform the partitioned
+//' version of the GLS in parallel
+//'
+//' @param y numeric vector
+//' @param X numeric matrix
+//' @param V numeric matrix
+//' @param X0 numeric matrix
+//' @param save_xx logical: should xx, xx0, and tInvCholV be returned?
+//'
+//' @export
+//' @examples #TBA
 // [[Rcpp::export]]
 List GLS_worker_cpp(const MapMatd& y,
                     const MapMatd& X,
@@ -527,7 +617,20 @@ List GLS_worker_cpp(const MapMatd& y,
   return x_gls;
 }
 
-
+//' worker function 2 for partitioned GLS
+//'
+//' @details this function will also be used to perform the partitioned
+//' version of the GLS in parallel and will compute cross-partition statistics
+//'
+//' @param Li list whose elements are those of a starmod.gls objects (i.e. created with
+//' `GLS_worker_cpp()`). These are results from a single partition.
+//' @param Lj list with same structure as Li that will be compared with Li
+//' @param Vij numeric variance matrix for Xij
+//' @param df1 first degree of freedom
+//' @param df2 second degree of freedom
+//'
+//' @export
+//' @examples #TBA
 // [[Rcpp::export]]
 List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
                           int df1, int df2){

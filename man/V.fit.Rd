@@ -27,3 +27,6 @@ Note: currently the "exponential" version yields a non-positive definitive
 Additionally, V.fit() is functionally identical to fitV() however, fitV()
 should be used instead. This function should be phased out
 }
+\examples{
+#TBA
+}

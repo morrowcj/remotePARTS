@@ -18,7 +18,7 @@
 #'
 #' @export
 #'
-#' @examples
+#' @examples #TBA
 
 fitCLS <- function(x, t, Z = NULL) {
   # variables
@@ -90,7 +90,7 @@ fitCLS <- function(x, t, Z = NULL) {
 #'
 #' @export
 #'
-#' @examples
+#' @examples #TBA
 #' # starting parameters
 #' n = 25; p = 20; beta = .2
 #'

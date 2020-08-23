@@ -46,5 +46,5 @@ fit GLS model by partitioning remote sensing data
 Note: This function is not complete yet. Use the C++ version instead
 }
 \examples{
-TBA
+#TBA
 }
