@@ -339,6 +339,70 @@ return(results)
 
 }
 
+
+#' Worker function 2 for partitioned GLS
+#'
+#' @details this is the second worker function for the partitioned GLS analysis.
+#'
+#' NOTE: currently, there is no native parallel functionality and the partitioned
+#' form of the GLS is not implemented entirely in C++. Instead, the R function
+#' fitGLS.partition_rcpp() weaves between R and C++ on a single core. While
+#' this method is still much faster than the purely R implementation, migration
+#' to entirely C++ will greatly improve speed further. This migration requires
+#' calculating geographic distances with C++ which I've not yet written.
+#'
+#' Additionally, there seems to be a memory-related issue with the cpp version
+#' of this code. I've
+#' successfully used the function when partitions have 100 or fewer rows (too
+#' small). However, larger partitions cause a fatal error that causes a crash.
+#'
+#' @param xxi numeric matrix xx from  partition i
+#' @param xxj numeric matrix xx from  partition j
+#' @param xxi0 numeric matrix xx0 from  partition i
+#' @param xxj0 numeric matrix xx0 from  partition j
+#' @param tUinv_i numeric matrix tInvCholV from  partition i
+#' @param tUinv_j numeric matrix tInvCholV from  partition j
+#' @param Vij numeric variance matrix for Xij
+#' @param df1 first degree of freedom
+#' @param df2 second degree of freedom
+#'
+#' @export
+#' @examples #TBA
+crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
+                             Vij, nug_i, nug_j,  df1, df2){
+  np = ncol(Vij)/2
+  # rescale nuggets
+  nug_i = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+  nug_j = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+
+  # variance matrix with nuggets
+  Vn <- diag(rep(c(nug_i, nug_j), each = np)) + Vij
+  Vn <- Vn[1:np, (np+1):(2*np)] # upper right block
+
+  # calculate stats
+  Rij <- crossprod(t(tUinv_i), tcrossprod(Vn, tUinv_j))
+
+  Hi <- xxi %*% solve(crossprod(xxi)) %*% t(xxi)
+  Hj <- xxj %*% solve(crossprod(xxj)) %*% t(xxj)
+
+  Hi0 <- xxi0 %*% solve(crossprod(xxi0)) %*% t(xxi0)
+  Hj0 <- xxj0 %*% solve(crossprod(xxj0)) %*% t(xxj0)
+
+  SiR <- Hi - Hi0
+  SjR <- Hj - Hj0
+
+  SiE <- diag(np) - Hi
+  SjE <- diag(np) - Hj
+
+  rSSRij <- (SiR %*% (Rij %*% SjR %*% t(Rij)))/df1
+  rSSEij <- (SiE %*% (Rij %*% SjE %*% t(Rij)))/df2
+
+  # output
+  out_lst <- list("rSSRij" = rSSRij,
+                  "rSSEij" = rSSEij)
+  return(out_lst)
+}
+
 #' fit GLS model by partitioning remote sensing data via Rcpp
 #'
 #' @param X n x p numeric design matrix for predictor variables
@@ -367,7 +431,7 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
   nn <- n - (n%%npart) # n divisible by npart
   n.p <- nn/npart # size of each partition
   shuff <- sample(n)[1:nn] # shuffled rows
-  partition <- matrix(shuff, nrow = npart)
+  partition <- matrix(shuff, ncol = npart)
   # shuff.mat <- matrix(shuff, nrow = npart)
   ## TBA: handle user-defined partitions?
 
@@ -393,13 +457,44 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
   })
 
   out.cross = lapply(seq_len(mincross - 1), function(x){
-    i = x; j = x+1
+    i = x; j = x + 1
     Xij = as.matrix(X[partition[, c(i,j)], ])
     # locij = loc[X[partition[, c(i,j)], ]
     Vij <- fitV(Dist[partition[, c(i,j)], partition[, c(i,j)]], spatialcor = spatcor,
                  fun = Vfit.fun)
     Li <- out[[i]]; Lj = out[[j]]
-    res = crosspart_worker_cpp(Li, Lj, Vij, df1, df2)
+
+    ## use crosspart worker function
+    res = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
+                           xxi0 = Li$xx0, xxj0 = Lj$xx0,
+                           tUinv_i = Li$tInvCholV,
+                           tUinv_j = Lj$tInvCholV,
+                           Vij = Vij,
+                           nug_i = Li$nugget,
+                           nug_j = Lj$nugget,
+                           df1 = df1, df2 = df2)
+
+    # average statistics
+    Fmean <-  numeric(length(out))
+    rSSR <- numeric(length(out))
+    rSSE <- numeric(length(out))
+    coef <- matrix(NA, ncol = ncol(X), nrow = length(out))
+    coef0 <- matrix(NA, ncol = ncol(X0), nrow = length(out))
+    for (i in 1:length(out)){
+      Fmean[i] = out[[i]]$Fstat
+      rSSR[i] = out[[i]]$rSSRij
+      rSSE[i] = out[[i]]$rSSEij
+      coef[i, ] = out[[i]]$betahat
+      coef0[i, ] = out[[i]]$betahat0
+    }
+    Fmean = mean(Fmean, na.rm = TRUE)
+    rSSR[i] = mean(rSSR, na.rm = TRUE)
+    rSSE[i] = mean(rSSE, na.rm = TRUE)
+    coef = colMeans(coef, na.rm = TRUE)
+    coef0 = colMeans(coef0, na.rm = TRUE)
+
   })
-  return(list("part_results" = out, "crosspart_results" = out.cross))
+  return(list("part_results" = out, "crosspart_results" = out.cross,
+              "Fmean" = Fmean, "rSSR" = rSSR, "rSSE" = rSSE, "coef" = coef,
+              "coef0" = coef0))
 }

@@ -91,6 +91,9 @@ data("ndvi_AK3000")
 
 # remove rare land classes
 ndvi_AK3000 <- ndvi_AK3000[!ndvi_AK3000$rare.land, ]
+if(FALSE){ ## make data set very small to test that things work quickly
+  ndvi_AK3000 <- ndvi_AK3000[1:500, ]
+}
 # extract some info
 X <- as.matrix(ndvi_AK3000[, -c(1:6)]) # columns containing NDVI measurements
 n = nrow(X); p = ncol(X) # dimensions of X
@@ -202,10 +205,10 @@ round(fm.gls$pval.t, 4)
 round(fm.gls$pval.F, 4) # reject H0
 ```
 
-I'm still working on the partitioned version - bugs keep popping up
+I'm still working on the partitioned version - bugs keep popping up **Don't use **
 
-```{r GLS_partition, eval = FALSE}
-n.p = 400; n.part = 5
+```{r GLS_partition, eval = FALSE, echo = TRUE}
+n.p = 50; n.part = 3
 partition <- matrix(sample(1:nrow(ndvi_AK3000), size = n.p * n.part), ncol = n.part)
 ix.1 = as.vector(partition[, 1])
 ix.2 = as.vector(partition[, 2])
@@ -236,14 +239,14 @@ df0 <- n.p - (ncol(Xnull) - 1)
 df1 <- df0 - df2
 ```
 
-```{r}
+```{r, eval = FALSE, echo = TRUE}
 ## results
 out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE)
 out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE)
 
 ## The cross-partition step is where it breaks down
 ## last worked when n.p was 400 but no larger
-out.cross <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx,
+out.cross.cpp <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx,
                                   xxi0 = out1$xx0, xxj0 = out2$xx0,
                                   tUinv_i = out1$tInvCholV, 
                                   tUinv_j = out2$tInvCholV, 
@@ -252,17 +255,31 @@ out.cross <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx,
                                   Vij = V12, 
                                   df1 = df1, df2 = df2) # not working yet
 
-size.Mb <- function(x){format(object.size(x), units = "Mb")}
+out.cross <- crosspart_worker(xxi = out1$xx, xxj = out2$xx,
+                                  xxi0 = out1$xx0, xxj0 = out2$xx0,
+                                  tUinv_i = out1$tInvCholV, 
+                                  tUinv_j = out2$tInvCholV, 
+                                  nug_i = out1$nugget, 
+                                  nug_j = out2$nugget, 
+                                  Vij = V12, 
+                                  df1 = df1, df2 = df2) # not working yet
+```
 
+```{r, eval = FALSE, echo = TRUE}
+## Full function (not working properly)
+results <- fitGLS.partition_rcpp(X = X, y = rel.est, X0 = X0, Dist = D,
+                                 spatcor = r.est$spatialcor, Vfit.fun = meth,
+                                 npart = 2, mincross = 2, nug.int = c(0, 1),
+                                 nug.tol = tolr)
+```
+
+```{r, eval = FALSE, echo = FALSE}
+size.Mb <- function(x){format(object.size(x), units = "Kb")}
 sizes <- data.frame(obj = c("out1", "out2", "outcross"), 
                     MB = c(size.Mb(out1), size.Mb(out2), size.Mb(out.cross))
                     )
 sizes
-## function
-# tmp <- fitGLS.partition_rcpp(X, rel.est, X0, D, r.est$spatialcor, Vfit.fun = meth, npart = 5, mincross = 4, nug.int = c(0,1), nug.tol = tolr)
-```
 
-```{r}
 ## could it be a memory issue? MB is the size of out.cross with different n.p values
 curve = data.frame(n.p = c(100, 80, 60), MB = c(3.5, 2.2, 1.2))
 fm <- lm(curve$MB ~ curve$n.p)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{GLS_worker_cpp}
 \alias{GLS_worker_cpp}
-\title{worker function 1 for paritioned GLS}
+\title{Worker function 1 for paritioned GLS}
 \usage{
 GLS_worker_cpp(y, X, V, X0, save_xx = FALSE)
 }
@@ -18,11 +18,17 @@ GLS_worker_cpp(y, X, V, X0, save_xx = FALSE)
 \item{save_xx}{logical: should xx, xx0, and tInvCholV be returned?}
 }
 \description{
-worker function 1 for paritioned GLS
+Worker function 1 for paritioned GLS
 }
 \details{
-this function will eventually be used to perform the partitioned
-version of the GLS in parallel
+this function is the first of 2 (maybe 3) worker functions that,
+together, perform the partitioned GLS analysis.
+
+This function is simply a wrapper for fitGLS_cpp() that finds the MLE nugget
+and adds it to the output.
+
+NOTE: eventually, the worker functions will perform the analysis using
+multiple cores but that has not yet been implemented.
 }
 \examples{
 #TBA

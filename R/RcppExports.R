@@ -98,10 +98,16 @@ optimizeNugget_cpp <- function(X, V, y, lower = 0, upper = 1, tol = .00001, debu
     .Call(`_remoteSTAR_optimizeNugget_cpp`, X, V, y, lower, upper, tol, debug)
 }
 
-#' worker function 1 for paritioned GLS
+#' Worker function 1 for paritioned GLS
 #'
-#' @details this function will eventually be used to perform the partitioned
-#' version of the GLS in parallel
+#' @details this function is the first of 2 (maybe 3) worker functions that,
+#' together, perform the partitioned GLS analysis.
+#'
+#' This function is simply a wrapper for fitGLS_cpp() that finds the MLE nugget
+#' and adds it to the output.
+#'
+#' NOTE: eventually, the worker functions will perform the analysis using
+#' multiple cores but that has not yet been implemented.
 #'
 #' @param y numeric vector
 #' @param X numeric matrix
@@ -115,21 +121,34 @@ GLS_worker_cpp <- function(y, X, V, X0, save_xx = FALSE) {
     .Call(`_remoteSTAR_GLS_worker_cpp`, y, X, V, X0, save_xx)
 }
 
-#' worker function 2 for partitioned GLS
+#' Worker function 2 for partitioned GLS
 #'
-#' @details this function will also be used to perform the partitioned
-#' version of the GLS in parallel and will compute cross-partition statistics
+#' @details this is the second worker function for the partitioned GLS analysis.
 #'
-#' @param Li list whose elements are those of a starmod.gls objects (i.e. created with
-#' `GLS_worker_cpp()`). These are results from a single partition.
-#' @param Lj list with same structure as Li that will be compared with Li
+#' NOTE: currently, there is no parallel functionality and the partitioned
+#' form of the GLS is not implemented entirely in C++. Instead, the R function
+#' fitGLS.partition_rcpp() weaves between R and C++ on a single core. While
+#' this method is still much faster than the purely R implementation, migration
+#' to entirely C++ will greatly improve speed further. This migration requires
+#' calculating geographic distances with C++ which I've not yet written.
+#'
+#' Additionally, there seems to be a memory-related issue with this code. I've
+#' successfully used this function when partitions have 100 or fewer rows (too
+#' small). However, larger partitions cause a fatal error that causes a crash.
+#'
+#' @param xxi numeric matrix xx from  partition i
+#' @param xxj numeric matrix xx from  partition j
+#' @param xxi0 numeric matrix xx0 from  partition i
+#' @param xxj0 numeric matrix xx0 from  partition j
+#' @param tUinv_i numeric matrix tInvCholV from  partition i
+#' @param tUinv_j numeric matrix tInvCholV from  partition j
 #' @param Vij numeric variance matrix for Xij
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
 #'
 #' @export
 #' @examples #TBA
-crosspart_worker_cpp <- function(Li, Lj, Vij, df1, df2) {
-    .Call(`_remoteSTAR_crosspart_worker_cpp`, Li, Lj, Vij, df1, df2)
+crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, nug_i, nug_j, Vij, df1, df2) {
+    .Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, nug_i, nug_j, Vij, df1, df2)
 }
 

@@ -3,6 +3,7 @@
 export(GLS_worker_cpp)
 export(LogLikGLS_cpp)
 export(cls_star)
+export(crosspart_worker)
 export(crosspart_worker_cpp)
 export(fitCLS)
 export(fitGLS)

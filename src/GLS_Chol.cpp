@@ -685,7 +685,7 @@ List crosspart_worker_cpp(const MapMatd& xxi,
   // extract block matrix
   // MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
 
-  // Calculate some Statistics
+  // Calculate some Statistics # this math is wrong.
   MatrixXd Rij = tUinv_i.adjoint() * VDiag.block(1, np + 1, np, np) * tUinv_j.adjoint();
 
   MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();

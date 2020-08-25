@@ -9,3 +9,5 @@ data-raw
 .*.so
 NAMESPACE_backup
 inst/doc
+doc
+Meta
