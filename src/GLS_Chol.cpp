@@ -137,10 +137,10 @@ Eigen::MatrixXd solve_ident_cpp(const MatrixXd& A){
 }
 
 /***R
-## Test the inline function AtA()
-M <- matrix(as.double(1:6), ncol = 2)
-crossprod(M) # native R
-AtA(M) # cpp way
+# ## Test the inline function AtA()
+# M <- matrix(as.double(1:6), ncol = 2)
+# crossprod(M) # native R
+# AtA(M) # cpp way
 */
 
 //==============================================================================
@@ -180,18 +180,18 @@ Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
 }
 
 /***R
-## Test tinvchol_cpp()
-V <- crossprod(M)
-
-# no nugget (i.e. nugget = 0)
-t(backsolve(chol(V), diag(nrow(V)))) # native R
-tinvchol_cpp(V) # cpp
-
-# with nugget
-nug = .1
-Vn = (1 - nug) * V + nug * diag(nrow(V))
-t(backsolve(chol(Vn), diag(nrow(Vn)))) # R
-tinvchol_cpp(Vn, nug) # cpp
+# ## Test tinvchol_cpp()
+# V <- crossprod(M)
+#
+# # no nugget (i.e. nugget = 0)
+# t(backsolve(chol(V), diag(nrow(V)))) # native R
+# tinvchol_cpp(V) # cpp
+#
+# # with nugget
+# nug = .1
+# Vn = (1 - nug) * V + nug * diag(nrow(V))
+# t(backsolve(chol(Vn), diag(nrow(Vn)))) # R
+# tinvchol_cpp(Vn, nug) # cpp
 */
 
 //==============================================================================
@@ -335,24 +335,24 @@ List fitGLS_cpp(const MapMatd& X,
 }
 
 /*** R
-# ## test fitGLS_cpp()
-load("../../R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
-Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
-source("../../R/fitGLS.R")
-
-tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
-
-tmp.R <- fitGLS(X.small, V.small, y.small)
-
-## compare results
-check.equal <- function(string){
-  all.equal(unlist(unname(tmp.R[[string]])), unlist(tmp.cpp[[string]]))
-}
-
-sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
-         "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
-         "df0", "logLik0", "FF", "df.F"),
-       check.equal)
+# # ## test fitGLS_cpp()
+# load("..//R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
+# Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
+# source("../../R/fitGLS.R")
+#
+# tmp.cpp <- fitGLS_cpp(X.small, V.small, y.small, Xnull)
+#
+# tmp.R <- fitGLS(X.small, V.small, y.small)
+#
+# ## compare results
+# check.equal <- function(string){
+#   all.equal(unlist(unname(tmp.R[[string]])), unlist(tmp.cpp[[string]]))
+# }
+#
+# sapply(c("betahat","VarX", "SSE", "MSE", "varcov", "SE", "t.stat",
+#          "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
+#          "df0", "logLik0", "FF", "df.F"),
+#        check.equal)
 */
 
 //==============================================================================
@@ -568,15 +568,15 @@ double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
 }
 
 /***R
-tol <- .00001
-system.time(tmp1 <- fitNugget(X.small, V.small, y.small, c(0, 1), tol))
-system.time(tmp2 <- optimizeNugget_cpp(X.small, V.small, y.small, 0, 1, tol))
-system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
-
-(vals <- c(tmp1, tmp2, tmp3))
-# xs <- seq(0, 1, length.out = 20)
-# fxs <- sapply(xs, function(x){LogLikGLS_cpp(x, X.small, V.small, y.small)})
-# plot(fxs ~ xs);abline(v = vals, col = c("red", "green", "blue"), lty = 1:3)
+# tol <- .00001
+# system.time(tmp1 <- fitNugget(X.small, V.small, y.small, c(0, 1), tol))
+# system.time(tmp2 <- optimizeNugget_cpp(X.small, V.small, y.small, 0, 1, tol))
+# system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
+#
+# (vals <- c(tmp1, tmp2, tmp3))
+# # xs <- seq(0, 1, length.out = 20)
+# # fxs <- sapply(xs, function(x){LogLikGLS_cpp(x, X.small, V.small, y.small)})
+# # plot(fxs ~ xs);abline(v = vals, col = c("red", "green", "blue"), lty = 1:3)
 
 */
 
@@ -587,10 +587,16 @@ system.time(tmp3 <- fitNugget_Rcpp(X.small, V.small, y.small, c(0,1), tol))
  * due to the fact that since distGeo() needs to be done externally as well.
  */
 
-//' worker function 1 for paritioned GLS
+//' Worker function 1 for paritioned GLS
 //'
-//' @details this function will eventually be used to perform the partitioned
-//' version of the GLS in parallel
+//' @details this function is the first of 2 (maybe 3) worker functions that,
+//' together, perform the partitioned GLS analysis.
+//'
+//' This function is simply a wrapper for fitGLS_cpp() that finds the MLE nugget
+//' and adds it to the output.
+//'
+//' NOTE: eventually, the worker functions will perform the analysis using
+//' multiple cores but that has not yet been implemented.
 //'
 //' @param y numeric vector
 //' @param X numeric matrix
@@ -617,14 +623,27 @@ List GLS_worker_cpp(const MapMatd& y,
   return x_gls;
 }
 
-//' worker function 2 for partitioned GLS
+//' Worker function 2 for partitioned GLS
 //'
-//' @details this function will also be used to perform the partitioned
-//' version of the GLS in parallel and will compute cross-partition statistics
+//' @details this is the second worker function for the partitioned GLS analysis.
 //'
-//' @param Li list whose elements are those of a starmod.gls objects (i.e. created with
-//' `GLS_worker_cpp()`). These are results from a single partition.
-//' @param Lj list with same structure as Li that will be compared with Li
+//' NOTE: currently, there is no parallel functionality and the partitioned
+//' form of the GLS is not implemented entirely in C++. Instead, the R function
+//' fitGLS.partition_rcpp() weaves between R and C++ on a single core. While
+//' this method is still much faster than the purely R implementation, migration
+//' to entirely C++ will greatly improve speed further. This migration requires
+//' calculating geographic distances with C++ which I've not yet written.
+//'
+//' Additionally, there seems to be a memory-related issue with this code. I've
+//' successfully used this function when partitions have 100 or fewer rows (too
+//' small). However, larger partitions cause a fatal error that causes a crash.
+//'
+//' @param xxi numeric matrix xx from  partition i
+//' @param xxj numeric matrix xx from  partition j
+//' @param xxi0 numeric matrix xx0 from  partition i
+//' @param xxj0 numeric matrix xx0 from  partition j
+//' @param tUinv_i numeric matrix tInvCholV from  partition i
+//' @param tUinv_j numeric matrix tInvCholV from  partition j
 //' @param Vij numeric variance matrix for Xij
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
@@ -632,45 +651,42 @@ List GLS_worker_cpp(const MapMatd& y,
 //' @export
 //' @examples #TBA
 // [[Rcpp::export]]
-List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
-                          int df1, int df2){
-  int np = Vij.cols()/2;
-  // cout << "n: " << np << endl;
+List crosspart_worker_cpp(const MapMatd& xxi,
+                          const MapMatd& xxj,
+                          const MapMatd& xxi0,
+                          const MapMatd& xxj0,
+                          const MapMatd& tUinv_i,
+                          const MapMatd& tUinv_j,
+                          double nug_i,
+                          double nug_j,
+                          const MapMatd& Vij,
+                          int df1,
+                          int df2){
+  int N = Vij.cols(); // total rows
+  int np = N/2; // rows per partition
 
-  // extract the nuggets and rescale them if they aren't 0
-  double nug_i = Li["nugget"];
-  nug_i = nug_i == 0. ? 0. : (1. - nug_i) / nug_i;
-  double nug_j = Lj["nugget"];
-  nug_j = nug_j == 0. ? 0. : (1. - nug_j) / nug_j;
-  // cout << "nuggets = ("<<nug_i<<", "<<nug_j<<")"<<endl;
-  // create a vector to hold the nugget diagonal
-  VectorXd nugvec(Vij.cols());
-  // replicate the nuggets n/2 times
-  VectorXd Ni = VectorXd::Constant(np, nug_i);
-  VectorXd Nj = VectorXd::Constant(np, nug_j);
-  // fill the vector with the nugget values
-  nugvec << Ni, Nj;
-  // cout << "nugvec: " << nugvec <<endl;
-  // add them to the diagonal
-  // Eigen::DiagonalMatrix<double> nugDiag(np*2);
-  // nugDiag.diagonal() = nugvec;
-  MatrixXd nugDiag = nugvec.asDiagonal();
-  MatrixXd Vn = Vij + nugDiag;
-  // cout << "Vn: \n" <<Vn <<endl;
-  MatrixXd xxi = Li["xx"];
-  MatrixXd xxi0 = Li["xx0"];
-  MatrixXd xxj = Lj["xx"];
-  MatrixXd xxj0 = Lj["xx0"];
+  // scale the nuggets if nonzero
+  double nugget_i = nug_i == 0 ? 0 : (1 - nug_i) / nug_i;
+  double nugget_j = nug_j == 0 ? 0 : (1 - nug_j) / nug_j;
+  // combine the nuggets into a vector
+     // equivalent to rep(c(nugget_i, nugget_j), each = np)
+  VectorXd nugget_vector(2*np);
+  for(int i = 0; i < np; i++){
+    nugget_vector(i) = nug_i;
+  }
+  for(int j = np + 1; j < 2*np; j++){
+    nugget_vector(j) = nug_j;
+  }
+  // turn this into a diagonal matrix
+  MatrixXd VDiag = nugget_vector.asDiagonal();
+  // then add Vij
+  VDiag = VDiag + Vij;
 
-  MatrixXd tUinv_i = Li["tInvCholV"];
-  MatrixXd tUinv_j = Lj["tInvCholV"];
+  // extract block matrix
+  // MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
 
-  MatrixXd Vsub = Vn.block(1, np + 1, np, np);
-  // MatrixXd Vsub = Vn(Eigen::seq(1, np), Eigen::seq(np+1, np*2));
-  // cout << "Vsub:\n" << Vsub << endl;
-
-  MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
-  // cout << "Rij:\n" << Rij << endl; // has nan, -nan, and inf where Vsub = 0
+  // Calculate some Statistics
+  MatrixXd Rij = tUinv_i.adjoint() * VDiag.block(1, np + 1, np, np) * tUinv_j.adjoint();
 
   MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
   MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
@@ -685,28 +701,15 @@ List crosspart_worker_cpp(const List Li, const List Lj, const MatrixXd Vij,
   MatrixXd SiE = npDiag - Hi;
   MatrixXd SjE = npDiag - Hj;
 
-  MatrixXd tmp_ij = SiR * (Rij * SjR * Rij.adjoint());
-  MatrixXd rSSRij = tmp_ij.array()/df1;
-  MatrixXd rSSEij = tmp_ij.array()/df2;
+  MatrixXd tmp_ijR = SiR * (Rij * SjR * Rij.adjoint());
+  MatrixXd rSSRij = tmp_ijR.array()/df1;
 
-  List out_lst = List::create(Named("nugvec") = nugvec,
-                              Named("Vn") = Vn.matrix(),
-                              Named("Vsub") = Vsub,
-                              Named("tUinv_i") = tUinv_i,
-                              Named("tUinv_j") = tUinv_j,
-                              Named("Rij") = Rij,
-                              Named("Hi") = Hi,
-                              Named("Hj") = Hj,
-                              Named("Hi0") = Hi0,
-                              Named("Hj0") = Hj0,
-                              Named("SiR") = SiR,
-                              Named("SjR") = SjR,
-                              Named("SiE") = SiE,
-                              Named("SjE") = SjE,
-                              Named("tmp_ij") = tmp_ij,
-                              Named("rSSRij") = rSSRij,
-                              Named("rSSEij") = rSSEij);
+  MatrixXd tmp_ijE = SiE * (Rij * SjE * Rij.adjoint());
+  MatrixXd rSSEij = tmp_ijE.array()/df2;
+
+  // output
+  List out_lst = List::create(Named("rSSRij") = rSSRij.matrix(),
+                              Named("rSSEij") = rSSEij.matrix());
 
   return out_lst;
-  // return 0;
 }
