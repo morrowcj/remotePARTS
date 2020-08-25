@@ -23,7 +23,7 @@ Currently to install this package, the best way is to install with the
 Once a user has the tar.gz file they can install it with
 
 ```
-install.packages("../remoteSTAR_[version].tar.gz", repos = NULL, type = "source")
+install.packages("remoteSTAR_[version].tar.gz", repos = NULL, type = "source")
 ```
 
 and then load it with
