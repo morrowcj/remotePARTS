@@ -40,5 +40,5 @@ For examples on how to use `remoteSTAR` in it's current state, see the `Alaska`
 vignette by using the following R code:
 
 ```
-vignette(remoteSTAR)
+vignette("Alaska")
 ```
