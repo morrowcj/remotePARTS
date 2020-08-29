@@ -644,7 +644,7 @@ List GLS_worker_cpp(const MapMatd& y,
 //' @param xxj0 numeric matrix xx0 from  partition j
 //' @param tUinv_i numeric matrix tInvCholV from  partition i
 //' @param tUinv_j numeric matrix tInvCholV from  partition j
-//' @param Vij numeric variance matrix for Xij
+//' @param Vsub numeric variance matrix for Xij (upper block)
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
 //'
@@ -657,36 +657,35 @@ List crosspart_worker_cpp(const MapMatd& xxi,
                           const MapMatd& xxj0,
                           const MapMatd& tUinv_i,
                           const MapMatd& tUinv_j,
-                          double nug_i,
-                          double nug_j,
-                          const MapMatd& Vij,
+                          const MapMatd& Vsub,
                           int df1,
                           int df2){
-  int N = Vij.cols(); // total rows
-  int np = N/2; // rows per partition
+  // int N = Vij.cols(); // total rows
+  // int np = N/2; // rows per partition
+  int np = xxi.rows();
 
-  // scale the nuggets if nonzero
-  double nugget_i = nug_i == 0 ? 0 : (1 - nug_i) / nug_i;
-  double nugget_j = nug_j == 0 ? 0 : (1 - nug_j) / nug_j;
-  // combine the nuggets into a vector
-     // equivalent to rep(c(nugget_i, nugget_j), each = np)
-  VectorXd nugget_vector(2*np);
-  for(int i = 0; i < np; i++){
-    nugget_vector(i) = nug_i;
-  }
-  for(int j = np + 1; j < 2*np; j++){
-    nugget_vector(j) = nug_j;
-  }
-  // turn this into a diagonal matrix
-  MatrixXd VDiag = nugget_vector.asDiagonal();
-  // then add Vij
-  VDiag = VDiag + Vij;
+  // // scale the nuggets if nonzero
+  // double nugget_i = nug_i == 0 ? 0 : (1 - nug_i) / nug_i;
+  // double nugget_j = nug_j == 0 ? 0 : (1 - nug_j) / nug_j;
+  // // combine the nuggets into a vector
+  //    // equivalent to rep(c(nugget_i, nugget_j), each = np)
+  // VectorXd nugget_vector(2*np);
+  // for(int i = 0; i < np; i++){
+  //   nugget_vector(i) = nug_i;
+  // }
+  // for(int j = np + 1; j < 2*np; j++){
+  //   nugget_vector(j) = nug_j;
+  // }
+  // // // turn this into a diagonal matrix
+  // // MatrixXd VDiag = nugget_vector.asDiagonal();
+  // // then add Vij
+  // VDiag = VDiag + Vij;
 
   // extract block matrix
   // MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
 
   // Calculate some Statistics # this math is wrong.
-  MatrixXd Rij = tUinv_i.adjoint() * VDiag.block(1, np + 1, np, np) * tUinv_j.adjoint();
+  MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
 
   MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
   MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
@@ -696,15 +695,21 @@ List crosspart_worker_cpp(const MapMatd& xxi,
 
   MatrixXd SiR = Hi - Hi0;
   MatrixXd SjR = Hj - Hj0;
+  // Rcout << "SiR" <<SiR <<endl;
 
   MatrixXd npDiag = MatrixXd::Identity(np, np);
   MatrixXd SiE = npDiag - Hi;
   MatrixXd SjE = npDiag - Hj;
 
-  MatrixXd tmp_ijR = SiR * (Rij * SjR * Rij.adjoint());
+  // rSSR and rSSE were calculated incorrectly!
+  VectorXd tmpRvec = (Rij * SjR * Rij.adjoint()).array();
+  VectorXd SRvec = SiR.array();
+  MatrixXd tmp_ijR = SRvec.adjoint() * tmpRvec;
   MatrixXd rSSRij = tmp_ijR.array()/df1;
 
-  MatrixXd tmp_ijE = SiE * (Rij * SjE * Rij.adjoint());
+  VectorXd tmpEvec = (Rij * SjE * Rij.adjoint()).array();
+  VectorXd SEvec = SiE.array();
+  MatrixXd tmp_ijE = SEvec.adjoint() * tmpEvec;
   MatrixXd rSSEij = tmp_ijE.array()/df2;
 
   // output

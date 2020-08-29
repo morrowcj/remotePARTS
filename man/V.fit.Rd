@@ -11,7 +11,7 @@ V.fit(Dist, spatialcor, FUN = "exponential")
 
 \item{spatialcor}{spatial correlation parameter(s)}
 
-\item{fun}{function with which to transform the distance matrix into the
+\item{FUN}{function with which to transform the distance matrix into the
 varcov matrix}
 }
 \value{

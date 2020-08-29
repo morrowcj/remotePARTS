@@ -5,15 +5,15 @@
 # setup ----
 ## source relevant file
   # normally build and load package instead of sourceCpp()
-if(!exists("crosspart_worker_cpp")){
+# if(!exists("crosspart_worker_cpp")){
   Rcpp::sourceCpp("crosspart-worker.cpp")
-}
+# }
 
 ## make reproducible
 set.seed(75)
 
 ## set parameters
-n = 100 # rows in original model matrix X
+n = 500 # rows in original model matrix X
 p = 32 # columns in original model matrix X
 p0 = 1 # collumns in null model matrix X0
 
@@ -23,7 +23,7 @@ df1 = n - p0 - 1 - df2
 
 # Generate dummy data with arbitrary contents, but correct structure ----
 ## varcovar matrix
-Vij <- matrix(abs(rnorm(n * n)), nrow = n)
+Vij <- matrix(abs(rnorm(2*n * 2*n)), nrow = 2*n)
 
 ## create list with only the components needed for GLS_worker_cpp()
 make_example_list <- function(){

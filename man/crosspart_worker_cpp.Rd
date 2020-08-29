@@ -4,19 +4,7 @@
 \alias{crosspart_worker_cpp}
 \title{Worker function 2 for partitioned GLS}
 \usage{
-crosspart_worker_cpp(
-  xxi,
-  xxj,
-  xxi0,
-  xxj0,
-  tUinv_i,
-  tUinv_j,
-  nug_i,
-  nug_j,
-  Vij,
-  df1,
-  df2
-)
+crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2)
 }
 \arguments{
 \item{xxi}{numeric matrix xx from  partition i}
@@ -31,7 +19,7 @@ crosspart_worker_cpp(
 
 \item{tUinv_j}{numeric matrix tInvCholV from  partition j}
 
-\item{Vij}{numeric variance matrix for Xij}
+\item{Vsub}{numeric variance matrix for Xij (upper block)}
 
 \item{df1}{first degree of freedom}
 

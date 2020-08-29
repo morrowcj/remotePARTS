@@ -1,11 +1,16 @@
 // [[Rcpp::depends(RcppEigen)]]
+#include <iostream>
 #include <RcppEigen.h>
+// #include <Eigen/Core>
 
 using namespace Rcpp;
 
 using Eigen::Map;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+// using Eigen::seq; // does not work
+
+using std::endl;
 
 typedef Map<MatrixXd> MapMatd;
 
@@ -49,12 +54,19 @@ List crosspart_worker_cpp(const MapMatd& xxi, // n x p
                           const MapMatd& Vij,
                           int df1,
                           int df2){
+  Rcout << "Dimensions" << endl;
+
   int N = Vij. cols(); // total rows
   int np = N/2; // rows per partition
+
+  Rcout << "Nuggets" <<endl;
 
   // scale the nuggets if nonzero
   double nugget_i = nug_i == 0 ? 0 : (1 - nug_i) / nug_i;
   double nugget_j = nug_j == 0 ? 0 : (1 - nug_j) / nug_j;
+
+  Rcout << "Repeat nuggets" << endl;
+
   // combine the nuggets into a vector
   // equivalent to rep(c(nugget_i, nugget_j), each = np)
   VectorXd nugget_vector(2*np);
@@ -64,38 +76,63 @@ List crosspart_worker_cpp(const MapMatd& xxi, // n x p
   for(int j = np + 1; j < 2*np; j++){
     nugget_vector(j) = nug_j;
   }
+
+  Rcout << "diag(nuggets)" << endl;
+
   // turn this into a diagonal matrix
   MatrixXd VDiag = nugget_vector.asDiagonal();
+
+  Rcout << "Vij + diag(nuggets)" << endl;
+
   // then add Vij
   VDiag = VDiag + Vij;
-  // extract sub-block of varcovar matrix (only unique pairs)
-  MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
 
-  // Calculate some Statistics
-  MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
-
-  MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
-  MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
-
-  MatrixXd Hi0 = xxi0 * solve_ident_cpp(xxi0.adjoint() * xxi0) * xxi0.adjoint();
-  MatrixXd Hj0 = xxj0 * solve_ident_cpp(xxj0.adjoint() * xxj0) * xxj0.adjoint();
-
-  MatrixXd SiR = Hi - Hi0;
-  MatrixXd SjR = Hj - Hj0;
-
-  MatrixXd npDiag = MatrixXd::Identity(np, np);
-  MatrixXd SiE = npDiag - Hi;
-  MatrixXd SjE = npDiag - Hj;
-
-  MatrixXd tmp_ijR = SiR * (Rij * SjR * Rij.adjoint());
-  MatrixXd rSSRij = tmp_ijR.array()/df1;
-
-  MatrixXd tmp_ijE = SiE * (Rij * SjE * Rij.adjoint());
-  MatrixXd rSSEij = tmp_ijE.array()/df2;
+  // Rcout << "Block matrix" << endl;
+  //
+  // // extract sub-block of varcovar matrix (only unique pairs)
+  // MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
+  //
+  // Rcout << "Rij" << endl;
+  //
+  // // Calculate some Statistics
+  // MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
+  //
+  // Rcout << "H" << endl;
+  //
+  // MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
+  // MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
+  //
+  // Rcout << "H0" << endl;
+  //
+  // MatrixXd Hi0 = xxi0 * solve_ident_cpp(xxi0.adjoint() * xxi0) * xxi0.adjoint();
+  // MatrixXd Hj0 = xxj0 * solve_ident_cpp(xxj0.adjoint() * xxj0) * xxj0.adjoint();
+  //
+  // Rcout << "SR" << endl;
+  //
+  // MatrixXd SiR = Hi - Hi0;
+  // MatrixXd SjR = Hj - Hj0;
+  //
+  // Rcout << "SE" << endl;
+  //
+  // MatrixXd npDiag = MatrixXd::Identity(np, np);
+  // MatrixXd SiE = npDiag - Hi;
+  // MatrixXd SjE = npDiag - Hj;
+  //
+  // Rcout << "rSSR" << endl;
+  //
+  // MatrixXd tmp_ijR = SiR * (Rij * SjR * Rij.adjoint());
+  // MatrixXd rSSRij = tmp_ijR.array()/df1;
+  //
+  // Rcout << "rSSE" << endl;
+  //
+  // MatrixXd tmp_ijE = SiE * (Rij * SjE * Rij.adjoint());
+  // MatrixXd rSSEij = tmp_ijE.array()/df2;
+  //
+  Rcout << "List" << endl;
 
   // output
-  List out_lst = List::create(Named("rSSRij") = rSSRij.matrix(),
-                              Named("rSSEij") = rSSEij.matrix());
+  List out_lst = List::create(Named("VDiag") = VDiag);
 
+  Rcout << "return" << endl;
   return out_lst;
 }

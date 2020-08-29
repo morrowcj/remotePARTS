@@ -18,8 +18,6 @@ search of the MLE estimator. Default = `c(0, 1)`.}
 
 \item{tol}{the desired accuracy of the mathematical optimization.
 see `?optimize()`.}
-
-\item{X0}{n x p0 null numeric design matrix}
 }
 \value{
 maximum likelihood estimate of the nugget

@@ -3,8 +3,7 @@ Description
 
 `remoteSTAR` is currently in early development. Organization is less
 than ideal, official unit tests are not present, and C++ code has
-occasionally exhibited bugs (especially those used for the partitioned
-analyses - avoid them for now).
+occasionally exhibited bugs.
 
 This package is not stable, consider it a beta. Please report any
 comments or bugs either directly to me `morrow5@wisc.edu` or through
@@ -35,4 +34,4 @@ Example usage
 For examples on how to use `remoteSTAR` in it’s current state, see the
 `Alaska` vignette by using the following R code:
 
-    vignette(remoteSTAR)
+    vignette("Alaska")

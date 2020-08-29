@@ -142,13 +142,13 @@ GLS_worker_cpp <- function(y, X, V, X0, save_xx = FALSE) {
 #' @param xxj0 numeric matrix xx0 from  partition j
 #' @param tUinv_i numeric matrix tInvCholV from  partition i
 #' @param tUinv_j numeric matrix tInvCholV from  partition j
-#' @param Vij numeric variance matrix for Xij
+#' @param Vsub numeric variance matrix for Xij (upper block)
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
 #'
 #' @export
 #' @examples #TBA
-crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, nug_i, nug_j, Vij, df1, df2) {
-    .Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, nug_i, nug_j, Vij, df1, df2)
+crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2) {
+    .Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2)
 }
 
