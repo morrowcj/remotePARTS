@@ -185,13 +185,13 @@ fitV <- function(Dist, spatialcor, fun = "exponential"){
 #'
 #' @param Dist n x n numeric distance matrix
 #' @param spatialcor spatial correlation parameter(s)
-#' @param fun function with which to transform the distance matrix into the
+#' @param FUN function with which to transform the distance matrix into the
 #' varcov matrix
 #'
 #' @return
-# @export ## Don't export this function - it is the same as fitV
 #'
 #' @examples #TBA
+# @export ## Don't export this function - it is the same as fitV
 V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 
   if (FUN == "exponential")
@@ -213,7 +213,6 @@ V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 #' @param X n x p numeric design matrix for predictor variables
 #' @param V n x n numeric covariance matrix
 #' @param y length n numeric resposne vector
-#' @param X0 n x p0 null numeric design matrix
 #' @param int length 2 numeric vector specifying the inverval over which to
 #' search of the MLE estimator. Default = `c(0, 1)`.
 #' @param tol the desired accuracy of the mathematical optimization.
@@ -244,7 +243,6 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
 #' @param X n x p numeric design matrix for predictor variables
 #' @param V n x n numeric covariance matrix
 #' @param y length n numeric resposne vector
-#' @param X0 n x p0 null numeric design matrix
 #' @param int length 2 numeric vector specifying the inverval over which to
 #' search of the MLE estimator. Default = `c(0, 1)`.
 #' @param tol the desired accuracy of the mathematical optimization.
@@ -362,25 +360,27 @@ return(results)
 #' @param xxj0 numeric matrix xx0 from  partition j
 #' @param tUinv_i numeric matrix tInvCholV from  partition i
 #' @param tUinv_j numeric matrix tInvCholV from  partition j
-#' @param Vij numeric variance matrix for Xij
+#' @param Vsub numeric variance matrix for Xij (upper block)
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
 #'
 #' @export
 #' @examples #TBA
 crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
-                             Vij, nug_i, nug_j,  df1, df2){
-  np = ncol(Vij)/2
+                             Vsub,
+                             # nug_i, nug_j,
+                             df1, df2){
+  np = nrow(xxi)
   # rescale nuggets
-  nug_i = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
-  nug_j = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+  # nug_i = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+  # nug_j = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
 
-  # variance matrix with nuggets
-  Vn <- diag(rep(c(nug_i, nug_j), each = np)) + Vij
-  Vn <- Vn[1:np, (np+1):(2*np)] # upper right block
+  # variance matrix with nuggets (ARE NEVER USED)
+  # Vn <- diag(rep(c(nug_i, nug_j), each = np)) + Vij
+  # Vn <- Vn[1:np, (np+1):(2*np)] # upper right block
 
   # calculate stats
-  Rij <- crossprod(t(tUinv_i), tcrossprod(Vn, tUinv_j))
+  Rij <- crossprod(t(tUinv_i), tcrossprod(Vsub, tUinv_j))
 
   Hi <- xxi %*% solve(crossprod(xxi)) %*% t(xxi)
   Hj <- xxj %*% solve(crossprod(xxj)) %*% t(xxj)
@@ -397,9 +397,15 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
   rSSRij <- (SiR %*% (Rij %*% SjR %*% t(Rij)))/df1
   rSSEij <- (SiE %*% (Rij %*% SjE %*% t(Rij)))/df2
 
+  rSSR.part <- matrix(SiR, nrow=1) %*% matrix(Rij %*% SjR %*% t(Rij), ncol=1)/df1
+  rSSE.part <- matrix(SiE, nrow=1) %*% matrix(Rij %*% SjE %*% t(Rij), ncol=1)/df2
+
+
   # output
   out_lst <- list("rSSRij" = rSSRij,
-                  "rSSEij" = rSSEij)
+                  "rSSEij" = rSSEij,
+                  "rSSR.part" = rSSR.part,
+                  "rSSE.part" = rSSE.part)
   return(out_lst)
 }
 
@@ -453,7 +459,16 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
     Vi <- fitV(Dist[partition[, i], partition[, i]],
                 spatialcor = spatcor, fun = Vfit.fun)
     save_xx = ifelse(i <= mincross, TRUE, FALSE)
-    return(GLS_worker_cpp(yi, Xi, Vi, Xi0, save_xx = save_xx))
+    gls.out <- GLS_worker_cpp(yi, Xi, Vi, Xi0, save_xx = save_xx)
+
+    #add pvalues
+    gls.out$pval.t <- sapply(gls.out$tstat, function(x){
+      2 * pt(abs(x), df = gls.out$dft, lower.tail = FALSE)
+    })
+    gls.out$pval.F <- pf(gls.out$Fstat, gls.out$df.F[1], gls.out$df.F[2],
+                         lower.tail = FALSE)
+
+    return(gls.out)
   })
 
   out.cross = lapply(seq_len(mincross - 1), function(x){
@@ -462,39 +477,114 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
     # locij = loc[X[partition[, c(i,j)], ]
     Vij <- fitV(Dist[partition[, c(i,j)], partition[, c(i,j)]], spatialcor = spatcor,
                  fun = Vfit.fun)
+    Vsub <- Vij[1:n.p, (n.p+1):(2*n.p)] # off diaganal element
     Li <- out[[i]]; Lj = out[[j]]
 
     ## use crosspart worker function
-    res = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
+    res = crosspart_worker_cpp(xxi = Li$xx, xxj = Lj$xx,
                            xxi0 = Li$xx0, xxj0 = Lj$xx0,
                            tUinv_i = Li$tInvCholV,
                            tUinv_j = Lj$tInvCholV,
-                           Vij = Vij,
-                           nug_i = Li$nugget,
-                           nug_j = Lj$nugget,
+                           Vsub = Vsub,
                            df1 = df1, df2 = df2)
 
-    # average statistics
-    Fmean <-  numeric(length(out))
-    rSSR <- numeric(length(out))
-    rSSE <- numeric(length(out))
-    coef <- matrix(NA, ncol = ncol(X), nrow = length(out))
-    coef0 <- matrix(NA, ncol = ncol(X0), nrow = length(out))
-    for (i in 1:length(out)){
-      Fmean[i] = out[[i]]$Fstat
-      rSSR[i] = out[[i]]$rSSRij
-      rSSE[i] = out[[i]]$rSSEij
-      coef[i, ] = out[[i]]$betahat
-      coef0[i, ] = out[[i]]$betahat0
-    }
-    Fmean = mean(Fmean, na.rm = TRUE)
-    rSSR[i] = mean(rSSR, na.rm = TRUE)
-    rSSE[i] = mean(rSSE, na.rm = TRUE)
-    coef = colMeans(coef, na.rm = TRUE)
-    coef0 = colMeans(coef0, na.rm = TRUE)
-
+    return(res)
   })
+
+  # average statistics
+  Fmean <-  numeric(length(out))
+  coef <- matrix(NA, ncol = ncol(X), nrow = length(out))
+  coef0 <- matrix(NA, ncol = ncol(X0), nrow = length(out))
+  for (i in 1:length(out)){
+    Fmean[i] = out[[i]]$Fstat
+    coef[i, ] = out[[i]]$betahat
+    coef0[i, ] = out[[i]]$betahat0
+  }
+  rSSE <- numeric(length(out.cross))
+  rSSR <- numeric(length(out.cross))
+  for(i in 1:length(out.cross)){
+    rSSR[i] = out.cross[[i]]$rSSRij
+    rSSE[i] = out.cross[[i]]$rSSEij
+  }
+  Fmean = mean(Fmean, na.rm = TRUE)
+  rSSR = mean(rSSR, na.rm = TRUE)
+  rSSE = mean(rSSE, na.rm = TRUE)
+  coef = colMeans(coef, na.rm = TRUE)
+  coef0 = colMeans(coef0, na.rm = TRUE)
+
   return(list("part_results" = out, "crosspart_results" = out.cross,
-              "Fmean" = Fmean, "rSSR" = rSSR, "rSSE" = rSSE, "coef" = coef,
-              "coef0" = coef0))
+              "Fmean" = Fmean, "rSSR" = rSSR,
+                               "rSSE" = rSSE, "coef" = coef,
+                               "coef0" = coef0, "npart" = npart,
+                               "np" = n.p, "df1" = df1, "df2" = df2))
 }
+
+#' bootsrap test
+#'
+#' @param Fmean.obs Fmean
+#' @param rSSR rSSR
+#' @param rSSE rSSE
+#' @param df1 df1
+#' @param df2 df2
+#' @param npart partitions
+#' @param nboot bootstraps
+#'
+#' @return
+#' @export
+#'
+#' @examples #TBA
+correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2,
+                                   npart, nboot = 2000){
+  part <- rep(1:npart, each=df1)
+
+  rZ <- rSSR^.5/df1
+  v.MSR <- diag(df1) - rZ
+  v.MSR <- kronecker(diag(npart),v.MSR) + rZ
+  D.MSR <- t(chol(v.MSR, pivot=T))
+  if(attr(D.MSR, "rank") < npart){
+    rank.MSR <- attr(D.MSR, "rank")
+    v.MSR <- diag(df1) - .99/df1
+    v.MSR <- kronecker(diag(npart),v.MSR) + rZ
+    D.MSR <- t(chol(v.MSR, pivot=T))
+  }else{
+    rank.MSR <- NA
+  }
+
+  v.MSE <- (1-rSSE) * diag(npart) + rSSE
+  D.MSE <- t(chol(v.MSE))
+
+  count <- 0
+  for(boot in 1:nboot){
+    Z1 <- D.MSR %*% rnorm(npart*df1)
+    MSR.boot <- aggregate(Z1^2, by=list(part), FUN=sum)[,2]/df1
+    MSE.boot <- 1 + D.MSE %*% rnorm(npart, mean=0, sd=(2*df2)^.5/df2)
+    if(Fmean.obs < mean(MSR.boot/MSE.boot)) count <- count + 1
+  }
+  return(list(pvalue = count/nboot, nboot = nboot, rank.MSR = rank.MSR))
+}
+
+#' Wrapper for bootsrap test
+#'
+#' @param starpart starpart
+#' @param nboot bootsraps
+#'
+#' @return
+#' @export
+#'
+#' @examples #TBA
+GLS.partition.pvalue <- function(starpart, nboot = 2000){
+  if(is.finite(starpart$rSSR)) {
+    p.Fmean <- correlated.F.bootstrap(Fmean.obs = starpart$Fmean,
+                                      rSSR = starpart$rSSR,
+                                      rSSE = starpart$rSSE,
+                                      df1 = starpart$df1,
+                                      df2 = starpart$df2,
+                                      npart = starpart$npart,
+                                      nboot = nboot)
+  }else{
+    p.Fmean <- list(NA,NA,NA)
+  }
+  return(p.Fmean = p.Fmean)
+}
+
+

@@ -132,10 +132,14 @@ base.col = ifelse(test = outl, yes = "black",
                     c("orange", "grey", "darkgreen")
                     )(nrow(fm.cls))[ordered(rel.est)]
 )
+maximum <- round(max(rel.est), 2)
+median <- round(median(rel.est), 2)
+minimum <- round(min(rel.est), 2)
+
 plot(ndvi_AK3000$lat ~ ndvi_AK3000$lng, pch = 15, cex = .5, col = base.col,
      xlab = "longitude", ylab = "latitude")
 legend(x = "bottomright", fill = c("darkgreen", "grey","orange", "black"),
-       legend = c("high", "med", "low", "outl"), title = "NDVI")
+       legend = c(maximum, median, minimum, "outlier"), title = "NDVI change")
 ```
 
 We can see from the above figure that outliers almost always occur at the edges of
@@ -172,7 +176,7 @@ meth = "exponential-power" # transformation method
 ## Fit variance matrix
 V <- fitV(D, spatialcor = r.est$spatialcor, fun = meth)
 
-## inverse of the chol decomp of V
+## inverse of the chol decomp of V (time consuming)
 tInvCholV <- tinvchol_cpp(V, nugget = 0)
 
 mod.mat <- cbind("Intercept" = 1, X) # add an intercept
@@ -195,7 +199,8 @@ fm.gls$pval.t <- sapply(fm.gls$tstat, function(x){
 })
 names(fm.gls$pval.t) <- colnames(mod.mat)
   # F-test
-fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], lower.tail = F)
+fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], 
+                    lower.tail = FALSE)
 
 ## print p-values
 # t-test ## H0: No difference in NDVI among sites at given time
@@ -205,9 +210,36 @@ round(fm.gls$pval.t, 4)
 round(fm.gls$pval.F, 4) # reject H0
 ```
 
-I'm still working on the partitioned version - bugs keep popping up **Don't use **
+#### Partitioned version
 
-```{r GLS_partition, eval = FALSE, echo = TRUE}
+And here are the results from the partitioned version of the test
+
+```{r partitioned GLS}
+results <- fitGLS.partition_rcpp(X = X, y = rel.est, X0 = X0, Dist = D,
+                                 spatcor = r.est$spatialcor, Vfit.fun = meth,
+                                 npart = 5, mincross = 4, nug.int = c(0, 1),
+                                 nug.tol = tolr)
+
+# ## t tests for each partition
+# lapply(results$part_results, function(x)rbind("t" = round(x$tstat, 4),
+#                                               "pval" = round(x$pval.t, 4)))
+
+library(dplyr)
+
+## F tests for each partition
+lapply(results$part_results, function(x){c("F" = round(x$Fstat, 4), 
+                                           "pval" = round(x$pval.F, 4))}) %>% 
+  bind_rows()
+
+## Cross-partition F test
+pval.Fpart <- GLS.partition.pvalue(results, nboot = 2000)
+c("F" = results$Fmean, "pval" = pval.Fpart[1])
+```
+
+
+<!-- I'm still working on the partitioned version -->
+
+```{r GLS_partition, eval = FALSE, echo = FALSE}
 n.p = 50; n.part = 3
 partition <- matrix(sample(1:nrow(ndvi_AK3000), size = n.p * n.part), ncol = n.part)
 ix.1 = as.vector(partition[, 1])
@@ -232,6 +264,8 @@ V2 <- fitV(D[ix.2, ix.2],
 ## cross partition
 V12 <- fitV(D[ix.12, ix.12],
              spatialcor = r.est$spatialcor, fun = "exponential-power")
+Vsub <- V12[1:n.p, (n.p+1):(2*n.p)]
+
 Xnull <- matrix(1, nrow = nrow(X1))
 
 df2 <- n.p - (ncol(X1) - 1)
@@ -239,7 +273,7 @@ df0 <- n.p - (ncol(Xnull) - 1)
 df1 <- df0 - df2
 ```
 
-```{r, eval = FALSE, echo = TRUE}
+```{r, eval = FALSE, echo = FALSE}
 ## results
 out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE)
 out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE)
@@ -250,27 +284,15 @@ out.cross.cpp <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx,
                                   xxi0 = out1$xx0, xxj0 = out2$xx0,
                                   tUinv_i = out1$tInvCholV, 
                                   tUinv_j = out2$tInvCholV, 
-                                  nug_i = out1$nugget, 
-                                  nug_j = out2$nugget, 
-                                  Vij = V12, 
+                                  Vsub = Vsub, 
                                   df1 = df1, df2 = df2) # not working yet
 
 out.cross <- crosspart_worker(xxi = out1$xx, xxj = out2$xx,
                                   xxi0 = out1$xx0, xxj0 = out2$xx0,
                                   tUinv_i = out1$tInvCholV, 
                                   tUinv_j = out2$tInvCholV, 
-                                  nug_i = out1$nugget, 
-                                  nug_j = out2$nugget, 
                                   Vij = V12, 
                                   df1 = df1, df2 = df2) # not working yet
-```
-
-```{r, eval = FALSE, echo = TRUE}
-## Full function (not working properly)
-results <- fitGLS.partition_rcpp(X = X, y = rel.est, X0 = X0, Dist = D,
-                                 spatcor = r.est$spatialcor, Vfit.fun = meth,
-                                 npart = 2, mincross = 2, nug.int = c(0, 1),
-                                 nug.tol = tolr)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
