@@ -394,18 +394,26 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
   SiE <- diag(np) - Hi
   SjE <- diag(np) - Hj
 
-  rSSRij <- (SiR %*% (Rij %*% SjR %*% t(Rij)))/df1
-  rSSEij <- (SiE %*% (Rij %*% SjE %*% t(Rij)))/df2
+  # rSSRij <- (SiR %*% (Rij %*% SjR %*% t(Rij)))/df1
+  # rSSEij <- (SiE %*% (Rij %*% SjE %*% t(Rij)))/df2
 
-  rSSR.part <- matrix(SiR, nrow=1) %*% matrix(Rij %*% SjR %*% t(Rij), ncol=1)/df1
-  rSSE.part <- matrix(SiE, nrow=1) %*% matrix(Rij %*% SjE %*% t(Rij), ncol=1)/df2
+  rSSRij <- matrix(SiR, nrow=1) %*%
+    matrix(Rij %*% SjR %*% t(Rij), ncol=1)/df1
+
+  rSSEij <- matrix(SiE, nrow=1) %*%
+    matrix(Rij %*% SjE %*% t(Rij), ncol=1)/df2
 
 
   # output
-  out_lst <- list("rSSRij" = rSSRij,
-                  "rSSEij" = rSSEij,
-                  "rSSR.part" = rSSR.part,
-                  "rSSE.part" = rSSE.part)
+  out_lst <- list("Rij" = Rij,
+                  "Hi" = Hi,
+                  "Hj" = Hj,
+                  "Hi0" = Hi0,
+                  "Hj0" = Hj0,
+                  "SiR" = SiR,
+                  "SjR" = SjR,
+                  "rSSRij" = rSSRij,
+                  "rSSEij" = rSSEij)
   return(out_lst)
 }
 
@@ -422,6 +430,8 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
 #' statistics
 #' @param nug.int interval of nugget search
 #' @param nug.tol accuracy of nugget estimate
+#' @param workerB_cpp logical: should the cpp version of worker function be
+#' used? this argument is deprecated and was just used to test
 #'
 #' @return list of GLS statistics
 #' @export
@@ -430,7 +440,8 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
 fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
                                   Vfit.fun = "exponential-power",
                                   npart = 5, mincross = 4,
-                                  nug.int = c(0, 1), nug.tol = .00001){
+                                  nug.int = c(0, 1), nug.tol = .00001,
+                                  workerB_cpp = TRUE){
 
   ## Select random subsets according to the number of partitions
   n <- nrow(X) # full data n
@@ -481,12 +492,21 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
     Li <- out[[i]]; Lj = out[[j]]
 
     ## use crosspart worker function
+    if(workerB_cpp){
     res = crosspart_worker_cpp(xxi = Li$xx, xxj = Lj$xx,
                            xxi0 = Li$xx0, xxj0 = Lj$xx0,
                            tUinv_i = Li$tInvCholV,
                            tUinv_j = Lj$tInvCholV,
                            Vsub = Vsub,
                            df1 = df1, df2 = df2)
+    } else {
+      res = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
+                                 xxi0 = Li$xx0, xxj0 = Lj$xx0,
+                                 tUinv_i = Li$tInvCholV,
+                                 tUinv_j = Lj$tInvCholV,
+                                 Vsub = Vsub,
+                                 df1 = df1, df2 = df2)
+    }
 
     return(res)
   })
@@ -584,7 +604,17 @@ GLS.partition.pvalue <- function(starpart, nboot = 2000){
   }else{
     p.Fmean <- list(NA,NA,NA)
   }
-  return(p.Fmean = p.Fmean)
+  pF.part = sapply(starpart$part_results, function(x)x$pval.F)
+
+  pF.hoch <- min(p.adjust(pF.part, "hochberg"))
+  pF.homm <- min(p.adjust(pF.part, "hommel"))
+  pF.fdr <- min(p.adjust(pF.part, "fdr"))
+
+  pF.adjust = c("hochberg" = pF.hoch, "hommel" = pF.homm, "fdr" = pF.fdr,
+                "boot" = p.Fmean$pvalue)
+
+
+  return(list("pF.boot" = p.Fmean, "pF.adj" = pF.adjust))
 }
 
 
