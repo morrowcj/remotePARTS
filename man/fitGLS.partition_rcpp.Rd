@@ -14,7 +14,8 @@ fitGLS.partition_rcpp(
   npart = 5,
   mincross = 4,
   nug.int = c(0, 1),
-  nug.tol = 1e-05
+  nug.tol = 1e-05,
+  workerB_cpp = TRUE
 )
 }
 \arguments{
@@ -38,6 +39,9 @@ statistics}
 \item{nug.int}{interval of nugget search}
 
 \item{nug.tol}{accuracy of nugget estimate}
+
+\item{workerB_cpp}{logical: should the cpp version of worker function be
+used? this argument is deprecated and was just used to test}
 }
 \value{
 list of GLS statistics
