@@ -1,6 +1,6 @@
 Package: remoteSTAR
 Title: Spatio-temporal Auto-regression for Remote Sensing Data
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     c(person(given = "Clay",
            family = "Morrow",
@@ -18,15 +18,15 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
 RoxygenNote: 7.1.1
-Depends: R (>= 3.5.0)
+Depends: R (>= 4.0.2)
 Imports: 
   stats,
   graphics,
   geosphere (>= 1.5.10), 
   Rcpp (>= 1.0.5), 
   RcppEigen (>= 0.3.3.7.0),
-  dplyr (>= 1.0.0)
 Suggests: 
+    dplyr (>= 1.0.0),
     data.table,
     testthat,
     knitr,
