@@ -114,7 +114,7 @@ cls_star <- function(X, t, Z.list = NULL){
       fit <- fitCLS(X[i, ], t, Z = NULL)
     } else {
       stopifnot(sapply(Z.list, function(Y)dim(Y)==dim(X)))
-      z <-  as.matrix(dplyr::bind_cols(lapply(Z.list, function(Y){Y[i, ]})))
+      z <-  as.matrix(sapply(Z.list, function(Y){Y[i, ]}))
       fit <- fitCLS(X[i, ], t, z)
     }
     # d[i, "mean"] <- mean(X[i, ])
