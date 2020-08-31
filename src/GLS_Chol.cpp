@@ -270,20 +270,20 @@ List fitGLS_cpp(const MapMatd& X,
    * fitGLS_cpp() REQUIRES an X0 input.
    */
 
-  const MatrixXd xx0 = tUinv * X0;
-  const MatrixXd varX0 = AtA(xx0); // crossprod(xx0)
-  const MatrixXd X0tY(xx0.adjoint() * yy); // crossprod(xx0, yy)
-  const VectorXd betahat0(solve_cpp(varX0, X0tY));
+  MatrixXd xx0 = tUinv * X0;
+  MatrixXd varX0 = AtA(xx0); // crossprod(xx0)
+  MatrixXd X0tY(xx0.adjoint() * yy); // crossprod(xx0, yy)
+  VectorXd betahat0(solve_cpp(varX0, X0tY));
   int df0 = betahat0.size();
-  const VectorXd SSE0 = AtA(yy - xx0 * betahat0); // SSE
+  VectorXd SSE0 = AtA(yy - xx0 * betahat0); // SSE
   double MSE0 = SSE0.array()[0]/(nX - xx.cols()); // MSE
   double MSR = (SSE0.array()[0] - SSE.array()[0])/(xx.cols() - xx0.cols());
   double logLik0 = -0.5 * (nX * log(2 * M_PI) + nX * log((nX - df0) * MSE0/nX) +
                            logDetV + nX);
 
-  const MatrixXd varX0inv = varX0.colPivHouseholderQr().solve(
+  MatrixXd varX0inv = varX0.colPivHouseholderQr().solve(
     MatrixXd::Identity(varX0.rows(), varX0.cols()));
-  const MatrixXd varcov0 = MSE0 * varX0inv.array();
+  MatrixXd varcov0 = MSE0 * varX0inv.array();
 
   VectorXd se0 = varcov0.matrix().diagonal();
   for (int i = 0; i < se0.size(); i++){
@@ -294,7 +294,7 @@ List fitGLS_cpp(const MapMatd& X,
   /* F test ----
    *
    */
-  const double FF = (nX - xx.cols())/(xx.cols() - xx0.cols()) *
+  double FF = (nX - xx.cols())/(xx.cols() - xx0.cols()) *
     (SSE0.array()[0] - SSE.array()[0]) / SSE.array()[0];
   VectorXi dfF(2);
   dfF(0) = xx.cols() - xx0.cols();
@@ -685,7 +685,8 @@ List crosspart_worker_cpp(const MapMatd& xxi,
   // MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
 
   // Calculate some Statistics # this math is wrong.
-  MatrixXd Rij = tUinv_i.adjoint() * Vsub * tUinv_j.adjoint();
+  MatrixXd B = Vsub * tUinv_j.adjoint(); //tcrossprod(Vsub, tUinv_j)
+  MatrixXd Rij = tUinv_i * B;
 
   MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
   MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
@@ -701,19 +702,63 @@ List crosspart_worker_cpp(const MapMatd& xxi,
   MatrixXd SiE = npDiag - Hi;
   MatrixXd SjE = npDiag - Hj;
 
-  // rSSR and rSSE were calculated incorrectly!
-  VectorXd tmpRvec = (Rij * SjR * Rij.adjoint()).array();
-  VectorXd SRvec = SiR.array();
-  MatrixXd tmp_ijR = SRvec.adjoint() * tmpRvec;
-  MatrixXd rSSRij = tmp_ijR.array()/df1;
+  // Calculate rSSR ----
+    // temporary R matrix
+  MatrixXd R = Rij * SjR * Rij.adjoint();
+    // turn R matrix into a column vector: not the .array() method does this wrong
+  VectorXd Rvec(R.rows() * R.cols());
+  int iter = 0;
+  for(int c = 0; c < R.cols(); ++c){
+    for(int r = 0; r < R.rows(); ++r){
+      Rvec(iter) = R(r, c);
+      ++iter;
+    }
+  }
+    // turn SiR into a column vector
+  VectorXd SiRvec(SiR.rows() * SiR.cols());
+  iter = 0;
+  for(int c = 0; c < SiR.cols(); ++c){
+    for(int r = 0; r < SiR.rows(); ++r){
+      SiRvec(iter) = SiR(r, c);
+      ++iter;
+    }
+  }
+    // calculate rSSRij
+  MatrixXd rSSRij = (SiRvec.adjoint() * Rvec).array()/df1;
 
-  VectorXd tmpEvec = (Rij * SjE * Rij.adjoint()).array();
-  VectorXd SEvec = SiE.array();
-  MatrixXd tmp_ijE = SEvec.adjoint() * tmpEvec;
-  MatrixXd rSSEij = tmp_ijE.array()/df2;
+  // Calculate rSSE ----
+    // temporary E matrix
+  MatrixXd E = Rij * SjE * Rij.adjoint();
+    // turn E into column vector
+  VectorXd Evec(E.rows() * E.cols());
+  iter = 0;
+  for(int c = 0; c < E.cols(); ++c){
+    for(int r = 0; r < E.rows(); ++r){
+      Evec(iter) = E(r, c);
+      ++iter;
+    }
+  }
+    // turn SiE into a column vector
+  VectorXd SiEvec(SiE.rows() * SiE.cols());
+  iter = 0;
+  for(int c = 0; c < SiE.cols(); ++c){
+    for(int r = 0; r < SiE.rows(); ++r){
+      SiEvec(iter) = SiE(r, c);
+      ++iter;
+    }
+  }
+    // calculate rSSEij
+  MatrixXd rSSEij = (SiEvec.adjoint() * Evec).array()/df2;
 
-  // output
-  List out_lst = List::create(Named("rSSRij") = rSSRij.matrix(),
+  // output ----
+  List out_lst = List::create(Named("Rij") = Rij,
+                              Named("Hi") = Hi,
+                              Named("Hj") = Hj,
+                              Named("Hi0") = Hi0,
+                              Named("Hj0") = Hj0,
+                              Named("SiR") = SiR,
+                              Named("SjR") = SjR,
+                              Named("rSSRij") = rSSRij.matrix(),
                               Named("rSSEij") = rSSEij.matrix());
 
   return out_lst;
