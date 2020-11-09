@@ -2,7 +2,7 @@
 ^\.Rproj\.user$
 
 NAMESPACE_.*
-code/
+old-code/
 .*Rpackage/
 data-raw/
 readme_19-aug-2020
