@@ -42,3 +42,39 @@ vignette by using the following R code:
 ```
 vignette("Alaska")
 ```
+
+## Planned Features
+
+Since this package in developmental stages, there are many features that are
+currently unimplemented. This section will keep track of the features and design
+implementations that I plan to include or change in the next version as well. 
+
+* [ ] allow users to, optionally, input parameters (e.g. `r` and `a` in the 
+exponential-power function) instead of fitting ML parameters. 
+
+* [ ] add example for testing "is there an overall time trend" to the vignette
+
+* [ ] make providing distance matrix **optional** instead of required for 
+`fitGLS.partition_rcpp()` and the partitioned method as a whole.
+
+* [ ] include parallelization and distributed comptuting options. If these are
+not natively implemented (i.e. using openMP in C++), then examples of how to
+make it work with other parallelization tools should be provided. 
+
+* [ ] more explicit handling of missing data: "How should a constant time series
+be treated?"; "What happends if there is a missing data point within a single 
+time series?"
+
+* [ ] possibly change the CLS function so that it reads 1 line of data at a time
+to save memory. Also, using `RcppEigen::fastLM()` may be better than `lm()` in 
+terms of speed. 
+
+* [ ] **Break up C++ functions into more than 1 file**
+
+* [ ] **WRITE TESTS FOR EVERY FUNCTION!!!**
+
+* [ ] update documentation for every function to include output format
+and example usage. 
+
+If there are any additional features that you would like to see implemented, or
+bugs/issues that you ran into, please submit an issue on github. 
