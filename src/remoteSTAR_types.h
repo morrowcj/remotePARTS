@@ -1,4 +1,7 @@
 // [[Rcpp::depends(RcppEigen)]]
+
+#pragma once
+
 #include <RcppEigen.h>
 
 using Eigen::LLT;

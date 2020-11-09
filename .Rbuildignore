@@ -10,6 +10,6 @@ Readme.Rmd
 ^doc$
 ^Meta$
 
-remoteSTAR*.tar.gz
+remoteSTAR.*.tar.gz
 Readme*
 
