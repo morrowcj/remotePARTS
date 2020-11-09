@@ -4,6 +4,7 @@ R/arcive
 data-raw
 .Rhistory
 *.html
+!vignettes/Alaska.html
 *.o*
 *.dll
 .*.so
