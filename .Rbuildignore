@@ -14,4 +14,4 @@ remoteSTAR.*.tar.gz
 Readme*
 
 src_old
-src_new
+vignettes_backup
