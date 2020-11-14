@@ -144,7 +144,7 @@ Eigen::MatrixXd solve_ident_cpp(const MatrixXd& A){
 */
 
 //==============================================================================
-/* tinvchol_cpp(V, nugget = 0)
+/* invchol_cpp(V, nugget = 0)
  * computes the choleskey decomposition upper triangle (U) of V
  * and then returns the transpose: t(U)
  *
@@ -160,7 +160,7 @@ Eigen::MatrixXd solve_ident_cpp(const MatrixXd& A){
 //'
 //' @examples #TBA
 // [[Rcpp::export]]
-Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
+Eigen::MatrixXd invchol_cpp(const MapMatd& V, double nugget = 0.){
 
   double n = V.rows(); //dim of V
 
@@ -180,18 +180,18 @@ Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
 }
 
 /***R
-# ## Test tinvchol_cpp()
+# ## Test invchol_cpp()
 # V <- crossprod(M)
 #
 # # no nugget (i.e. nugget = 0)
 # t(backsolve(chol(V), diag(nrow(V)))) # native R
-# tinvchol_cpp(V) # cpp
+# invchol_cpp(V) # cpp
 #
 # # with nugget
 # nug = .1
 # Vn = (1 - nug) * V + nug * diag(nrow(V))
 # t(backsolve(chol(Vn), diag(nrow(Vn)))) # R
-# tinvchol_cpp(Vn, nug) # cpp
+# invchol_cpp(Vn, nug) # cpp
 */
 
 //==============================================================================
@@ -208,7 +208,7 @@ Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
 //' @param y numeric vector
 //' @param X0 numeric matrix
 //' @param nugget numeric nugget to add to V
-//' @param save_xx logical: should xx, xx0, and tInvCholV be returned? This
+//' @param save_xx logical: should xx, xx0, and invcholV be returned? This
 //' functionality is meant for use with the partitioned GLS whereby these
 //' values are used to calculate cross-partition statistics.
 //' @param threads integer indicating the number of threads to use. This current
@@ -217,7 +217,7 @@ Eigen::MatrixXd tinvchol_cpp(const MapMatd& V, double nugget = 0.){
 //'
 //' @export
 //' @examples #TBA
-// [[Rcpp::export]]
+// [[Rcpp::export(fitGLS_cpp)]]
 List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& V,
                 const MapMatd& y,
@@ -227,7 +227,7 @@ List fitGLS_cpp(const MapMatd& X,
                 const int threads = 1){
 
   int nX = X.rows(), pX = X.cols(); // dimensions of X
-  MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
+  MatrixXd tUinv = invchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
   MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
   MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
   MatrixXd varX = AtA(xx); // crossprod(xx)
@@ -324,11 +324,11 @@ List fitGLS_cpp(const MapMatd& X,
   if (save_xx){
     res_list.push_back(xx, "xx");
     res_list.push_back(xx0, "xx0");
-    res_list.push_back(tUinv, "tInvCholV");
+    res_list.push_back(tUinv, "invcholV");
   } else{
     res_list.push_back(NA_REAL, "xx");
     res_list.push_back(NA_REAL, "xx0");
-    res_list.push_back(NA_REAL, "tInvCholV");
+    res_list.push_back(NA_REAL, "invcholV");
   }
 
   return res_list;
@@ -336,7 +336,7 @@ List fitGLS_cpp(const MapMatd& X,
 
 /*** R
 # # ## test fitGLS_cpp()
-# load("..//R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
+# load("old-code/R/vignettes-and-examples/test-gls.rda", verbose = FALSE)
 # Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small))
 # source("../../R/fitGLS.R")
 #
@@ -353,6 +353,8 @@ List fitGLS_cpp(const MapMatd& X,
 #          "df.t", "logDetV", "logLik", "betahat0", "SSE0", "MSE0", "MSR",
 #          "df0", "logLik0", "FF", "df.F"),
 #        check.equal)
+
+## Rcpp::compileAttributes();devtools::document();load("old-code/R/vignettes-and-examples/test-gls.rda", verbose = FALSE);Xnull <- matrix(as.double(1), ncol = 1, nrow = nrow(X.small));.fitGLS_cpp(X.small, V.small, y.small, Xnull)
 */
 
 //==============================================================================
@@ -382,7 +384,7 @@ inline double LogLikGLS_cpp(double nugget,
                         const MapMatd& y){
 
   const int nX = X.rows(); // dimensions of X
-  const MatrixXd tUinv = tinvchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
+  const MatrixXd tUinv = invchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
   const MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
   const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
   const MatrixXd varX = AtA(xx); // crossprod(xx)
@@ -602,7 +604,7 @@ double optimizeNugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
 //' @param X numeric matrix
 //' @param V numeric matrix
 //' @param X0 numeric matrix
-//' @param save_xx logical: should xx, xx0, and tInvCholV be returned?
+//' @param save_xx logical: should xx, xx0, and invcholV be returned?
 //'
 //' @export
 //' @examples #TBA
@@ -642,8 +644,8 @@ List GLS_worker_cpp(const MapMatd& y,
 //' @param xxj numeric matrix xx from  partition j
 //' @param xxi0 numeric matrix xx0 from  partition i
 //' @param xxj0 numeric matrix xx0 from  partition j
-//' @param tUinv_i numeric matrix tInvCholV from  partition i
-//' @param tUinv_j numeric matrix tInvCholV from  partition j
+//' @param tUinv_i numeric matrix invcholV from  partition i
+//' @param tUinv_j numeric matrix invcholV from  partition j
 //' @param Vsub numeric variance matrix for Xij (upper block)
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
