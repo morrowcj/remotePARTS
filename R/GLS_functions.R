@@ -33,7 +33,7 @@ invert_cholR <- function(M, nugget = 0, debug = FALSE){
 }
 
 
-## fitGLS ----
+## fitGLS_R ----
 ## This function calls invert_cholR()
 
 #' fit GLS to remote sensing data
@@ -52,7 +52,7 @@ invert_cholR <- function(M, nugget = 0, debug = FALSE){
 #' @export
 #'
 #' @examples #TBA
-fitGLS <- function(X, V, y, X0 = NULL, nugget = 0){
+fitGLS_R <- function(X, V, y, X0 = NULL, nugget = 0){
   stopifnot(all.equal(nrow(X), ncol(V), nrow(V), length(y)))
   n <- nrow(X)
   invcholV <- invert_cholR(V, nugget)
@@ -206,7 +206,7 @@ V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 }
 
 ## fitNugget ----
-## This function calls fitGLS() and invert_choldec()
+## This function calls fitGLS_R() and invert_choldec()
 
 #' Obtain the maximum likelihood nugget estimate from a `starmod.gls` model
 #'
@@ -223,10 +223,10 @@ V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 #'
 #' @examples #TBA
 fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
-  N.opt <- optimize(f = function(nug){return(fitGLS(X, V, y, nugget = nug)$logLik)},
+  N.opt <- optimize(f = function(nug){return(fitGLS_R(X, V, y, nugget = nug)$logLik)},
                     interval = int, tol = tol, maximum = TRUE)
   if(N.opt$maximum < tol){
-    N0.LL <- fitGLS(X, V, y, nugget = 0)$logLik
+    N0.LL <- fitGLS_R(X, V, y, nugget = 0)$logLik
     if(N0.LL > N.opt$objective){
       N.opt$maximum <- 0
     }
@@ -236,9 +236,9 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
 
 #' Obtain the maximum likelihood nugget estimate from a `starmod.gls.cpp` model
 #'
-#' @details this function is a wrapper that calls the C++ version of fitGLS()
+#' @details this function is a wrapper that calls the C++ version of fitGLS_R()
 #' and can be faster than fitNugget(). However, this functionallity is also
-#' available in the C++ version of fitGLS()
+#' available in the C++ version of fitGLS_R()
 #'
 #' @param X n x p numeric design matrix for predictor variables
 #' @param V n x n numeric covariance matrix
@@ -279,8 +279,8 @@ fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
 #' @param npart integer: number of of partitions to divide the data into
 #' @param mincross intiger: minimum number of partition pairs from which to
 #' calculate statistics (i.e. )
-#' @param nug.int interval of nugget passed to fitGLS()
-#' @param nug.tol accuracy of nugget calculation passed to fitGLS()
+#' @param nug.int interval of nugget passed to fitGLS_R()
+#' @param nug.tol accuracy of nugget calculation passed to fitGLS_R()
 #'
 #' @return list of GLS statistics
 #' @export
@@ -311,7 +311,7 @@ fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
   results <- lapply(seq_len(npart), function(partition){
     ## subset the full data according to the partion
     subset <- (partition - 1)*n.p + (seq_len(n.p))
-    tmp <- fitGLS(X = X[subset, ], V = V[subset, subset], y = y[subset],
+    tmp <- fitGLS_R(X = X[subset, ], V = V[subset, subset], y = y[subset],
                   X0 = X0[subset, ], nugget = nugget)
 
       ## TBA: fit V matrix to individual partitions

@@ -7,6 +7,20 @@
 
 using namespace Rcpp;
 
+// LogLikGLS_cpp
+double LogLikGLS_cpp(double nugget, const MapMatd& X, const MapMatd& V, const MapMatd& y);
+RcppExport SEXP _remoteSTAR_LogLikGLS_cpp(SEXP nuggetSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(LogLikGLS_cpp(nugget, X, V, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fitGLS_cpp
 List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, const int threads);
 RcppExport SEXP _remoteSTAR_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
@@ -85,6 +99,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
     {"_remoteSTAR_MatMult", (DL_FUNC) &_remoteSTAR_MatMult, 3},
     {"_remoteSTAR_AtA", (DL_FUNC) &_remoteSTAR_AtA, 1},

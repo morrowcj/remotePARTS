@@ -1,8 +1,7 @@
 #' Invert the cholesky decomposition of V
 #'
-#' @param M numeric matrix
-#' @param nugget numeric nugget to add to V
-#' @param debug logical: enter debug mode?
+#' @param M numeric (double), positive definite matrix
+#' @param nugget numeric (double) nugget to add to M
 #'
 #' @return numeric matrix: inverse of the cholesky decomposition
 #'
@@ -14,26 +13,18 @@
 #' invert_chol(M, nugget = 0.2)
 #'
 #' @export
-invert_chol <- function(M, nugget = 0, debug = FALSE){
+invert_chol <- function(M, nugget = 0){
   # Coerce inputs to proper format ----
 
-  if(!is.matrix(M)){M <- as.matrix(M)}
-  if(!is.numeric(M)){M <- as.matrix(M)}
+  if(!is.matrix(M)){M = as.matrix(M)}
+  if(!is.double(M)){M = as.double(M)}
 
   # exception handling ----
 
-  ## need to check if M is positive definitive or C++ will crash.
-  if(nrow(M) != ncol(M)){
-    stop("M not square")
-  } # not square
-  if(any(M[upper.tri(M)] != t(M[lower.tri(M)]))){
-    stop("M not symmetric")
-  } # not symetric
-  tmp <- eigen(M, only.values = TRUE)$values
-  if(any(eigen(M, only.values = TRUE)$values < 1e-8)){
-    stop("M not positive definite")
-  }
+  ## need to check if M is positive and square or C++ will crash.
+  stopifnot(all(check_posdef(M)))
 
   # execute the C++ function ----
-  return(.invchol_cpp(M, nugget))
+  # return(.invchol_cpp(M, nugget))
+  return(.Call(`_remoteSTAR_invchol_cpp`, M, nugget))
 }

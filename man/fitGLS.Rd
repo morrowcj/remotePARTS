@@ -2,30 +2,48 @@
 % Please edit documentation in R/fitGLS.R
 \name{fitGLS}
 \alias{fitGLS}
-\title{fit GLS to remote sensing data}
+\alias{LogLikGLS}
+\title{Fit GLS to remote sensing data}
 \usage{
-fitGLS(X, V, y, X0 = NULL, nugget = 0)
+fitGLS(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1)
+
+LogLikGLS(nugget, X, V, y)
 }
 \arguments{
-\item{X}{n x p numeric design matrix for predictor variables}
+\item{X}{numeric matrix}
 
-\item{V}{n x n numeric covariance matrix}
+\item{V}{numeric matrix}
 
-\item{y}{length n numeric resposne vector}
+\item{y}{numeric vector}
 
-\item{X0}{n x p0 null numeric design matrix}
+\item{X0}{numeric (double) matrix}
 
-\item{nugget}{nugget to be added to variance matrix. see `?invert_cholR()`}
-}
-\value{
-list containing relevant output paramters from model fit
+\item{nugget}{the nugget to add to V}
 
-Note: this output should be converted to an S3 class and values should be
-extracted by defining `print.method()` and other methods.
+\item{save_xx}{logical: should xx, xx0, and invcholV be returned? This
+functionality is meant for use with the partitioned GLS whereby these
+values are used to calculate cross-partition statistics.}
+
+\item{threads}{integer indicating the number of threads to use. This current
+version does not have multi-thread functionality so this argument does
+nothing yet.}
 }
 \description{
-fit GLS to remote sensing data
+Fit GLS to remote sensing data
+
+Caculate log-liklihood of GLS model
+}
+\details{
+see `fitGLS()`
+
+this function is mostly meant to optimize the nugget for a paritular
+set of data.
+
+Note: this function should be deprecated and simply added as functionality
+to `.fitGLS_cpp()`.
 }
 \examples{
+#TBA
+
 #TBA
 }

@@ -24,6 +24,9 @@ MatrixXd invchol_cpp(const MapMatd& V, double nugget);
 List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
                 const MapMatd& X0, double nugget, bool save_xx,
                 const int threads);
+// calculate log-likelihood only
+double LogLikGLS_cpp(double nugget, const MapMatd& X, const MapMatd& V,
+                     const MapMatd& y);
 
 /*
  * Test Functions ----

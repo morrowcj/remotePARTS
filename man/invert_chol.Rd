@@ -4,14 +4,12 @@
 \alias{invert_chol}
 \title{Invert the cholesky decomposition of V}
 \usage{
-invert_chol(M, nugget = 0, debug = FALSE)
+invert_chol(M, nugget = 0)
 }
 \arguments{
-\item{M}{numeric matrix}
+\item{M}{numeric (double), positive definite matrix}
 
-\item{nugget}{numeric nugget to add to V}
-
-\item{debug}{logical: enter debug mode?}
+\item{nugget}{numeric (double) nugget to add to M}
 }
 \value{
 numeric matrix: inverse of the cholesky decomposition
