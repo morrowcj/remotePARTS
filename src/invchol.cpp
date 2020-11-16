@@ -1,4 +1,4 @@
-#include "function-declarations.hpp"
+#include "function-declarations.h"
 
 //' Invert the cholesky decomposition of V
 //'

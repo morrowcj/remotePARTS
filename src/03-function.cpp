@@ -1,4 +1,4 @@
-#include "function-declarations.hpp"
+#include "function-declarations.h"
 #include <omp.h>
 // [[Rcpp::plugins(openmp)]]]
 

@@ -1,7 +1,7 @@
 #ifndef FUNC_DECL
 #define FUNC_DECL
 
-#include "remoteSTAR_types.hpp"
+#include "remoteSTAR_types.h"
 
 /*
  * Helper Functions ----

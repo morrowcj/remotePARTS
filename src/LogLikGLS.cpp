@@ -1,4 +1,4 @@
-#include "function-declarations.hpp"
+#include "function-declarations.h"
 
 //' Caculate log-liklihood of GLS model
 //'

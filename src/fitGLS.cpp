@@ -1,4 +1,4 @@
-#include "function-declarations.hpp"
+#include "function-declarations.h"
 
 //' Fit GLS to remote sensing data
 //'
