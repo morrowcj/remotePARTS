@@ -1,8 +1,24 @@
 ---
-output:
-  md_document:
-    variant: markdown_github
+output: github_document
 ---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# remoteSTAR
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of remoteSTAR is to ...
 
 ## Description
 
@@ -30,13 +46,27 @@ Once a user has the tar.gz file they can install it with
 install.packages("remoteSTAR_[version].tar.gz", repos = NULL, type = "source")
 ```
 
-and then load it with
+and then from the R console with load it with
 
 ```
 library(remoteSTAR)
 ```
 
-from the R console. 
+<!-- Eventually, the following lines should replace the above installation info: -->
+
+<!-- You can install the released version of remoteSTAR from 
+[CRAN](https://CRAN.R-project.org) with: -->
+
+<!-- ``` r -->
+<!-- install.packages("remoteSTAR") -->
+<!-- ``` -->
+
+<!-- And the development version from [GitHub](https://github.com/) with: -->
+
+<!-- ``` r -->
+<!-- # install.packages("devtools") -->
+<!-- devtools::install_github("morrowcj/remoteSTAR") -->
+<!-- ``` -->
 
 ## Example usage
 
@@ -47,7 +77,7 @@ vignette by using the following R code:
 vignette("Alaska")
 ```
 
-## Planned Features
+## Planned Features / To-do
 
 Since this package in developmental stages, there are many features that are
 currently unimplemented. This section will keep track of the features and design
@@ -82,3 +112,28 @@ and example usage.
 
 If there are any additional features that you would like to see implemented, or
 bugs/issues that you ran into, please submit an issue on github. 
+
+<!-- ## Example -->
+
+<!-- This is a basic example which shows you how to solve a common problem: -->
+
+<!-- ```{r example} -->
+<!-- library(remoteSTAR) -->
+<!-- ## basic example code -->
+<!-- ``` -->
+
+<!-- What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so: -->
+
+<!-- ```{r cars} -->
+<!-- summary(cars) -->
+<!-- ``` -->
+
+<!-- You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. -->
+
+<!-- You can also embed plots, for example: -->
+
+<!-- ```{r pressure, echo = FALSE} -->
+<!-- plot(pressure) -->
+<!-- ``` -->
+
+<!-- In that case, don't forget to commit and push the resulting figure files, so they display on GitHub! -->
