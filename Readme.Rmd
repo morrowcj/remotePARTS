@@ -15,6 +15,10 @@ bugs either directly to me `morrow5@wisc.edu` or through github:
 https://github.com/morrowcj/remoteSTAR (it is a private repo so please send
 me a github username and I'll add you to the repo). 
 
+**Note** I plan to eventually show examples of importing rasters. Here is a lovely 
+resource for manipulating rasters in R, including how to convert them
+to data frames: [Geospatial raster with R data carpentry](http://datacarpentry.org/r-raster-vector-geospatial/)
+
 ## Installation
 
 Currently to install this package, the best way is to install with the 

@@ -15,3 +15,4 @@ Readme*
 
 src_old
 vignettes_backup
+^README\.Rmd$
