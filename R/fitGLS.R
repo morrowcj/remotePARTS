@@ -36,7 +36,11 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 
   ## call the c++ function
   # return(.fitGLS_cpp) # contains additional function call
-  return(.Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads))
+  out <- .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
+  ## add in p values
+  out$pval.t <- 2 * pt(abs(out$tstat), df = out$dft, lower.tail = F)
+  out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
+  return(out)
 }
 
 #' Caculate log-liklihood of GLS model
