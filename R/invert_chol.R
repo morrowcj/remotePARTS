@@ -14,15 +14,11 @@
 #'
 #' @export
 invert_chol <- function(M, nugget = 0){
-  # Coerce inputs to proper format ----
-
-  if(!is.matrix(M)){M = as.matrix(M)}
-  if(!is.double(M)){M = as.double(M)}
 
   # exception handling ----
-
-  ## need to check if M is positive and square or C++ will crash.
-  stopifnot(all(check_posdef(M)))
+  if(!is.matrix(M)){stop("M is not of class 'matrix'")}
+  if(!is.double(M)){stop("M is not of type 'double'")}
+  if(!all(check_posdef(M))){stop("M is not positive definite")}
 
   # execute the C++ function ----
   # return(.invchol_cpp(M, nugget))
