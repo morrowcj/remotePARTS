@@ -39,6 +39,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// crosspart_worker_cpp
+List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& tUinv_i, const MapMatd& tUinv_j, const MapMatd& Vsub, int df1, int df2);
+RcppExport SEXP _remoteSTAR_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP tUinv_iSEXP, SEXP tUinv_jSEXP, SEXP VsubSEXP, SEXP df1SEXP, SEXP df2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const MapMatd& >::type xxi(xxiSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type xxj(xxjSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type xxi0(xxi0SEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type xxj0(xxj0SEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type tUinv_i(tUinv_iSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type tUinv_j(tUinv_jSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type Vsub(VsubSEXP);
+    Rcpp::traits::input_parameter< int >::type df1(df1SEXP);
+    Rcpp::traits::input_parameter< int >::type df2(df2SEXP);
+    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fitGLS_cpp
 List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, const int threads);
 RcppExport SEXP _remoteSTAR_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
@@ -136,6 +155,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_remoteSTAR_GLS_worker_cpp", (DL_FUNC) &_remoteSTAR_GLS_worker_cpp, 8},
     {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
+    {"_remoteSTAR_crosspart_worker_cpp", (DL_FUNC) &_remoteSTAR_crosspart_worker_cpp, 9},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
     {"_remoteSTAR_MatMult", (DL_FUNC) &_remoteSTAR_MatMult, 3},
     {"_remoteSTAR_AtA", (DL_FUNC) &_remoteSTAR_AtA, 1},

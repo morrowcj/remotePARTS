@@ -35,6 +35,11 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
 List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V,
                     const MapMatd& X0, double nug_l, double nug_u,
                     double nug_tol, bool save_xx);
+// worker function to compare partitions from GLS_worker_cpp
+List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj,
+                          const MapMatd& xxi0, const MapMatd& xxj0,
+                          const MapMatd& tUinv_i, const MapMatd& tUinv_j,
+                          const MapMatd& Vsub, int df1, int df2);
 /*
  * Test Functions ----
  */
