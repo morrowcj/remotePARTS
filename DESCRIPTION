@@ -28,7 +28,7 @@ Imports:
 Suggests: 
     dplyr (>= 1.0.0),
     data.table,
-    testthat,
+    tinytest,
     knitr,
     rmarkdown
 LinkingTo: Rcpp, RcppEigen
