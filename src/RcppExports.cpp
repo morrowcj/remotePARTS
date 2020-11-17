@@ -75,19 +75,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// MatMult
-MatrixXd MatMult(const MapMatd& A, const MapMatd& B, int cores);
-RcppExport SEXP _remoteSTAR_MatMult(SEXP ASEXP, SEXP BSEXP, SEXP coresSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const MapMatd& >::type A(ASEXP);
-    Rcpp::traits::input_parameter< const MapMatd& >::type B(BSEXP);
-    Rcpp::traits::input_parameter< int >::type cores(coresSEXP);
-    rcpp_result_gen = Rcpp::wrap(MatMult(A, B, cores));
-    return rcpp_result_gen;
-END_RCPP
-}
 // AtA
 MatrixXd AtA(const MatrixXd& A);
 RcppExport SEXP _remoteSTAR_AtA(SEXP ASEXP) {
@@ -157,7 +144,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
     {"_remoteSTAR_crosspart_worker_cpp", (DL_FUNC) &_remoteSTAR_crosspart_worker_cpp, 9},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
-    {"_remoteSTAR_MatMult", (DL_FUNC) &_remoteSTAR_MatMult, 3},
     {"_remoteSTAR_AtA", (DL_FUNC) &_remoteSTAR_AtA, 1},
     {"_remoteSTAR_solve_cpp", (DL_FUNC) &_remoteSTAR_solve_cpp, 2},
     {"_remoteSTAR_solve_ident_cpp", (DL_FUNC) &_remoteSTAR_solve_ident_cpp, 1},

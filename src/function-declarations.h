@@ -40,20 +40,5 @@ List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj,
                           const MapMatd& xxi0, const MapMatd& xxj0,
                           const MapMatd& tUinv_i, const MapMatd& tUinv_j,
                           const MapMatd& Vsub, int df1, int df2);
-/*
- * Test Functions ----
- */
-
-// Function to test multicore multiplication
-
-// function to test openmp matrix multiplication
-//' Matrix multiplication, possibly with multiple cores
-//'
-//' @param A numeric matrix
-//' @param B numeric matrix
-//' @param cores integer number of cores to use
-//'
-// [[Rcpp::export]]
-MatrixXd MatMult(const MapMatd& A, const MapMatd& B, int cores);
 
 #endif // FUNC_DECL

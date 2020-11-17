@@ -95,16 +95,6 @@
     .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
 }
 
-#' Matrix multiplication, possibly with multiple cores
-#'
-#' @param A numeric matrix
-#' @param B numeric matrix
-#' @param cores integer number of cores to use
-#'
-MatMult <- function(A, B, cores) {
-    .Call(`_remoteSTAR_MatMult`, A, B, cores)
-}
-
 #' caculate t(A) \%*\% A
 #'
 #' @param A numeric matrix
