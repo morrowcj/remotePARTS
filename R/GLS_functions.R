@@ -366,7 +366,7 @@ return(results)
 #'
 #' @export
 #' @examples #TBA
-crosspart_worker <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
+crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
                              Vsub,
                              # nug_i, nug_j,
                              df1, df2){
