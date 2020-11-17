@@ -7,6 +7,24 @@
 
 using namespace Rcpp;
 
+// GLS_worker_cpp
+List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V, const MapMatd& X0, double nug_l, double nug_u, double nug_tol, bool save_xx);
+RcppExport SEXP _remoteSTAR_GLS_worker_cpp(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP nug_lSEXP, SEXP nug_uSEXP, SEXP nug_tolSEXP, SEXP save_xxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type X0(X0SEXP);
+    Rcpp::traits::input_parameter< double >::type nug_l(nug_lSEXP);
+    Rcpp::traits::input_parameter< double >::type nug_u(nug_uSEXP);
+    Rcpp::traits::input_parameter< double >::type nug_tol(nug_tolSEXP);
+    Rcpp::traits::input_parameter< bool >::type save_xx(save_xxSEXP);
+    rcpp_result_gen = Rcpp::wrap(GLS_worker_cpp(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx));
+    return rcpp_result_gen;
+END_RCPP
+}
 // LogLikGLS_cpp
 double LogLikGLS_cpp(double nugget, const MapMatd& X, const MapMatd& V, const MapMatd& y);
 RcppExport SEXP _remoteSTAR_LogLikGLS_cpp(SEXP nuggetSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP) {
@@ -97,8 +115,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// optimize_nugget_cpp
+double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, double lower, double upper, double tol, bool debug);
+RcppExport SEXP _remoteSTAR_optimize_nugget_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP tolSEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type lower(lowerSEXP);
+    Rcpp::traits::input_parameter< double >::type upper(upperSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(optimize_nugget_cpp(X, V, y, lower, upper, tol, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_remoteSTAR_GLS_worker_cpp", (DL_FUNC) &_remoteSTAR_GLS_worker_cpp, 8},
     {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
     {"_remoteSTAR_MatMult", (DL_FUNC) &_remoteSTAR_MatMult, 3},
@@ -106,6 +142,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remoteSTAR_solve_cpp", (DL_FUNC) &_remoteSTAR_solve_cpp, 2},
     {"_remoteSTAR_solve_ident_cpp", (DL_FUNC) &_remoteSTAR_solve_ident_cpp, 1},
     {"_remoteSTAR_invchol_cpp", (DL_FUNC) &_remoteSTAR_invchol_cpp, 2},
+    {"_remoteSTAR_optimize_nugget_cpp", (DL_FUNC) &_remoteSTAR_optimize_nugget_cpp, 7},
     {NULL, NULL, 0}
 };
 

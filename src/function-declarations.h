@@ -27,7 +27,14 @@ List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
 // calculate log-likelihood only
 double LogLikGLS_cpp(double nugget, const MapMatd& X, const MapMatd& V,
                      const MapMatd& y);
-
+// find the maximum likelihood nugget
+double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
+                          double lower, double upper, double tol,
+                          bool debug);
+// worker function to execute fitGLS()
+List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V,
+                    const MapMatd& X0, double nug_l, double nug_u,
+                    double nug_tol, bool save_xx);
 /*
  * Test Functions ----
  */
