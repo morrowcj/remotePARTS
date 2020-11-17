@@ -500,7 +500,7 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
                            Vsub = Vsub,
                            df1 = df1, df2 = df2)
     } else {
-      res = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
+      res = crosspart_worker_R(xxi = Li$xx, xxj = Lj$xx,
                                  xxi0 = Li$xx0, xxj0 = Lj$xx0,
                                  tUinv_i = Li$tInvCholV,
                                  tUinv_j = Lj$tInvCholV,
