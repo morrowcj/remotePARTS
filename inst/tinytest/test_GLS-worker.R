@@ -7,3 +7,6 @@ expect_true(FALSE, info = paste("need to create and implement tests for",
 
 expect_true(FALSE, info = paste("need to create and implement tests for",
                                 "crosspart_worker()"))
+
+
+expect_true(FALSE, info = "need to depricate crosspart_worker_R()")
