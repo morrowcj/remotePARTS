@@ -66,12 +66,14 @@
 #' @param tUinv_i numeric matrix invcholV from  partition i
 #' @param tUinv_j numeric matrix invcholV from  partition j
 #' @param Vsub numeric variance matrix for Xij (upper block)
+#' @param nug_i nugget from partition i
+#' @param nug_j nugget from partition j
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
 #'
 #' @examples #TBA
-.crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2) {
-    .Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2)
+.crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, nug_i, nug_j, df1, df2) {
+    .Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, nug_i, nug_j, df1, df2)
 }
 
 #' Fit GLS to remote sensing data

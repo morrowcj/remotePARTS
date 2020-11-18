@@ -1,6 +1,11 @@
-#' check if matrix is positive definitive
+#' check if matrix is positive definite
+#'
+#' @details check if a matrix is 1) square, 2) symmetric, and 3) positive
+#' definite
 #'
 #' @param M numeric matrix
+#'
+#' @export
 check_posdef <- function(M){
 
   res <- c(sqr = FALSE, sym = FALSE, posdef = FALSE)

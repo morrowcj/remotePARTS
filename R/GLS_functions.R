@@ -434,7 +434,6 @@ crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
 #' used? this argument is deprecated and was just used to test
 #'
 #' @return list of GLS statistics
-#' @export
 #'
 #' @examples #TBA
 fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
@@ -470,7 +469,7 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
     Vi <- fitV(Dist[partition[, i], partition[, i]],
                 spatialcor = spatcor, fun = Vfit.fun)
     save_xx = ifelse(i <= mincross, TRUE, FALSE)
-    gls.out <- GLS_worker_cpp(yi, Xi, Vi, Xi0, save_xx = save_xx)
+    gls.out <- GLS_worker(yi, Xi, Vi, Xi0, save_xx = save_xx)
 
     #add pvalues
     gls.out$pval.t <- sapply(gls.out$tstat, function(x){
@@ -493,10 +492,12 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 
     ## use crosspart worker function
     if(workerB_cpp){
-    res = crosspart_worker_cpp(xxi = Li$xx, xxj = Lj$xx,
+    res = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
                            xxi0 = Li$xx0, xxj0 = Lj$xx0,
-                           tUinv_i = Li$tInvCholV,
-                           tUinv_j = Lj$tInvCholV,
+                           nug_i = Li$nugget,
+                           nug_j = Lj $nugget,
+                           invChol_i = Li$invcholV,
+                           invChol_j = Lj$invcholV,
                            Vsub = Vsub,
                            df1 = df1, df2 = df2)
     } else {
@@ -585,7 +586,7 @@ correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2,
 
 #' Wrapper for bootsrap test
 #'
-#' @param starpart starpart
+#' @param starpart output of partitioned GLS model...
 #' @param nboot bootsraps
 #'
 #' @return

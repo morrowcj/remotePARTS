@@ -7,7 +7,7 @@
 GLS.partition.pvalue(starpart, nboot = 2000)
 }
 \arguments{
-\item{starpart}{starpart}
+\item{starpart}{output of partitioned GLS model...}
 
 \item{nboot}{bootsraps}
 }

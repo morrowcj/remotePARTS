@@ -29,6 +29,7 @@ Suggests:
     dplyr (>= 1.0.0),
     data.table,
     tinytest,
+    raster,
     knitr,
     rmarkdown
 LinkingTo: Rcpp, RcppEigen

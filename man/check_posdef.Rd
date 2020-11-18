@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper-functions.R
 \name{check_posdef}
 \alias{check_posdef}
-\title{check if matrix is positive definitive}
+\title{check if matrix is positive definite}
 \usage{
 check_posdef(M)
 }
@@ -10,5 +10,9 @@ check_posdef(M)
 \item{M}{numeric matrix}
 }
 \description{
-check if matrix is positive definitive
+check if matrix is positive definite
+}
+\details{
+check if a matrix is 1) square, 2) symmetric, and 3) positive
+definite
 }

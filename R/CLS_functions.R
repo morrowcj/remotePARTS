@@ -11,7 +11,9 @@
 #' p time points.
 #'
 #' @return a list of 3 or 4 elements:
-#' `coef` the model coefficients from `summary(lm(...))$coef`
+#' `coef` the model coefficients from `summary(lm(...))$coef` where `x_t0` is the
+#' effect of a pixel's value at the previous time on its value  at the current
+#' time point and `time` is the effect of time.
 #' `MSE` means squared error of the regression model
 #' `resids` the residual errors of the model
 #' `Z` the coefficients for optional covariates
@@ -19,7 +21,6 @@
 #' @export
 #'
 #' @examples #TBA
-
 fitCLS <- function(x, t, Z = NULL) {
   # variables
   t_n = length(t)
