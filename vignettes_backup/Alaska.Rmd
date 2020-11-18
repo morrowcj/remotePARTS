@@ -216,7 +216,7 @@ values that `fitGLS_cpp` uses.
 
 ```{r}
 # get the inverse of the chol decomp of V (can be time consuming)
-tInvCholV <- tinvchol_cpp(V, nugget = 0)
+tInvCholV <- invert_chol(V, nugget = 0)
 
 ## get model matrix from formulae
 # full model
@@ -228,11 +228,11 @@ X0 <- model.matrix(object = formula(form0), data = ndvi_AK3000)
 
 ## estimate maximum likelihood nugget
 tolr = .00001 # precision of nugget search
-nugget.ml <- optimizeNugget_cpp(X = mod.mat, V = V, y = rel.est,
+nugget.ml <- optimize_nugget(X = mod.mat, V = V, y = rel.est,
                                 lower = 0, upper = 1, tol = tolr)
 
 ## fit GLS 
-fm.gls <- fitGLS_cpp(X = mod.mat, V = V, y = rel.est, X0 = X0,
+fm.gls <- fitGLS(X = mod.mat, V = V, y = rel.est, X0 = X0,
                      nugget = nugget.ml)
 ```
 
@@ -260,7 +260,7 @@ data set.
 
 #### F-test
 
-Now, let's test $H_0:$ "there is no overall temporal trend in NDVI"
+Now, let's test $H_0:$ "there is no overall effect of land class on NDVI trend"
 
 ```{r}
   # F-test
@@ -271,7 +271,7 @@ fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2],
 # round(fm.gls$betahat, 4)
 
 # F-test ## H0: no change in NDVI over time for all of AK3000
-round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # fail to reject H0
+round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # reject H0
 ```
 
 We are, however, able to reject this $H_0$ for this data set at $\alpha = .05$. 
