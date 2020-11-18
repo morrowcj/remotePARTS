@@ -22,6 +22,8 @@
 #' @param invChol_i numeric matrix invcholV from  partition i
 #' @param invChol_j numeric matrix invcholV from  partition j
 #' @param Vsub numeric variance matrix for Xij (upper block)
+#' @param nug_i nugget from partition i
+#' @param nug_j nugget from partition j
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
 #'
@@ -29,7 +31,7 @@
 #'
 #' @export
 crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
-                             df1, df2){
+                             nug_i, nug_j, df1, df2){
   # coerce input to matrices
   xxi = as(xxi, "matrix")
   xxj = as(xxj, "matrix")
@@ -50,5 +52,5 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
   # stopifnot(all(check_posdef(V)))
 
   return(.Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
-               invChol_i, invChol_j, Vsub,  df1, df2))
+               invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2))
 }

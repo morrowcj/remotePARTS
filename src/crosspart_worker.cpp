@@ -22,6 +22,8 @@
 //' @param tUinv_i numeric matrix invcholV from  partition i
 //' @param tUinv_j numeric matrix invcholV from  partition j
 //' @param Vsub numeric variance matrix for Xij (upper block)
+//' @param nug_i nugget from partition i
+//' @param nug_j nugget from partition j
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
 //'
@@ -34,34 +36,37 @@ List crosspart_worker_cpp(const MapMatd& xxi,
                           const MapMatd& tUinv_i,
                           const MapMatd& tUinv_j,
                           const MapMatd& Vsub,
+                          double nug_i,
+                          double nug_j,
                           int df1,
                           int df2){
-  // int N = Vij.cols(); // total rows
+  // int N = Vsub.cols(); // total rows
   // int np = N/2; // rows per partition
   int np = xxi.rows();
+  MatrixXd Vij;
 
   // // scale the nuggets if nonzero
-  // double nugget_i = nug_i == 0 ? 0 : (1 - nug_i) / nug_i;
-  // double nugget_j = nug_j == 0 ? 0 : (1 - nug_j) / nug_j;
-  // // combine the nuggets into a vector
-  //    // equivalent to rep(c(nugget_i, nugget_j), each = np)
-  // VectorXd nugget_vector(2*np);
-  // for(int i = 0; i < np; i++){
-  //   nugget_vector(i) = nug_i;
-  // }
-  // for(int j = np + 1; j < 2*np; j++){
-  //   nugget_vector(j) = nug_j;
-  // }
-  // // // turn this into a diagonal matrix
-  // // MatrixXd VDiag = nugget_vector.asDiagonal();
-  // // then add Vij
-  // VDiag = VDiag + Vij;
+  double nugget_i = nug_i == 0 ? 0 : (1 - nug_i) / nug_i;
+  double nugget_j = nug_j == 0 ? 0 : (1 - nug_j) / nug_j;
+  // combine the nuggets into a vector
+     // equivalent to rep(c(nugget_i, nugget_j), each = np)
+  VectorXd nugget_vector(2*np);
+  for(int i = 0; i < np; i++){
+    nugget_vector(i) = nug_i;
+  }
+  for(int j = np + 1; j < 2*np; j++){
+    nugget_vector(j) = nug_j;
+  }
+  // // turn this into a diagonal matrix
+  // // MatrixXd Vij = nugget_vector.asDiagonal();
+  // // then add Vsub
+    // // Note (18-Nov-2020): this needs to be fixed. The appropriate
+    // // method is actually sqrt((1 - nug_i)*(1 - nug_j)) * Vij.array
+  // Vij = Vij + Vsub;
+  Vij = sqrt((1 - nug_i)*(1 - nug_j)) * Vsub.array();
 
-  // extract block matrix
-  // MatrixXd Vsub = VDiag.block(1, np + 1, np, np);
-
-  // Calculate some Statistics # this math is wrong.
-  MatrixXd B = Vsub * tUinv_j.adjoint(); //tcrossprod(Vsub, tUinv_j)
+  // Caclulate some satistics
+  MatrixXd B = Vij * tUinv_j.adjoint(); //tcrossprod(Vij, tUinv_j)
   MatrixXd Rij = tUinv_i * B;
 
   MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();

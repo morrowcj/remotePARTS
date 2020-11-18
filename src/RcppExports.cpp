@@ -40,8 +40,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // crosspart_worker_cpp
-List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& tUinv_i, const MapMatd& tUinv_j, const MapMatd& Vsub, int df1, int df2);
-RcppExport SEXP _remoteSTAR_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP tUinv_iSEXP, SEXP tUinv_jSEXP, SEXP VsubSEXP, SEXP df1SEXP, SEXP df2SEXP) {
+List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& tUinv_i, const MapMatd& tUinv_j, const MapMatd& Vsub, double nug_i, double nug_j, int df1, int df2);
+RcppExport SEXP _remoteSTAR_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP tUinv_iSEXP, SEXP tUinv_jSEXP, SEXP VsubSEXP, SEXP nug_iSEXP, SEXP nug_jSEXP, SEXP df1SEXP, SEXP df2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,9 +52,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const MapMatd& >::type tUinv_i(tUinv_iSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type tUinv_j(tUinv_jSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type Vsub(VsubSEXP);
+    Rcpp::traits::input_parameter< double >::type nug_i(nug_iSEXP);
+    Rcpp::traits::input_parameter< double >::type nug_j(nug_jSEXP);
     Rcpp::traits::input_parameter< int >::type df1(df1SEXP);
     Rcpp::traits::input_parameter< int >::type df2(df2SEXP);
-    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2));
+    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, nug_i, nug_j, df1, df2));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -142,7 +144,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_remoteSTAR_GLS_worker_cpp", (DL_FUNC) &_remoteSTAR_GLS_worker_cpp, 8},
     {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
-    {"_remoteSTAR_crosspart_worker_cpp", (DL_FUNC) &_remoteSTAR_crosspart_worker_cpp, 9},
+    {"_remoteSTAR_crosspart_worker_cpp", (DL_FUNC) &_remoteSTAR_crosspart_worker_cpp, 11},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
     {"_remoteSTAR_AtA", (DL_FUNC) &_remoteSTAR_AtA, 1},
     {"_remoteSTAR_solve_cpp", (DL_FUNC) &_remoteSTAR_solve_cpp, 2},
