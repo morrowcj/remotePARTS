@@ -220,7 +220,7 @@ tInvCholV <- invert_chol(V, nugget = 0)
 
 ## get model matrix from formulae
 # full model
-form = "rel.est ~ 0 + land" 
+form = "rel.est ~ land" 
 mod.mat <- model.matrix(object = formula(form), data = ndvi_AK3000)
 # null model
 form0 = "rel.est ~ 1"
@@ -276,15 +276,19 @@ round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # reject H0
 
 We are, however, able to reject this $H_0$ for this data set at $\alpha = .05$. 
 
-#### Partitioned version
+#### Partitioned GLS
 
 For extremely large data sets, computational constraints such as limited memory,
 make it desirable to use a partitioned version of the GLS analysis. This version
-splits the data into `npart` random and non-overlapping sub-sets by site and then
-calculates cross-partition statistics on *nc* pairs of partitions (according to 
-`mincross`) and summarizes the results with a correlated F-test.
+of the method splits the data into `npart` random and non-overlapping sub-sets 
+by site and then calculates cross-partition statistics on *nc* pairs of 
+partitions (according to `mincross`) and summarizes the results with a 
+correlated F-test.
 
-The function that performs this analysis is the wrapper `fitGLS.partiion_rcpp()`:
+The function that performs this analysis is the wrapper `fitGLS.partiion`. What
+follows is a short example of how to perform this method with the `Alaska3000` 
+data set but is not necessarily indicative of how users would want to use it 
+in practice. See "More on the partitioned GLS method" for further clarification.
 
 ```{r partitioned GLS}
 ## run the parittioned analysis
@@ -310,6 +314,313 @@ pval.Fpart <- GLS.partition.pvalue(results.cpp, nboot = 2000)
 
 round(cbind("Fmean" = results.cpp$Fmean, "pval" = pval.Fpart$pF.boot$pvalue), 4)
 ```
+
+
+## More on the partitioned GLS method
+
+```{r save alaska vignette data, eval = FALSE, echo = FALSE}
+save(list = ls(), file = "alaska-vignette-data.RData")
+
+load("alaska-vignette-data.RData", verbose = TRUE)
+```
+
+Here, we will provide a description of how to use the individual functions for
+the partitioned GLS method. 
+
+First, we will use `sample_partitions()` to get a sample the pixels to use for each
+subset. The result is a matrix with columns containing pixel IDs. Each column
+corresponds to a different partition
+
+```{r}
+# segment dataset into 4 equal-sized partitions:
+part.mat <- sample_partitions(nrow(mod.mat), npart = 4)
+```
+
+Then, we will calculate the degrees of freedom with `calc_df()`, and perform 
+GLS on each partition with `GLS_worker()`. The main arguments that `GLS_worker()`
+needs are similar to those needed by `fitGLS()`: a response `y`, a model matrix
+of predictors `X`, a null model matrix `X0` to compare against, and a variance 
+matrix `V`. Each input is partition-specific. 
+
+The difference between `GLS_worker()` and `fitGLS()` is that 
+`fitGLS()` needs a nugget to be input (defaults to 0) while `GLS_worker()` finds
+the maximum likelihood estimator of the nugget internally.
+
+```{r}
+# calculate degrees of freedom up front
+dfs <- calc_df(nrow(part.mat), ncol(mod.mat), ncol(X0))
+df1 <- dfs[1]
+df2 <- dfs[2]
+
+# make empty list to store the output
+part.results <- list() 
+
+# Use GLS worker function on each partition
+for(part in seq_len(ncol(part.mat))){
+  ## index setup
+  subs = part.mat[, part] # current subset index
+  X.sub = mod.mat[subs, ] # current subset of model matrix
+  y.sub = rel.est[subs] # current subset of Y
+  loc.sub = location[subs, ] # current coordinates
+  X0.sub = X0[subs, ] # current subset of X0
+  ## calculate variance matrix
+  D.sub = geosphere::distm(loc.sub) # distance between subset points
+  V.sub = fitV(D.sub, spatialcor = r.est$spatialcor, 
+               fun = "exponential-power") # variance of subset points
+  ## obtain GLS results
+  part.results[[part]] <- GLS_worker(y.sub, X.sub, V.sub, X0.sub, save_xx = TRUE) 
+}
+```
+
+The list `part.results` now has 4 elements - one for each partition - which are
+GLS output lists (i.e. results for partition 1 are stored in 
+`part.results[[1]]`).
+
+Then, for each pair of GLS partition results, we can get the cross-partition
+statistics with `crosspart_worker()`. This function takes as input (1) 
+statistics returned by `GLS_worker()` (including the nugget estimate), (2) 
+degrees of freedom, and (3) the cross-partition variance matrix `V.ij` which 
+can be obtained from a matrix of distances between points from subsets `i` and 
+`j`: 
+
+```{r}
+# make empty list for cross-partition results
+cross.results = list()
+
+# use crosspart_worker() to get cross-partition statistics
+for(cross in seq_len(length(part.results) - 1)){ # each consecutive pair of partitions
+  ## index setup
+  i = cross # first partition
+  j = cross + 1 # second partition
+  subs.i = part.mat[, i] # index for part i
+  subs.j = part.mat[, j] # index for part j
+  ## GLS_worker() output
+  Li = part.results[[i]] # list containing partition results i
+  Lj = part.results[[j]] # list containing partition results j
+  ## Obtain V.ij
+  loc.i = location[subs.i, ] # coordinates of i
+  loc.j = location[subs.j, ] # coordinates of j
+  D.ij = geosphere::distm(loc.i, loc.j) # distance between i and j
+  V.ij = fitV(D.ij, r.est$spatialcor) # variance matrix ij
+  ## obtain cross-partition results
+  cross.results[[cross]] = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
+                                            xxi0 = Li$xx0, xxj0 = Lj$xx0,
+                                            invChol_i = Li$invcholV,
+                                            invChol_j = Lj$invcholV,
+                                            nug_i = Li$nugget,
+                                            nug_j = Lj$nugget,
+                                            Vsub = V.ij,
+                                            df1 = df1, df2 = df2)
+}
+```
+
+Finally, we can calculate some average statistics for the entire analysis by
+using `sapply()` to summarize across lists and then perform our hypothesis
+test:
+
+```{r}
+## Average partition stats 
+F.mean = mean(sapply(part.results, function(x){x$Fstat})) # average partition F
+coef.means = rowMeans(sapply(part.results, function(x){x$betahat})) # coef est (land class)
+coef0.mean = mean(sapply(part.results, function(x){x$betahat0})) # null coefs
+
+## average cross-partition stats
+rSSR = mean(sapply(cross.results, function(x){x$rSSRij})) # regression sum of squares
+rSSE = mean(sapply(cross.results, function(x){x$rSSEij})) # residual sum of squares
+
+# calculate the correlated test statistics
+## correlated chisquared test
+( p.chisqr = correlated.chisq(F.mean, rSSR, df1, npart = ncol(part.mat)) )
+# correlated F test
+( p.corF = correlated.F.bootstrap(F.mean, rSSR, rSSE, df1, df2, 
+                                  npart = ncol(part.mat), nboot = 2000) )
+```
+
+`fitGLS_partition()` does all of this behind the scenes but it may be important
+when analyzing extremely large data sets to know how the individual components
+work together. The above steps could be easily extended for distributed or 
+parallel computing which may be necessary if (A) the entire data set cannot be
+processed in memory and/or (B) processing time is important and many individual 
+computers or cores are available. 
+
+For example, each subset partition (say, 100K pixels) could be run 
+through `GLS_worker()` separately, output could be saved to individual files, 
+memory could be cleaned or recycled at each step. Then, you could load the 
+output files, 2 at a time, and run them through `crosspart_worker()`, saving the
+cross-partition results to files and cleaning up memory after each pair. 
+
+Average statistics (`F.mean`, `rSSR`, etc) could then be calculated by looping
+through the files and keeping only the relevant statistics in memory (or writing
+them to separate files). 
+
+We will not discuss this type of parallelization or distributed computing in 
+detail here but simply note that implementing this functionality could be 
+trivially simple. That being said, minimal multi-core functionality is 
+implemented internally through the C++ libraries `Eigen` and `openMP` (**NOTE** 
+this is still not reliably present in the package). 
+
+### `fitGLS_partition()`
+
+**NOTE** This section still needs work
+
+The previous example of `fitGLS_partiton()` was performed on the AK3000 dataset
+which was loaded into memory. As stated earlier, this may not be feasible for 
+large datasets. Luckily, `fitGLS_partition()` has functionality to address this
+problem. 
+
+but requires a 
+RasterStack or CSV as input (to prevent loading the entire dataset into memory)
+
+
+
+
+```{r}
+## Test of using a function as an argument to a function
+
+loc = location[sample(x = 1:nrow(location), size = 50), ]
+loc2 = location[sample(x = 1:nrow(location), size = 50),]
+
+
+D = distm(loc)
+
+test.dist <- function(location, fun = "distm", ...){
+  if(is.character(fun) && fun == "distm"){requireNamespace("geosphere")}
+  fun <- match.fun(fun)
+  D = fun(location, ...)
+  return(D)
+}
+
+
+all(D == test.dist(loc))
+
+D2 <- distm(loc, loc2)
+
+D.test <- test.dist(loc, y = loc2, fun = function(x, y){
+  distm(x, y)
+})
+
+all(D2 == D.test)
+
+D3 <- dist(loc)
+```
+
+
+## Using Rasters
+
+```{r, eval = FALSE}
+## convert data to raster format
+library(raster)
+# make backbone
+rast.backbone <- raster(xmn = min(location$lng), xmx = max(location$lng),
+                        ymn = min(location$lat), ymx = max(location$lat),
+                        ncol = length(unique(location$lng)),
+                        nrow = length(unique(location$lat)),
+                        # nrow = 1e4, ncol = 1e4 ## use 1e8 pixels
+                        )
+
+# initialize RasterStack
+AK.stack <- stack()
+
+# add layer for each column of X
+for(i in 1:ncol(X)){
+  # create raster from data and raster backbone
+  AK.rast <- rasterize(as.matrix(location), rast.backbone, X[,i], fun = mean)
+  AK.rast <- trim(AK.rast, internal = TRUE)
+  names(AK.rast) <- colnames(X)[i]
+  # add raster as layer to the stack
+  AK.stack <- addLayer(AK.stack, AK.rast)
+}
+
+writeRaster(AK.stack, "../data/AK-RasterStack.grd", overwrite = TRUE)
+
+AK.stack <- brick("../data/AK-RasterStack.grd")
+
+canProcessInMemory(AK.stack)
+
+land.class <- factor((mod.mat %*% (1:ncol(mod.mat))) + 1, 
+         labels = c(colnames(mod.mat)))
+
+land.raster <- rasterize(as.matrix(location), rast.backbone, as.numeric(land.class))
+```
+
+Since our raster files are mostly ocean, the grid is comprised of mostly empty cells:
+
+```{r, eval = FALSE}
+summary(AK.stack[[1]])
+```
+
+
+```{r, eval = FALSE}
+# calculate the CLS coefficient for the raster file
+CLS.rast = calc(AK.stack, 
+                function(x){if(is.na(x[1])){NA
+                }else{
+                  fitCLS(x, t = 1:nlayers(AK.stack))$coef["time", "Estimate"]}
+                })
+## First, make a list of the data cells to include
+
+
+# I'll simply do this by selecting the cells that are not NA in the first layer
+dat.indx <- which(!is.na(values(AK.stack[[1]])))
+
+part.mat <- sample_partitions(pixels = dat.indx, npart = 4)
+
+# exctract pixels from first partition
+rast.sub <- extract(AK.stack, part.mat[,1])
+
+
+rast.sub[1:5, 1:5] #head(rast.sub)
+y.sub = extract(CLS.rast, part.mat[,1])
+land  = extract(land.raster, part.mat[, 1])
+mm = model.matrix(~ 0 + factor(land))
+colnames(mm) <- levels(land.class)
+
+loc = xyFromCell(CLS.rast, cell = part.mat[, 1])
+
+r.est = fit_spatialcor(X = rast.sub, t = 1:nlayers(AK.stack), location = loc)
+
+D = geosphere::distm(loc)
+V = fitV(D, spatialcor = r.est$spatialcor)
+dfs <- calc_df(nrow(part.mat), p = ncol(X), p0 = ncol(X0))
+## and then the rast.sub can be used just like a matrix in GLS
+X0 = cbind(rep(1, length(y.sub)))
+
+(out.GLS <- GLS_worker(y = y.sub, X = mm, V = V, X0 = X0))
+```
+
+```{r, eval = FALSE}
+N = 2e8 #200Mill pixels
+
+rasterfile = "../raster-test.grd"
+
+tmp <- raster(ncol = sqrt(N), nrow = sqrt(N))
+
+writeRaster(x = tmp, filename = rasterfile, overwrite = TRUE)
+
+tmp <- raster(rasterfile)
+
+
+tmp[50] <-  1
+
+which(!is.na(values(tmp)))
+
+extract(tmp, 50)
+```
+
+## Old Code / Test Code: 
+
+```{r, echo = FALSE, eval = FALSE}
+## shows that the correlated chisqr test is randombly distributed about 0
+## when it is sufficiently low. 
+
+F.means = seq(50, .1, length.out = 100)
+p.vals <- sapply(F.means, function(x){
+  correlated.chisq(x, rSSR, df1, ncol(part.mat))
+})
+
+plot(x = F.means[1:95], y = p.vals[1:95])
+```
+
 <!-- However, this dataset is very small and results can vary: lets look at a few -->
 <!-- different subsets of `ndvi_AK`, each of 3000 sites. -->
 
@@ -346,7 +657,6 @@ print(Ftest_sub)
 
 rm("ndvi_AK")
 ```
-
 
 <!-- I'm still working on the partitioned version -->
 
