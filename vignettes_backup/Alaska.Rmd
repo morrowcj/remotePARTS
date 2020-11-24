@@ -318,12 +318,6 @@ round(cbind("Fmean" = results.cpp$Fmean, "pval" = pval.Fpart$pF.boot$pvalue), 4)
 
 ## More on the partitioned GLS method
 
-```{r save alaska vignette data, eval = FALSE, echo = FALSE}
-save(list = ls(), file = "alaska-vignette-data.RData")
-
-load("alaska-vignette-data.RData", verbose = TRUE)
-```
-
 Here, we will provide a description of how to use the individual functions for
 the partitioned GLS method. 
 
@@ -423,20 +417,26 @@ test:
 F.mean = mean(sapply(part.results, function(x){x$Fstat})) # average partition F
 coef.means = rowMeans(sapply(part.results, function(x){x$betahat})) # coef est (land class)
 coef0.mean = mean(sapply(part.results, function(x){x$betahat0})) # null coefs
+part.SEs = sapply(part.results, function(x){x$SE}) # partition standard errors
 
 ## average cross-partition stats
+rcoef.mean = rowMeans(sapply(cross.results, function(x){x$rcoef})) #cross-coef for conf ints
 rSSR = mean(sapply(cross.results, function(x){x$rSSRij})) # regression sum of squares
 rSSE = mean(sapply(cross.results, function(x){x$rSSEij})) # residual sum of squares
 
+
 # calculate the correlated test statistics
-## correlated chisquared test
+## correlated chisquared test: are trends different among land class?
 ( p.chisqr = correlated.chisq(F.mean, rSSR, df1, npart = ncol(part.mat)) )
-# correlated F test
+# correlated F test: are trends different among land class?
 ( p.corF = correlated.F.bootstrap(F.mean, rSSR, rSSE, df1, df2, 
                                   npart = ncol(part.mat), nboot = 2000) )
+# t-test: are trends in land classes different from 0?
+  (t.test = correlated.t(coefs = coef.means, part.SEs = part.SEs, rcoef = rcoef.mean, 
+                   df2 = df2, npart = ncol(part.mat)) )
 ```
 
-`fitGLS_partition()` does all of this behind the scenes but it may be important
+`fitGLS_partition()` does (**WILL**) all of this behind the scenes but it may be important
 when analyzing extremely large data sets to know how the individual components
 work together. The above steps could be easily extended for distributed or 
 parallel computing which may be necessary if (A) the entire data set cannot be
@@ -458,6 +458,13 @@ detail here but simply note that implementing this functionality could be
 trivially simple. That being said, minimal multi-core functionality is 
 implemented internally through the C++ libraries `Eigen` and `openMP` (**NOTE** 
 this is still not reliably present in the package). 
+
+
+```{r save alaska vignette data, eval = FALSE, echo = FALSE}
+save(list = ls(), file = "alaska-vignette-data.RData")
+
+load("alaska-vignette-data.RData", verbose = TRUE)
+```
 
 ### `fitGLS_partition()`
 

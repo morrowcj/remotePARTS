@@ -69,8 +69,11 @@ List crosspart_worker_cpp(const MapMatd& xxi,
   MatrixXd B = Vij * tUinv_j.adjoint(); //tcrossprod(Vij, tUinv_j)
   MatrixXd Rij = tUinv_i * B;
 
-  MatrixXd Hi = xxi * solve_ident_cpp(xxi.adjoint() * xxi) * xxi.adjoint();
-  MatrixXd Hj = xxj * solve_ident_cpp(xxj.adjoint() * xxj) * xxj.adjoint();
+  MatrixXd Wi = solve_ident_cpp(xxi.adjoint() * xxi);
+  MatrixXd Wj = solve_ident_cpp(xxj.adjoint() * xxj);
+
+  MatrixXd Hi = xxi * Wi * xxi.adjoint();
+  MatrixXd Hj = xxj * Wj * xxj.adjoint();
 
   MatrixXd Hi0 = xxi0 * solve_ident_cpp(xxi0.adjoint() * xxi0) * xxi0.adjoint();
   MatrixXd Hj0 = xxj0 * solve_ident_cpp(xxj0.adjoint() * xxj0) * xxj0.adjoint();
@@ -131,6 +134,12 @@ List crosspart_worker_cpp(const MapMatd& xxi,
   // calculate rSSEij
   MatrixXd rSSEij = (SiEvec.adjoint() * Evec).array()/df2;
 
+  // calculate rcoef
+  MatrixXd Vcoefij = Wi * (xxi.adjoint() * Rij * xxj) * Wj.adjoint();
+  MatrixXd rcoefij = Vcoefij.diagonal().array() * (Wi.diagonal().array() *
+    Wj.diagonal().array());
+  rcoefij = pow(rcoefij.array(), -0.5);
+
   // output ----
   List out_lst = List::create(Named("Rij") = Rij,
                               Named("Hi") = Hi,
@@ -139,6 +148,7 @@ List crosspart_worker_cpp(const MapMatd& xxi,
                               Named("Hj0") = Hj0,
                               Named("SiR") = SiR,
                               Named("SjR") = SjR,
+                              Named("rcoefij") = rcoefij,
                               Named("rSSRij") = rSSRij.matrix(),
                               Named("rSSEij") = rSSEij.matrix());
 

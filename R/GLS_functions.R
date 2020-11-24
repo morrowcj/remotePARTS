@@ -606,6 +606,32 @@ correlated.chisq <- function(Fmean, rSSR, df1, npart){
   return(pvalue)
 }
 
+#' analytical t-test for partitioned GLS
+#'
+#' @param coefs the coefficients to test - averaged across partitions
+#' @param part.SEs matrix of partition standard errors (columns are partitions)
+#' @param rcoef cross-coefficient averaged across partition pairs
+#' @param df2 second degrees of freedom from partitioned GLS
+#' @param npart number of partitions the data was split into
+#'
+#' @export
+correlated.t <- function(coefs, part.SEs, rcoef, df2, npart){
+
+  secoef <- matrix(NA, length(coefs), 1)
+  for(i in seq_len(length(coefs))){
+    R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1,npart,npart)
+    secoef[i,] <- (part.SEs[i,] %*% R %*% part.SEs[i,])^.5/npart
+  }
+
+  tscore <- coefs/secoef
+  pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = FALSE)
+
+  ttest <- cbind(coefs, secoef, tscore, pvalue)
+  colnames(ttest) <- c("coefs", "se", "tscore", "P")
+
+  return(p.t = ttest)
+}
+
 #' Wrapper for bootsrap test
 #'
 #' @param starpart output of partitioned GLS model...
@@ -638,6 +664,11 @@ GLS.partition.pvalue <- function(starpart, nboot = 2000){
 
   pF.adjust = c("hochberg" = pF.hoch, "hommel" = pF.homm, "fdr" = pF.fdr,
                 "boot" = p.Fmean$pvalue)
+
+  # p.t <- correlated.t(coef = z$coef, se.part = z$se.part,
+  #                     rcoef = z$rcoef, z$df2, npart = z$npart)
+
+
 
 
   return(list("pF.boot" = p.Fmean, "p.chisqr" = pchisqr, "pF.adj" = pF.adjust))
