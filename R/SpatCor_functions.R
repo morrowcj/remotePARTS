@@ -105,7 +105,7 @@ scale_dist <- function(location, scl = 1000){
 #'
 #' @examples #TBA
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
-                           fit.n = 100, fun = "exp",
+                           fit.n = 1000, fun = "exp",
                            dist, location,
                            scale.dist = TRUE, dist.scl = 1000, U = NULL,
                            covars = NULL, plot.fig = FALSE, cols.plot = NULL,

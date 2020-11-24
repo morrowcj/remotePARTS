@@ -9,7 +9,7 @@ fit_spatialcor(
   t,
   r.start = 0.1,
   a.start = 1,
-  fit.n = 100,
+  fit.n = 1000,
   fun = "exp",
   dist,
   location,
