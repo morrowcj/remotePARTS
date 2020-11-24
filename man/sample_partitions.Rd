@@ -4,10 +4,12 @@
 \alias{sample_partitions}
 \title{function to calculate partition size or number of partitions}
 \usage{
-sample_partitions(npix, npart = 10, partsize = NA, verbose = TRUE)
+sample_partitions(npix, pixels = NA, npart = 10, partsize = NA, verbose = TRUE)
 }
 \arguments{
 \item{npix}{number of pixels in full dataset}
+
+\item{pixels}{vector of pixel indexes to sample from}
 }
 \description{
 function to calculate partition size or number of partitions
@@ -15,4 +17,5 @@ function to calculate partition size or number of partitions
 \examples{
 dat.M <- matrix(rnorm(3000*20), ncol = 20)
 dat.rast <- raster::raster(dat.M)
+
 }

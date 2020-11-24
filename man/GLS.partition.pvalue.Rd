@@ -9,7 +9,7 @@ GLS.partition.pvalue(starpart, nboot = 2000)
 \arguments{
 \item{starpart}{output of partitioned GLS model...}
 
-\item{nboot}{bootsraps}
+\item{nboot}{number of bootstraps to run for F-test (NA skips bootstrap)}
 }
 \value{
 
