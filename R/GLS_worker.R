@@ -38,6 +38,15 @@ GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
   stopifnot(nug.l >= 0)
   stopifnot(nug.u <= 1)
 
-  return(.Call(`_remoteSTAR_GLS_worker_cpp`, y, X, V, X0, nug.l, nug.u, nug.tol,
-               save_xx))
+  ## Execute C++ GLS worker function
+  out <- .Call(`_remoteSTAR_GLS_worker_cpp`, y, X, V, X0, nug.l, nug.u, nug.tol,
+               save_xx)
+
+  ## calculate p values outside of C++
+  out$pval.t <- sapply(out$tstat, function(tval){ #t test
+    2*pt(abs(tval), df = out$dft, lower.tail = FALSE)
+  })
+  out$pval.F <- pf(out$Fstat, out$df.F[1], out$df.F[2], lower.tail = FALSE) #F test
+
+  return(out)
 }
