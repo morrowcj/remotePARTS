@@ -3,12 +3,20 @@
 #' function to calculate partition size or number of partitions
 #'
 #' @param npix number of pixels in full dataset
-#'
+#' @param pixels vector of pixel indexes to sample from
 #' @examples
 #' dat.M <- matrix(rnorm(3000*20), ncol = 20)
 #' dat.rast <- raster::raster(dat.M)
-sample_partitions <- function(npix, npart = 10, partsize = NA, verbose = TRUE){
+#'
+#' @export
+sample_partitions <- function(npix, pixels = NA, npart = 10, partsize = NA, verbose = TRUE){
 
+  if(!is.na(pixels) && length(pixels) > 1){
+    npix = length(pixels)
+    from = pixels
+  } else {
+    from = 1:npix
+  }
 
   ## check which npart of partsize was given
   no.partsize <- (missing(partsize) || is.na(partsize) | is.null(partsize))
@@ -16,27 +24,43 @@ sample_partitions <- function(npix, npart = 10, partsize = NA, verbose = TRUE){
 
   ## caclulate partition size
   if(no.partsize){
-    if(verbose){print("calculating partsize\n")}
+    if(verbose){print("calculating partsize")}
     partsize = (npix - (npix%%npart)) / npart
   }
 
   ## OR calculate number of partitions
   if(no.npart){
-    if(verbose){print("calculating npart\n")}
-    npart = floor(npix/part.size)
+    if(verbose){print("calculating npart")}
+    npart = floor(npix/partsize)
   }
 
   if(npart * partsize > npix){
     stop("npart * partsize may not be greater than npix")
   }
 
-  part.mat <- matrix(sample.int(npix, size = npix, replace = FALSE),
-                     ncol = npart, nrow = partsize)
+  remainder = npix %% partsize
+  samp <- sample(from, size = npix - remainder, replace = FALSE)
+
+  part.mat <- matrix(samp, ncol = npart, nrow = partsize)
   colnames(part.mat) <- paste("part",1:npart, sep = ".")
 
   return(part.mat)
 }
 
+#' calculate degrees of freedom for partitioned GLS
+#'
+#' @param part.size number of pixels in each partition
+#' @param p number of predictors in alternate model
+#' @param p0 number of parameters in null model
+#'
+#' @export
+calc_df <- function(part.size, p, p0){
+  stopifnot(length(part.size) == 1)
+  df2 = part.size - (p - 1)
+  df0 = part.size - (p0 - 1)
+  df1 = df0 - df2
+  return(c("df1" = df1, "df2" = df2))
+}
 
 ##### NOTE:: This function is the same name as the one in GLS_functions.R and
 ##### should eventually be changed to just fitGLS.partition()
