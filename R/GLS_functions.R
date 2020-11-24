@@ -581,20 +581,42 @@ correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2,
     MSE.boot <- 1 + D.MSE %*% rnorm(npart, mean=0, sd=(2*df2)^.5/df2)
     if(Fmean.obs < mean(MSR.boot/MSE.boot)) count <- count + 1
   }
-  return(list(pvalue = count/nboot, nboot = nboot, rank.MSR = rank.MSR))
+  pval = ifelse(count/nboot == 0, 1/nboot, count/nboot)
+  return(list(pvalue = pval, nboot = nboot, rank.MSR = rank.MSR))
+}
+
+#' Correlated chi-squared test
+#'
+#' @details performs a correlated chi-squared test on cross-partition GLS
+#' results.
+#'
+#' @param Fmean average partition F value
+#' @param rSSR cross-partition regression sum of squares
+#' @param df1 first degrees of freedom
+#' @param npart number of partitions used to split the data
+#'
+#' @export
+correlated.chisq <- function(Fmean, rSSR, df1, npart){
+  rZ <- rSSR^.5/df1
+  v.MSR <- diag(df1) - rZ
+  V.MSR <- kronecker(diag(npart),v.MSR) + rZ
+  lambda <- eigen(V.MSR)$values
+  pvalue <- CompQuadForm::imhof(q = npart * df1 * Fmean, lambda = lambda)$Qq
+  pvalue = ifelse(pvalue <= 1e-06, 1e-06, pvalue) # prevent from being negative/too low
+  return(pvalue)
 }
 
 #' Wrapper for bootsrap test
 #'
 #' @param starpart output of partitioned GLS model...
-#' @param nboot bootsraps
+#' @param nboot number of bootstraps to run for F-test (NA skips bootstrap)
 #'
 #' @return
 #' @export
 #'
 #' @examples #TBA
 GLS.partition.pvalue <- function(starpart, nboot = 2000){
-  if(is.finite(starpart$rSSR)) {
+  if(is.finite(starpart$rSSR) & !is.na(nboot)) {
     p.Fmean <- correlated.F.bootstrap(Fmean.obs = starpart$Fmean,
                                       rSSR = starpart$rSSR,
                                       rSSE = starpart$rSSE,
@@ -607,6 +629,9 @@ GLS.partition.pvalue <- function(starpart, nboot = 2000){
   }
   pF.part = sapply(starpart$part_results, function(x)x$pval.F)
 
+  pchisqr = correlated.chisq(starpart$Fmean, starpart$rSSR,
+                             starpart$df1, starpart$npart)
+
   pF.hoch <- min(p.adjust(pF.part, "hochberg"))
   pF.homm <- min(p.adjust(pF.part, "hommel"))
   pF.fdr <- min(p.adjust(pF.part, "fdr"))
@@ -615,7 +640,7 @@ GLS.partition.pvalue <- function(starpart, nboot = 2000){
                 "boot" = p.Fmean$pvalue)
 
 
-  return(list("pF.boot" = p.Fmean, "pF.adj" = pF.adjust))
+  return(list("pF.boot" = p.Fmean, "p.chisqr" = pchisqr, "pF.adj" = pF.adjust))
 }
 
 
