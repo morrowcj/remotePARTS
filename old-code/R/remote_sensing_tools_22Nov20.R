@@ -1,33 +1,31 @@
 # from GarrettMooney/moonmisc: Personal Utility Functions
 
 # memory reporting function
-.ls.objects <- function (pos = 1, pattern, order.by,
-                        decreasing=FALSE, head=FALSE, n=5) {
-    napply <- function(names, fn) sapply(names, function(x)
-                                         fn(get(x, pos = pos)))
-    names <- ls(pos = pos, pattern = pattern)
-    obj.class <- napply(names, function(x) as.character(class(x))[1])
-    obj.mode <- napply(names, mode)
-    obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
-    obj.prettysize <- napply(names, function(x) {
-                           format(utils::object.size(x), units = "auto") })
-    obj.size <- napply(names, object.size)
-    obj.dim <- t(napply(names, function(x)
-                        as.numeric(dim(x))[1:2]))
-    vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
-    obj.dim[vec, 1] <- napply(names, length)[vec]
-    out <- data.frame(obj.type, obj.size, obj.prettysize, obj.dim)
-    names(out) <- c("Type", "Size", "PrettySize", "Length/Rows", "Columns")
-    if (!missing(order.by))
-        out <- out[order(out[[order.by]], decreasing=decreasing), ]
-    if (head)
-        out <- head(out, n)
-    out
+.ls.objects <- function(pos = 1, pattern, order.by, decreasing = FALSE, head = FALSE, n = 5) {
+	napply <- function(names, fn) sapply(names, function(x) fn(get(x, pos = pos)))
+	names <- ls(pos = pos, pattern = pattern)
+	obj.class <- napply(names, function(x) as.character(class(x))[1])
+	obj.mode <- napply(names, mode)
+	obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
+	obj.prettysize <- napply(names, function(x) {
+		format(utils::object.size(x), units = "auto")
+	})
+	obj.size <- napply(names, object.size)
+	obj.dim <- t(napply(names, function(x) as.numeric(dim(x))[1:2]))
+	vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
+	obj.dim[vec, 1] <- napply(names, length)[vec]
+	out <- data.frame(obj.type, obj.size, obj.prettysize, obj.dim)
+	names(out) <- c("Type", "Size", "PrettySize", "Length/Rows", "Columns")
+	if (!missing(order.by))
+		out <- out[order(out[[order.by]], decreasing = decreasing), ]
+	if (head)
+		out <- head(out, n)
+	out
 }
 
 # shorthand
-lsos <- function(..., n=10) {
-    .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
+lsos <- function(..., n = 10) {
+	.ls.objects(..., order.by = "Size", decreasing = TRUE, head = TRUE, n = n)
 }
 
 
@@ -91,7 +89,7 @@ AR.reml <- function(formula, data = list()) {
 
 #################################################
 simX <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = NULL, t.scale, n, n.obs, n.burn, seed = 0) {
-	set.seed(seed=seed)
+	set.seed(seed = seed)
 	mf <- model.frame(formula = formula, data = data)
 	u <- model.matrix(attr(mf, "terms"), data = mf)
 	if (!is.matrix(coef))
@@ -126,7 +124,7 @@ simX <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = NULL, t
 
 #################################################
 simX_shock <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = NULL, t.scale, n, n.obs, n.burn, seed = 0, shock = 0, n.shock = 0) {
-	set.seed(seed=seed)
+	set.seed(seed = seed)
 	mf <- model.frame(formula = formula, data = data)
 	u <- model.matrix(attr(mf, "terms"), data = mf)
 	if (!is.matrix(coef))
@@ -151,7 +149,7 @@ simX_shock <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = N
 			x <- d
 		} else {
 			d <- b * d + e
-			if(t == (n.burn + n.shock)) {
+			if (t == (n.burn + n.shock)) {
 				d <- d + shock
 			}
 			x <- t.scale[t - n.burn] * as.numeric(u %*% coef) + d
@@ -165,7 +163,7 @@ simX_shock <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = N
 
 #################################################
 #CLS with no scaled time variable
-CLS.fit.U <- function(X, U=NULL) {
+CLS.fit.U <- function(X, U = NULL) {
 
 	n <- dim(X)[1]
 
@@ -176,12 +174,12 @@ CLS.fit.U <- function(X, U=NULL) {
 
 		d$mean[i] <- mean(x)
 
-		if(is.null(U)){
+		if (is.null(U)) {
 			z.CLS <- lm(x[-1] ~ x[-length(x)])
 			d$b0[i] <- summary(z.CLS)$coef[1, 1]
 			d$b[i] <- summary(z.CLS)$coef[2, 1]
 			d$MSE[i] <- summary(z.CLS)$sigma^2
-		}else{
+		} else {
 			u <- U[i, ]
 			z.CLS <- lm(x[-1] ~ x[-length(x)] + u[-length(x)])
 			d$b0[i] <- summary(z.CLS)$coef[1, 1]
@@ -241,7 +239,7 @@ MK.fit <- function(X, t.scale) {
 	for (i in 1:dim(X)[1]) {
 		x <- X[i, ]
 
-		z.MK <- cor.test(x, t.scale, method="kendall")
+		z.MK <- cor.test(x, t.scale, method = "kendall")
 
 		d$c.mk[i] <- z.MK$estimate
 		d$p.mk[i] <- z.MK$p.value
@@ -327,7 +325,7 @@ spatialcor.fit <- function(X, t.scale, Dist, r.start = 0.1, fit.n.sample, FUN = 
 	return(list(spatialcor = spatialcor, spatialcor.sigma = summary(fit)$sigma))
 }
 
-spatialcor.fit.U <- function(X, U=NULL, Dist, r.start = 0.1, fit.n.sample, FUN = "exponential", plot.fig = F, col.plot = NULL) {
+spatialcor.fit.U <- function(X, U = NULL, Dist, r.start = 0.1, fit.n.sample, FUN = "exponential", plot.fig = F, col.plot = NULL) {
 
 	n <- nrow(X)
 
@@ -338,9 +336,9 @@ spatialcor.fit.U <- function(X, U=NULL, Dist, r.start = 0.1, fit.n.sample, FUN =
 	for (i in 1:fit.n.sample) {
 		x <- X[fit.pick[i], ]
 
-		if(is.null(U)){
+		if (is.null(U)) {
 			z.CLS <- lm(x[-1] ~ x[-length(x)])
-		}else{
+		} else {
 			u <- U[i, ]
 			z.CLS <- lm(x[-1] ~ x[-length(x)] + u[-length(x)])
 		}
@@ -405,8 +403,8 @@ spatialcor.fit.data <- function(X, t.scale, data, r.start = 0.1, a.start = 1, fi
 	cor.resid <- cor(t(resid))
 
 	# create distance matrix in kilometers
-	location <- data[fit.pick,c('lng','lat')]
-	Dist <- geosphere::distm(location, fun=distGeo)/1000
+	location <- data[fit.pick, c("lng", "lat")]
+	Dist <- geosphere::distm(location, fun = distGeo)/1000
 	dist <- Dist/max(Dist)
 
 	# colors for plotting
@@ -433,13 +431,13 @@ spatialcor.fit.data <- function(X, t.scale, data, r.start = 0.1, a.start = 1, fi
 	}
 	if (FUN == "exponential-power") {
 		#fit <- nls(cor ~ exp(-(dist/r)^a), data = w, start = list(r = r.start, a = a.start), nls.control(maxiter = 500))
-#browser()
-		# f <- function(x) {
-			# r <- x[1]
-			# a <- x[2]
-			# return(sum(exp((-w$dist/r)^a) - w$cor)^2)
-		# }
-		# fit <- optim(f, par = c(r.start, a.start))
+		#browser()
+# f <- function(x) {
+# r <- x[1]
+# a <- x[2]
+# return(sum(exp((-w$dist/r)^a) - w$cor)^2)
+# }
+# fit <- optim(f, par = c(r.start, a.start))
 
 		fit <- nls(cor ~ exp(-(dist/r)^a), data = w, start = list(r = r.start, a = a.start), nls.control(maxiter = 500))
 		spatialcor <- coef(fit)
@@ -482,17 +480,19 @@ nugget.fit.funct <- function(nugget, formula, data, V, verbose = FALSE) {
 	n <- ncol(V)
 	invcholV <- t(backsolve(chol((1 - nugget) * V + nugget * diag(n)), diag(n)))
 	z <- GLS.fit(formula, data = data, invcholV = invcholV)
-	if(verbose == TRUE) show(c(z$logLik, nugget))
+	if (verbose == TRUE)
+		show(c(z$logLik, nugget))
 	return(z$logLik)
 }
 
 
-nugget.fit <- function(formula, data, V, nugget.tol = 0.00001, interval = c(0, 1), verbose = FALSE) {
+nugget.fit <- function(formula, data, V, nugget.tol = 1e-05, interval = c(0, 1), verbose = FALSE) {
 	opt.nugget <- optimize(nugget.fit.funct, formula, data = data, V = V, interval = interval, maximum = T, tol = nugget.tol, verbose = verbose)
 	# check at the zero boundary
-	if(opt.nugget$maximum < nugget.tol){
+	if (opt.nugget$maximum < nugget.tol) {
 		nugget0.fit <- nugget.fit.funct(0, formula, data, V)
-		if(nugget0.fit > opt.nugget$objective) opt.nugget$maximum <- 0
+		if (nugget0.fit > opt.nugget$objective)
+			opt.nugget$maximum <- 0
 	}
 	return(opt.nugget$maximum)
 }
@@ -516,7 +516,7 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL, s
 	xx <- invcholV %*% x
 	yy <- invcholV %*% y
 
-	coef <- as.numeric(solve(crossprod(xx), crossprod(xx,yy)))
+	coef <- as.numeric(solve(crossprod(xx), crossprod(xx, yy)))
 	names(coef) <- colnames(x)
 	varX <- t(xx) %*% xx
 	SSE <- as.numeric(crossprod(yy - xx %*% coef))
@@ -529,7 +529,7 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL, s
 	p.t <- 2 * pt(abs(t), df = df.t, lower.tail = F)
 
 	logdetV <- -2 * sum(log(diag(invcholV)))
-	logLik <- -0.5 * (n * log(2 * pi) + n * log((n-ncol(xx))*MSE/n) + logdetV + n)
+	logLik <- -0.5 * (n * log(2 * pi) + n * log((n - ncol(xx)) * MSE/n) + logdetV + n)
 
 	if (is.null(formula0)) {
 		x0 <- matrix(1, nrow = n, ncol = 1)
@@ -542,11 +542,11 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL, s
 		x0 <- model.matrix(attr(mf0, "terms"), data = mf0)
 		xx0 <- invcholV %*% x0
 
-		if(any(xx0 != 0)){
+		if (any(xx0 != 0)) {
 			coef0 <- solve(crossprod(xx0), crossprod(xx0, yy))
 			SSE0 <- as.numeric(crossprod(yy - xx0 %*% coef0))
 			df0 <- ncol(coef0)
-		}else{
+		} else {
 			SSE0 <- as.numeric(crossprod(yy))
 			df0 <- 1
 			coef0 <- NA
@@ -554,13 +554,13 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL, s
 	}
 	MSE0 <- SSE0/(n - ncol(xx))
 	MSR <- (SSE0 - SSE)/(ncol(xx) - ncol(xx0))
-	logLik0 <- -0.5 * (n * log(2 * pi) + n * log((n-df0)*MSE0/n) + logdetV + n)
+	logLik0 <- -0.5 * (n * log(2 * pi) + n * log((n - df0) * MSE0/n) + logdetV + n)
 
-	if(any(xx0 != 0)){
+	if (any(xx0 != 0)) {
 		varX0 <- t(xx0) %*% xx0
 		varcov0 <- MSE0 * solve(varX0)
 		se0 <- diag(varcov0)^0.5
-	}else{
+	} else {
 		varcov0 <- NULL
 		se0 <- NULL
 	}
@@ -579,14 +579,17 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL, s
 		df.F <- c(df1.F, df2.F)
 	}
 
-	if(!save.invcholV) invcholV <- NULL
+	if (!save.invcholV)
+		invcholV <- NULL
 
-	return(list(coef = coef, se = se, t = t, df.t = df.t, p.t = p.t, F = FF, df1.F = df1.F, df2.F = df2.F, p.F = p.F, logLik = logLik, logLik0 = logLik0, MSE = MSE, MSE0 = MSE0, MSR = MSR, SSE = SSE, SSE0 = SSE0, SSR = SSE0 - SSE, coef0 = coef0, se0 = se0, varX = varX, varcov = varcov, varcov0 = varcov0, invcholV = invcholV, xx=xx, xx0=xx0, yy=yy))
+	return(list(coef = coef, se = se, t = t, df.t = df.t, p.t = p.t, F = FF, df1.F = df1.F, df2.F = df2.F, p.F = p.F, logLik = logLik, logLik0 = logLik0, MSE = MSE, MSE0 = MSE0, MSR = MSR,
+		SSE = SSE, SSE0 = SSE0, SSR = SSE0 - SSE, coef0 = coef0, se0 = se0, varX = varX, varcov = varcov, varcov0 = varcov0, invcholV = invcholV, xx = xx, xx0 = xx0, yy = yy))
 }
 
 
 #################################################
-GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor, est.nugget = T, npart = 10, partition = NULL, nugget.interval = c(0,1), fixed.nugget = NULL, nugget.tol = 0.00001, min.num.cross.part = 5, verbose = F, rm.spatial.autocorrelation = F) {
+GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor, est.nugget = T, npart = 10, partition = NULL, nugget.interval = c(0,
+	1), fixed.nugget = NULL, nugget.tol = 1e-05, min.num.cross.part = 5, verbose = F, rm.spatial.autocorrelation = F) {
 
 	n <- nrow(data)
 	if (!is.null(partition)) {
@@ -606,10 +609,12 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 	df0 <- n.p - (ncol(model.matrix(attr(mf0, "terms"), data = mf0)) - 1)
 	df1 <- df0 - df2
 
-	if(min.num.cross.part > npart) min.num.cross.part <- npart
-	if(ncol(mf) <= 1){
-	  min.num.cross.part <- NA
-	}
+	if (min.num.cross.part > npart)
+		min.num.cross.part <- npart
+	# NEED TO REMOVE
+	# if(ncol(mf) <= 1){
+# min.num.cross.part <- NA
+# }
 
 	SSR.part <- NULL
 	SSE.part <- NULL
@@ -628,17 +633,17 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 	xx0.part <- list(NULL)
 	for (i in 1:npart) {
 
-		data.part <- data[pick[i,],]
+		data.part <- data[pick[i, ], ]
 
-		if(rm.spatial.autocorrelation == F){
+		if (rm.spatial.autocorrelation == F) {
 			# create distance matrix in kilometers
-			location <- data.part[,c('lng','lat')]
-			Dist.part <- geosphere::distm(location, fun=distGeo)/1000
+			location <- data.part[, c("lng", "lat")]
+			Dist.part <- geosphere::distm(location, fun = distGeo)/1000
 
 			Vp <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 			if (is.null(fixed.nugget) & est.nugget) {
 				nugget <- nugget.fit(formula, data.part, Vp, interval = nugget.interval, verbose = verbose)
-				nugget.interval <- c(0, max(1000*nugget.tol, min(100*nugget,1)))
+				nugget.interval <- c(0, max(1000 * nugget.tol, min(100 * nugget, 1)))
 				Vp <- (1 - nugget) * Vp + nugget * diag(n.p)
 			} else {
 				if (is.null(fixed.nugget)) {
@@ -649,7 +654,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 					Vp <- (1 - nugget) * Vp + nugget * diag(n.p)
 				}
 			}
-		}else{
+		} else {
 			Vp <- diag(n.p)
 		}
 		invcholV <- t(backsolve(chol(Vp), diag(n.p)))
@@ -662,110 +667,105 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 		coef0.part <- cbind(coef0.part, z.part$coef0)
 		se.part <- cbind(se.part, z.part$se)
 		se0.part <- cbind(se0.part, z.part$se0)
-		F.part <-  c(F.part, z.part$F)
-		p.F.part <-  c(p.F.part, z.part$p.F)
+		F.part <- c(F.part, z.part$F)
+		p.F.part <- c(p.F.part, z.part$p.F)
 		logLik.part <- c(logLik.part, z.part$logLik)
 		logLik0.part <- c(logLik0.part, z.part$logLik0)
 		nugget.part <- c(nugget.part, nugget)
 
-		if(!is.na(min.num.cross.part) && i <= min.num.cross.part){
+		if (!is.na(min.num.cross.part) && i <= min.num.cross.part) {
 			invcholV.part[[i]] <- invcholV
 			xx.part[[i]] <- z.part$xx
 			xx0.part[[i]] <- z.part$xx0
 		}
-		if(verbose) {
-			show(paste0("partition ",i," of ", npart))
+		if (verbose) {
+			show(paste0("partition ", i, " of ", npart))
 			show(z.part$coef)
 			show(z.part$p.F)
 		}
 	}
 
-	if(!is.na(min.num.cross.part)){
-########## start NEED TO ADD IN remoteSTAR ##########
-	  rSSE.part <- matrix(NA, nrow=npart, ncol=npart)
-	  rSSR.part <- matrix(NA, nrow=npart, ncol=npart)
-	  rcoef.part <- matrix(NA, nrow=min.num.cross.part*(min.num.cross.part - 1)/2, ncol=ncol(mf)) # NEED TO ADD
-	  counter <- 0
-	  for (i in 1:(min.num.cross.part-1)) for (j in (i+1):min.num.cross.part) {
-	    counter <- counter + 1
-	    # create distance matrix in kilometers
-	    location1 <- data[pick[i,],c('lng','lat')]
-	    location2 <- data[pick[j,],c('lng','lat')]
-	    Dist.part <- geosphere::distm(location1, location2, fun=distGeo)/1000
-	    V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
-	    V12 <- sqrt((1 - nugget.part[i])*(1 - nugget.part[j])) * V12
+	#	if(!is.na(min.num.cross.part)){  # NEED TO REMOVE
+	########## start NEED TO ADD IN remoteSTAR ##########
+	rSSE.part <- matrix(NA, nrow = npart, ncol = npart)
+	rSSR.part <- matrix(NA, nrow = npart, ncol = npart)
+	rcoef.part <- matrix(NA, nrow = min.num.cross.part * (min.num.cross.part - 1)/2, ncol = nrow(coef.part)) # NEED TO ADD
+	counter <- 0
+	for (i in 1:(min.num.cross.part - 1)) for (j in (i + 1):min.num.cross.part) {
+		counter <- counter + 1
+		# create distance matrix in kilometers
+		location1 <- data[pick[i, ], c("lng", "lat")]
+		location2 <- data[pick[j, ], c("lng", "lat")]
+		Dist.part <- geosphere::distm(location1, location2, fun = distGeo)/1000
+		V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+		V12 <- sqrt((1 - nugget.part[i]) * (1 - nugget.part[j])) * V12
 
-	    Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
+		Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
 
-	    xx1 <- xx.part[[i]]
-	    xx2 <- xx.part[[j]]
-	    xx10 <- xx0.part[[i]]
-	    xx20 <- xx0.part[[j]]
+		xx1 <- xx.part[[i]]
+		xx2 <- xx.part[[j]]
+		xx10 <- xx0.part[[i]]
+		xx20 <- xx0.part[[j]]
 
-		W1 <- solve(t(xx1) %*% xx1) ## NEED TO ADD
-		W2 <- solve(t(xx2) %*% xx2) ## NEED TO ADD
-	    H1 <- xx1 %*% W1 %*% t(xx1)
-	    H2 <- xx2 %*% W2 %*% t(xx2)
+		W1 <- solve(t(xx1) %*% xx1)
+		W2 <- solve(t(xx2) %*% xx2)
+		H1 <- xx1 %*% W1 %*% t(xx1)
+		H2 <- xx2 %*% W2 %*% t(xx2)
 
-	    if(!is.na(xx10[1])){
-	      H10 <- xx10 %*% solve(t(xx10) %*% xx10) %*% t(xx10)
-	      H20 <- xx20 %*% solve(t(xx20) %*% xx20) %*% t(xx20)
-	    }else{
-	      H10 <- 0
-	      H20 <- 0
-	    }
+		if (!is.na(xx10[1])) {
+			H10 <- xx10 %*% solve(t(xx10) %*% xx10) %*% t(xx10)
+			H20 <- xx20 %*% solve(t(xx20) %*% xx20) %*% t(xx20)
+		} else {
+			H10 <- 0
+			H20 <- 0
+		}
 
-	    S1R <- H1 - H10
-	    S2R <- H2 - H20
+		S1R <- H1 - H10
+		S2R <- H2 - H20
 
-	    S1E <- diag(n.p) - H1
-	    S2E <- diag(n.p) - H2
+		S1E <- diag(n.p) - H1
+		S2E <- diag(n.p) - H2
 
-	    rSSR.part[i,j] <- matrix(S1R, nrow=1) %*% matrix(Rij %*% S2R %*% t(Rij), ncol=1)/df1
-	    rSSE.part[i,j] <- matrix(S1E, nrow=1) %*% matrix(Rij %*% S2E %*% t(Rij), ncol=1)/df2
+		rSSR.part[i, j] <- matrix(S1R, nrow = 1) %*% matrix(Rij %*% S2R %*% t(Rij), ncol = 1)/df1
+		rSSE.part[i, j] <- matrix(S1E, nrow = 1) %*% matrix(Rij %*% S2E %*% t(Rij), ncol = 1)/df2
 
-		Vcoefij <- W1 %*% (t(xx1) %*% Rij %*% xx2) %*% t(W2)  # NEED TO ADD
-		rcoef.part[counter,] <- diag(Vcoefij) * (diag(W1) * diag(W2))^-.5  # NEED TO ADD
-
+		Vcoefij <- W1 %*% (t(xx1) %*% Rij %*% xx2) %*% t(W2) # NEED TO ADD
+		rcoef.part[counter, ] <- diag(Vcoefij) * (diag(W1) * diag(W2))^-0.5 # NEED TO ADD
 		# NOTE: if we ever want to compute conditional se's for the coefficients, we'll need the full Vcoef12 matrix, which would have to be returned as a list of matricies. I don't know if it is worth doing this now just in case.
-	  }
+		}
 
-	  rSSR <- mean(rSSR.part, na.rm=T)
-	  rSSE <- mean(rSSE.part, na.rm=T)
-	  rcoef <- colMeans(rcoef.part, na.rm=T)
-	  Fmean <- mean(F.part)
-	}else{
-	  rSSR.part <- NA
-	  rSSE.part <- NA
-	  rcoef.part <- NA
+	rSSR <- mean(rSSR.part, na.rm = T)
+	rSSE <- mean(rSSE.part, na.rm = T)
+	rcoef <- colMeans(rcoef.part, na.rm = T)
+	Fmean <- mean(F.part)
+	# } else{
+	# rSSR.part <- NA
+# rSSE.part <- NA
+# rcoef.part <- NA
 
-	  rSSR <- NA
-	  rSSE <- NA
-	  rcoef <- NA
+	# rSSR <- NA
+	# rSSE <- NA
+# rcoef <- NA
 
-	  Fmean <- NA
-	}
+	# Fmean <- NA
+	# }
 
 	coef <- rowMeans(coef.part)
 	coef0 <- rowMeans(coef0.part)
 
-	return(list(coef = coef, Fmean = Fmean, df1 = df1, df2 = df2, SSR.part = SSR.part,
-	            SSE.part = SSE.part, SSE0.part = SSE0.part, logLik.part = logLik.part,
-	            logLik0.part = logLik0.part, nugget = mean(nugget.part),
-	            nugget.part = nugget.part, F.part = F.part, p.F.part = p.F.part,
-	            coef.part=coef.part, se.part=se.part, coef0.part=coef0.part,
-	            se0.part=se0.part, rSSR = rSSR, rSSE = rSSE, rcoef = rcoef,
-	            rSSR.part = rSSR.part, rSSE.part = rSSE.part, rcoef.part = rcoef.part,
-	            npart = npart, partition = pick, spatial.autocor.FUN = "exponential-power",
-	            spatialcor = spatialcor))  # NEED TO ADD rcoef and rcoef.part, and maybe a matrix for Vcoefij
-########## end NEED TO ADD IN remoteSTAR ##########
-}
+	return(list(coef = coef, Fmean = Fmean, df1 = df1, df2 = df2, SSR.part = SSR.part, SSE.part = SSE.part, SSE0.part = SSE0.part, logLik.part = logLik.part, logLik0.part = logLik0.part,
+		nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part, p.F.part = p.F.part, coef.part = coef.part, se.part = se.part, coef0.part = coef0.part, se0.part = se0.part,
+		rSSR = rSSR, rSSE = rSSE, rcoef = rcoef, rSSR.part = rSSR.part, rSSE.part = rSSE.part, rcoef.part = rcoef.part, npart = npart, partition = pick, spatial.autocor.FUN = "exponential-power",
+		spatialcor = spatialcor)) # NEED TO ADD rcoef and rcoef.part, and maybe a matrix for Vcoefij
+	########## end NEED TO ADD IN remoteSTAR ##########
+	}
 
 
 
 #################################################
 # If the nugget is the same for multiple formulae, then they can all be computed quickly
-GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor, est.nugget = T, npart = 10, partition = NULL, nugget.interval = c(0,1), fixed.nugget = NULL, nugget.tol = 0.0001, min.num.cross.part = 5, verbose = F, rm.spatial.autocorrelation = F) {
+GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor, est.nugget = T, npart = 10, partition = NULL,
+	nugget.interval = c(0, 1), fixed.nugget = NULL, nugget.tol = 1e-04, min.num.cross.part = 5, verbose = F, rm.spatial.autocorrelation = F) {
 
 	n.formula <- length(formula)
 
@@ -785,10 +785,11 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 	df1 <- list(numeric())
 	df2 <- list(numeric())
 
-	if(min.num.cross.part > npart) min.num.cross.part <- npart
+	if (min.num.cross.part > npart)
+		min.num.cross.part <- npart
 
 	dummy.part <- as.list(rep(NA, n.formula))
-	dummy.part <- lapply(dummy.part, FUN=function(.) NULL)
+	dummy.part <- lapply(dummy.part, FUN = function(.) NULL)
 
 	SSR.part <- dummy.part
 	SSE.part <- dummy.part
@@ -811,18 +812,18 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 
 	for (i in 1:npart) {
 
-		data.part <- data[pick[i,],]
+		data.part <- data[pick[i, ], ]
 
-		if(rm.spatial.autocorrelation == F){
+		if (rm.spatial.autocorrelation == F) {
 			# create distance matrix in kilometers
-			location <- data.part[,c('lng','lat')]
-			Dist.part <- geosphere::distm(location, fun=distGeo)/1000
+			location <- data.part[, c("lng", "lat")]
+			Dist.part <- geosphere::distm(location, fun = distGeo)/1000
 
 			Vp <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 
 			if (is.null(fixed.nugget) & est.nugget) {
 				nugget <- nugget.fit(formula[[1]], data.part, Vp, interval = nugget.interval, verbose = verbose)
-				nugget.interval <- c(0, max(1000*nugget.tol, min(100*nugget,1)))
+				nugget.interval <- c(0, max(1000 * nugget.tol, min(100 * nugget, 1)))
 				Vp <- (1 - nugget) * Vp + nugget * diag(n.p)
 			} else {
 				if (is.null(fixed.nugget)) {
@@ -833,12 +834,12 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 					Vp <- (1 - nugget) * Vp + nugget * diag(n.p)
 				}
 			}
-		}else{
+		} else {
 			Vp <- diag(n.p)
 		}
 
 		invcholV <- t(backsolve(chol(Vp), diag(n.p)))
-		for(i.formula in 1:n.formula){
+		for (i.formula in 1:n.formula) {
 
 			mf <- model.frame(formula = formula[[i.formula]], data = data)
 			df2[[i.formula]] <- n.p - (ncol(model.matrix(attr(mf, "terms"), data = mf)) - 1)
@@ -848,64 +849,64 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 
 			z.part <- GLS.fit(formula[[i.formula]], formula0[[i.formula]], data = data.part, invcholV = invcholV, save.invcholV = F)
 
-			SSR.part[[i.formula]] <- c(SSR.part[[i.formula]],z.part$SSR)
-			SSE.part[[i.formula]] <- c(SSE.part[[i.formula]],z.part$SSE)
-			SSE0.part[[i.formula]] <- c(SSE0.part[[i.formula]],z.part$SSE0)
+			SSR.part[[i.formula]] <- c(SSR.part[[i.formula]], z.part$SSR)
+			SSE.part[[i.formula]] <- c(SSE.part[[i.formula]], z.part$SSE)
+			SSE0.part[[i.formula]] <- c(SSE0.part[[i.formula]], z.part$SSE0)
 			coef.part[[i.formula]] <- cbind(coef.part[[i.formula]], z.part$coef)
-			se.part[[i.formula]] <- cbind(se.part[[i.formula]],z.part$se)
-			coef0.part[[i.formula]] <- cbind(coef0.part[[i.formula]],z.part$coef0)
-			se0.part[[i.formula]] <- cbind(se0.part[[i.formula]],z.part$se0)
-			F.part[[i.formula]] <-  c(F.part[[i.formula]],z.part$F)
-			p.F.part[[i.formula]] <-  c(p.F.part[[i.formula]],z.part$p.F)
-			logLik.part[[i.formula]] <- c(logLik.part[[i.formula]],z.part$logLik)
-			logLik0.part[[i.formula]] <- c(logLik0.part[[i.formula]],z.part$logLik0)
-			if(i <= min.num.cross.part){
+			se.part[[i.formula]] <- cbind(se.part[[i.formula]], z.part$se)
+			coef0.part[[i.formula]] <- cbind(coef0.part[[i.formula]], z.part$coef0)
+			se0.part[[i.formula]] <- cbind(se0.part[[i.formula]], z.part$se0)
+			F.part[[i.formula]] <- c(F.part[[i.formula]], z.part$F)
+			p.F.part[[i.formula]] <- c(p.F.part[[i.formula]], z.part$p.F)
+			logLik.part[[i.formula]] <- c(logLik.part[[i.formula]], z.part$logLik)
+			logLik0.part[[i.formula]] <- c(logLik0.part[[i.formula]], z.part$logLik0)
+			if (i <= min.num.cross.part) {
 				xx.part[[i.formula]][[i]] <- z.part$xx
 				xx0.part[[i.formula]][[i]] <- z.part$xx0
 			}
 		}
 
 		nugget.part[i] <- nugget
-		if(i <= min.num.cross.part){
+		if (i <= min.num.cross.part) {
 			invcholV.part[[i]] <- invcholV
 		}
 
-		if(verbose) {
-			print(paste0("partition ",i," of ", npart))
+		if (verbose) {
+			print(paste0("partition ", i, " of ", npart))
 		}
 	}
 
-	rSSE.part <- rep(list(matrix(NA, nrow=npart, ncol=npart)), n.formula)
-	rSSR.part <- rep(list(matrix(NA, nrow=npart, ncol=npart)), n.formula)
-	for (i in 1:(min.num.cross.part-1)) for (j in (i+1):min.num.cross.part) {
+	rSSE.part <- rep(list(matrix(NA, nrow = npart, ncol = npart)), n.formula)
+	rSSR.part <- rep(list(matrix(NA, nrow = npart, ncol = npart)), n.formula)
+	for (i in 1:(min.num.cross.part - 1)) for (j in (i + 1):min.num.cross.part) {
 
-	    # create distance matrix in kilometers
-	    location1 <- data[pick[i,],c('lng','lat')]
-	    location2 <- data[pick[j,],c('lng','lat')]
-	    Dist.part <- geosphere::distm(location1, location2, fun=distGeo)/1000
-	    V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
-	    # this is only approximate, because nugget.part is esstiamted for each partition, but here the overall mean nugget is used.
-	    V12 <- sqrt((1 - nugget.part[i])*(1 - nugget.part[j])) * V12
+		# create distance matrix in kilometers
+		location1 <- data[pick[i, ], c("lng", "lat")]
+		location2 <- data[pick[j, ], c("lng", "lat")]
+		Dist.part <- geosphere::distm(location1, location2, fun = distGeo)/1000
+		V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+		# this is only approximate, because nugget.part is esstiamted for each partition, but here the overall mean nugget is used.
+		V12 <- sqrt((1 - nugget.part[i]) * (1 - nugget.part[j])) * V12
 
-	    xx1 <- xx.part[[i]]
-	    xx2 <- xx.part[[j]]
-	    xx10 <- xx0.part[[i]]
-	    xx20 <- xx0.part[[j]]
+		xx1 <- xx.part[[i]]
+		xx2 <- xx.part[[j]]
+		xx10 <- xx0.part[[i]]
+		xx20 <- xx0.part[[j]]
 
-	    Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
+		Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
 
-	    # create distance matrix in kilometers
-	    location1 <- data[pick[i,],c('lng','lat')]
-	    location2 <- data[pick[j,],c('lng','lat')]
-	    Dist.part <- geosphere::distm(location1, location2, fun=distGeo)/1000
-	    V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+		# create distance matrix in kilometers
+		location1 <- data[pick[i, ], c("lng", "lat")]
+		location2 <- data[pick[j, ], c("lng", "lat")]
+		Dist.part <- geosphere::distm(location1, location2, fun = distGeo)/1000
+		V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 
-	    # this is only approximate, because nugget.part is estimated for each partition.
-	    V12 <- sqrt((1 - nugget.part[i])*(1 - nugget.part[j])) * V12
+		# this is only approximate, because nugget.part is estimated for each partition.
+		V12 <- sqrt((1 - nugget.part[i]) * (1 - nugget.part[j])) * V12
 
-	    Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
+		Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
 
-		for(i.formula in 1:n.formula){
+		for (i.formula in 1:n.formula) {
 			xx1 <- xx.part[[i.formula]][[i]]
 			xx2 <- xx.part[[i.formula]][[j]]
 			xx10 <- xx0.part[[i.formula]][[i]]
@@ -914,10 +915,10 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 			H1 <- xx1 %*% solve(t(xx1) %*% xx1) %*% t(xx1)
 			H2 <- xx2 %*% solve(t(xx2) %*% xx2) %*% t(xx2)
 
-			if(!is.na(xx10[1])){
+			if (!is.na(xx10[1])) {
 				H10 <- xx10 %*% solve(t(xx10) %*% xx10) %*% t(xx10)
 				H20 <- xx20 %*% solve(t(xx20) %*% xx20) %*% t(xx20)
-			}else{
+			} else {
 				H10 <- 0
 				H20 <- 0
 			}
@@ -928,8 +929,8 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 			S1E <- diag(n.p) - H1
 			S2E <- diag(n.p) - H2
 
-			rSSR.part[[i.formula]][i,j] <- matrix(S1R, nrow=1) %*% matrix(Rij %*% S2R %*% t(Rij), ncol=1)/df1[[i.formula]]
-			rSSE.part[[i.formula]][i,j] <- matrix(S1E, nrow=1) %*% matrix(Rij %*% S2E %*% t(Rij), ncol=1)/df2[[i.formula]]
+			rSSR.part[[i.formula]][i, j] <- matrix(S1R, nrow = 1) %*% matrix(Rij %*% S2R %*% t(Rij), ncol = 1)/df1[[i.formula]]
+			rSSE.part[[i.formula]][i, j] <- matrix(S1E, nrow = 1) %*% matrix(Rij %*% S2E %*% t(Rij), ncol = 1)/df2[[i.formula]]
 		}
 	}
 	coef <- dummy.part
@@ -937,19 +938,22 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 	rSSR <- dummy.part
 	rSSE <- dummy.part
 	Fmean <- dummy.part
-	for(i.formula in 1:n.formula){
+	for (i.formula in 1:n.formula) {
 		coef[[i.formula]] <- rowMeans(coef.part[[i.formula]])
 		coef0[[i.formula]] <- rowMeans(coef0.part[[i.formula]])
-		rSSR[[i.formula]] <- mean(rSSR.part[[i.formula]], na.rm=T)
-		rSSE[[i.formula]] <- mean(rSSE.part[[i.formula]], na.rm=T)
+		rSSR[[i.formula]] <- mean(rSSR.part[[i.formula]], na.rm = T)
+		rSSE[[i.formula]] <- mean(rSSE.part[[i.formula]], na.rm = T)
 
 		Fmean[[i.formula]] <- mean(F.part[[i.formula]])
 	}
 
 	return.list <- list()
-	for(i.formula in 1:n.formula) {
+	for (i.formula in 1:n.formula) {
 
-		return.list[[i.formula]] <- list(coef = coef[[i.formula]], Fmean = Fmean[[i.formula]], df1 = df1[[i.formula]], df2 = df2[[i.formula]], SSR.part = SSR.part[[i.formula]], SSE.part = SSE.part[[i.formula]], SSE0.part = SSE0.part[[i.formula]], logLik.part = logLik.part[[i.formula]], logLik0.part = logLik0.part[[i.formula]], nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part[[i.formula]], p.F.part = p.F.part[[i.formula]], coef.part=coef.part[[i.formula]], se.part=se.part[[i.formula]], coef0.part=coef0.part[[i.formula]], se0.part=se0.part[[i.formula]], rSSR = rSSR[[i.formula]], rSSE = rSSE[[i.formula]], rSSR.part = rSSR.part[[i.formula]], rSSE.part = rSSE.part[[i.formula]], npart = npart, partition = pick, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor)
+		return.list[[i.formula]] <- list(coef = coef[[i.formula]], Fmean = Fmean[[i.formula]], df1 = df1[[i.formula]], df2 = df2[[i.formula]], SSR.part = SSR.part[[i.formula]], SSE.part = SSE.part[[i.formula]],
+			SSE0.part = SSE0.part[[i.formula]], logLik.part = logLik.part[[i.formula]], logLik0.part = logLik0.part[[i.formula]], nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part[[i.formula]],
+			p.F.part = p.F.part[[i.formula]], coef.part = coef.part[[i.formula]], se.part = se.part[[i.formula]], coef0.part = coef0.part[[i.formula]], se0.part = se0.part[[i.formula]], rSSR = rSSR[[i.formula]],
+			rSSE = rSSE[[i.formula]], rSSR.part = rSSR.part[[i.formula]], rSSE.part = rSSE.part[[i.formula]], npart = npart, partition = pick, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor)
 
 	}
 	return(return.list)
@@ -957,46 +961,47 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 
 #################################################
 # bootstrap F-test
-correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot = 2000){
-	part <- rep(1:npart, each=df1)
+correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot = 2000) {
+	part <- rep(1:npart, each = df1)
 
-	rZ <- rSSR^.5/df1
+	rZ <- rSSR^0.5/df1
 	v.MSR <- diag(df1) - rZ
-	v.MSR <- kronecker(diag(npart),v.MSR) + rZ
-	D.MSR <- t(chol(v.MSR, pivot=T))
-	if(attr(D.MSR, "rank") < npart){
+	v.MSR <- kronecker(diag(npart), v.MSR) + rZ
+	D.MSR <- t(chol(v.MSR, pivot = T))
+	if (attr(D.MSR, "rank") < npart) {
 		rank.MSR <- attr(D.MSR, "rank")
-		v.MSR <- diag(df1) - .99/df1
-		v.MSR <- kronecker(diag(npart),v.MSR) + rZ
-		D.MSR <- t(chol(v.MSR, pivot=T))
-	}else{
+		v.MSR <- diag(df1) - 0.99/df1
+		v.MSR <- kronecker(diag(npart), v.MSR) + rZ
+		D.MSR <- t(chol(v.MSR, pivot = T))
+	} else {
 		rank.MSR <- NA
 	}
 
-	v.MSE <- (1-rSSE) * diag(npart) + rSSE
+	v.MSE <- (1 - rSSE) * diag(npart) + rSSE
 	D.MSE <- t(chol(v.MSE))
 
 	count <- 0
-	for(boot in 1:nboot){
-		Z1 <- D.MSR %*% rnorm(npart*df1)
-		MSR.boot <- aggregate(Z1^2, by=list(part), FUN=sum)[,2]/df1
-		MSE.boot <- 1 + D.MSE %*% rnorm(npart, mean=0, sd=(2*df2)^.5/df2)
-		if(Fmean.obs < mean(MSR.boot/MSE.boot)) count <- count + 1
+	for (boot in 1:nboot) {
+		Z1 <- D.MSR %*% rnorm(npart * df1)
+		MSR.boot <- aggregate(Z1^2, by = list(part), FUN = sum)[, 2]/df1
+		MSE.boot <- 1 + D.MSE %*% rnorm(npart, mean = 0, sd = (2 * df2)^0.5/df2)
+		if (Fmean.obs < mean(MSR.boot/MSE.boot))
+			count <- count + 1
 	}
 	return(list(pvalue = count/nboot, nboot = nboot, rank.MSR = rank.MSR))
 }
 
 #################################################
 # analytical chisq-test
-correlated.chisq <- function(Fmean.obs, rSSR, df1, npart){
+correlated.chisq <- function(Fmean.obs, rSSR, df1, npart) {
 
 	require(CompQuadForm)
 
-	rZ <- rSSR^.5/df1
+	rZ <- rSSR^0.5/df1
 	v.MSR <- diag(df1) - rZ
-	V.MSR <- kronecker(diag(npart),v.MSR) + rZ
+	V.MSR <- kronecker(diag(npart), v.MSR) + rZ
 	lambda <- eigen(V.MSR)$values
-	pvalue <- imhof(q = npart * df1 * Fmean.obs, lambda = lambda)$Qq
+	pvalue <- suppressMessages(imhof(q = npart * df1 * Fmean.obs, lambda = lambda)$Qq)
 	return(pvalue)
 }
 
@@ -1004,16 +1009,16 @@ correlated.chisq <- function(Fmean.obs, rSSR, df1, npart){
 
 #################################################
 # analytical t-test
-correlated.t <- function(coef, se.part, rcoef, df2, npart){
+correlated.t <- function(coef, se.part, rcoef, df2, npart) {
 
 	secoef <- matrix(NA, length(coef), 1)
-	for(i.coef in 1:length(coef)){
-		R <- (1 - rcoef[i.coef]) * diag(npart) + rcoef[i.coef] * matrix(1,npart,npart)
-		secoef[i.coef,] <- (se.part[i.coef,] %*% R %*% se.part[i.coef,])^.5/npart
+	for (i.coef in 1:length(coef)) {
+		R <- (1 - rcoef[i.coef]) * diag(npart) + rcoef[i.coef] * matrix(1, npart, npart)
+		secoef[i.coef, ] <- (se.part[i.coef, ] %*% R %*% se.part[i.coef, ])^0.5/npart
 	}
 
 	tscore <- coef/secoef
-	pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = F)
+	pvalue <- 2 * pt(abs(tscore), df = df2 * npart, lower.tail = FALSE)
 
 	ttest <- cbind(coef, secoef, tscore, pvalue)
 	colnames(ttest) <- c("coef", "se", "tscore", "P")
@@ -1023,15 +1028,15 @@ correlated.t <- function(coef, se.part, rcoef, df2, npart){
 
 #################################################
 # wrapper for bootstrap test
-GLS.partition.pvalue <- function(z, doFtest = F, nboot = 100000){
-	if(doFtest){
-		if(is.finite(z$rSSR)) {
+GLS.partition.pvalue <- function(z, doFtest = F, nboot = 1e+05) {
+	if (doFtest) {
+		if (is.finite(z$rSSR)) {
 			p.Fmean <- correlated.F.bootstrap(Fmean.obs = z$Fmean, rSSR = z$rSSR, rSSE = z$rSSE, df1 = z$df1, df2 = z$df2, npart = z$npart, nboot = nboot)
-		}else{
-			p.Fmean <- list(NA,NA,NA)
+		} else {
+			p.Fmean <- list(NA, NA, NA)
 		}
-	}else{
-			p.Fmean <- list(NA,NA,NA)
+	} else {
+		p.Fmean <- list(NA, NA, NA)
 	}
 
 	p.chisq <- correlated.chisq(Fmean.obs = z$Fmean, rSSR = z$rSSR, df1 = z$df1, npart = z$npart)
@@ -1045,4 +1050,3 @@ GLS.partition.pvalue <- function(z, doFtest = F, nboot = 100000){
 	return(list(p.Fmean = p.Fmean, p.chisq = p.chisq, p.Fhochberg = p.Fhochberg, p.Fhommel = p.Fhommel, p.Ffdr = p.Ffdr, p.t = p.t))
 }
 ########## end NEED TO ADD IN remoteSTAR ##########
-

@@ -327,7 +327,8 @@ corresponds to a different partition
 
 ```{r}
 # segment dataset into 4 equal-sized partitions:
-part.mat <- sample_partitions(nrow(mod.mat), npart = 4)
+# part.mat <- sample_partitions(nrow(mod.mat), npart = 4)
+part.mat <- sample_partitions(nrow(mod.mat), partsize = 1000)
 ```
 
 Then, we will calculate the degrees of freedom with `calc_df()`, and perform 
@@ -458,6 +459,39 @@ detail here but simply note that implementing this functionality could be
 trivially simple. That being said, minimal multi-core functionality is 
 implemented internally through the C++ libraries `Eigen` and `openMP` (**NOTE** 
 this is still not reliably present in the package). 
+
+```{r}
+## Check that the correlated t-test would lead to the same conclusions overall
+  ## as the tests for individual partitions:
+
+# coeficients
+cfs = sapply(part.results, function(x)x$betahat)
+rownames(cfs) = colnames(mod.mat)
+colnames(cfs) = paste0("part",1:ncol(cfs))
+# p values
+pts = sapply(part.results, function(x){x$pval.t})
+rownames(pts) = colnames(mod.mat)
+colnames(pts) = paste0("part",1:ncol(pts))
+# t scores
+tscrs = sapply(part.results, function(x){x$tstat})
+rownames(tscrs) = colnames(mod.mat)
+colnames(tscrs) = paste0("part",1:ncol(tscrs))
+# se
+SEs = sapply(part.results, function(x){x$SE})
+rownames(SEs) = colnames(mod.mat)
+colnames(SEs) = paste0("part",1:ncol(SEs))
+
+library(ggplot2)
+
+ggplot(as.data.frame(t.test), aes(x = colnames(mod.mat), y = coefs)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin = coefs - se, ymax = coefs + se, col = "t-test"), width = .1) +
+  geom_errorbar(aes(ymin = coefs - apply(cfs, 1, sd), 
+                    ymax = coefs + apply(cfs, 1, sd), 
+                    col = "sd(coef)"), width = .1)
+
+```
+
 
 
 ```{r save alaska vignette data, eval = FALSE, echo = FALSE}

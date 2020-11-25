@@ -601,7 +601,7 @@ correlated.chisq <- function(Fmean, rSSR, df1, npart){
   v.MSR <- diag(df1) - rZ
   V.MSR <- kronecker(diag(npart),v.MSR) + rZ
   lambda <- eigen(V.MSR)$values
-  pvalue <- CompQuadForm::imhof(q = npart * df1 * Fmean, lambda = lambda)$Qq
+  pvalue <- suppressWarnings(CompQuadForm::imhof(q = npart * df1 * Fmean, lambda = lambda)$Qq)
   pvalue = ifelse(pvalue <= 1e-06, 1e-06, pvalue) # prevent from being negative/too low
   return(pvalue)
 }
