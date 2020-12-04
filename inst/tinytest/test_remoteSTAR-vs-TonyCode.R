@@ -26,30 +26,37 @@ test.t = scale(seq_len(ncol(test.X)))
 test.D = geosphere::distm(test.coord)/1000
 
 # CLS functions ----
-## Speed Test
+## benchmark
 CLS.bench = microbenchmark(old.CLS <-  CLS.fit(test.X, test.t),
                            new.CLS <- cls_star(test.X, test.t),
                            times = 10L)
-
-## Compare relevant output
+## compare output
 expect_equivalent(old.CLS[, c("site", "mean", "c", "t", "p", "b", "MSE")],
 new.CLS[, c("site", "mean", "Est", "t", "p", "x_t0.EST", "MSE")])
-
-## Assign y
+## assign y
 test.y = with(new.CLS, Est/mean)
 
 # spatial correlation functions ----
-
+## benchmark
 spatcor.bench = microbenchmark(old.r <- spatialcor.fit(test.X, test.t, test.D,
                                                       fit.n.sample = 100),
                                new.r <- fit_spatialcor(test.X, test.t, dist = D,
                                                       location = test.coord,
                                                       fit.n = 100),
                                times = 10L)
-
+## compare output
 expect_equivalent(old.r$spatialcor, new.r$spatialcor)
 expect_equivalent(old.r$spatialcor.sigma, sigma(new.r$mod))
+## assign r
+r = new.r$spatialcor
+
 
 # V fitting functions ----
-# V.bench = microbenchmark(old.V = V.fit(test.D, spatialcor = r))
-
+## benchmark
+V.bench = microbenchmark(old.V <-  V.fit(test.D, r),
+                         new.V <- fitV(test.D, r),
+                         times = 10L)
+## compare output
+expect_equivalent(old.V, new.V)
+## assign V
+test.V = new.V
