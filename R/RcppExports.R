@@ -93,7 +93,7 @@
 #' nothing yet.
 #'
 #' @examples #TBA
-.fitGLS_cpp <- function(X, V, y, X0, nugget = 0., save_xx = FALSE, threads = 1L) {
+.fitGLS_cpp <- function(X, V, y, X0, nugget, save_xx, threads) {
     .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
 }
 

@@ -22,9 +22,9 @@ List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& V,
                 const MapMatd& y,
                 const MapMatd& X0,
-                double nugget = 0.,
-                bool save_xx = false,
-                const int threads = 1){
+                double nugget,
+                bool save_xx,
+                const int threads){
 
   int nX = X.rows(), pX = X.cols(); // dimensions of X
   MatrixXd tUinv = invchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
@@ -99,8 +99,9 @@ List fitGLS_cpp(const MapMatd& X,
    *
    */
 
-  VectorXd FF = (nX - xx.cols())/(xx.cols() - xx0.cols()) *
-    (SSR.array()) / SSE.array();
+  VectorXd FF = ((double)nX - (double)xx.cols())/ // force integers to doubles
+    ((double)xx.cols() - (double)xx0.cols()) *
+      SSR.array() / SSE.array();
   VectorXi dfF(2);
   dfF(0) = xx.cols() - xx0.cols();
   dfF(1) = nX - xx.cols();
