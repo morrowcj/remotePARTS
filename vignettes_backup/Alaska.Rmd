@@ -327,8 +327,8 @@ corresponds to a different partition
 
 ```{r}
 # segment dataset into 4 equal-sized partitions:
-# part.mat <- sample_partitions(nrow(mod.mat), npart = 4)
-part.mat <- sample_partitions(nrow(mod.mat), partsize = 1000)
+part.mat <- sample_partitions(nrow(mod.mat), npart = 4)
+# part.mat <- sample_partitions(nrow(mod.mat), partsize = 1000)
 ```
 
 Then, we will calculate the degrees of freedom with `calc_df()`, and perform 
@@ -409,6 +409,8 @@ for(cross in seq_len(length(part.results) - 1)){ # each consecutive pair of part
 }
 ```
 
+`crosspart_worker()` is usually much faster than `GLS_worker()`.
+
 Finally, we can calculate some average statistics for the entire analysis by
 using `sapply()` to summarize across lists and then perform our hypothesis
 test:
@@ -460,6 +462,11 @@ trivially simple. That being said, minimal multi-core functionality is
 implemented internally through the C++ libraries `Eigen` and `openMP` (**NOTE** 
 this is still not reliably present in the package). 
 
+# Debugging remoteSTAR fitGLS_parititon functions
+
+There are some discrepancies between my output and Tony's, so I'm going to try
+to solve the problem. 
+
 ```{r}
 ## Check that the correlated t-test would lead to the same conclusions overall
   ## as the tests for individual partitions:
@@ -481,15 +488,77 @@ SEs = sapply(part.results, function(x){x$SE})
 rownames(SEs) = colnames(mod.mat)
 colnames(SEs) = paste0("part",1:ncol(SEs))
 
+t.crit = qt(1 - (.05 / 2), df = df2 * ncol(part.mat))
+
 library(ggplot2)
 
-ggplot(as.data.frame(t.test), aes(x = colnames(mod.mat), y = coefs)) + 
+ggplot(data.frame(t.test, var = factor(colnames(mod.mat), levels = colnames(mod.mat))), 
+       aes(x = var, y = coefs)) + 
+  geom_hline(yintercept = 0, lty = 3, col = "black") + 
+  geom_errorbar(aes(ymin = coefs - se*t.crit, 
+                    ymax = coefs + se*t.crit, 
+                    col = "correlated t-test", ), position = position_nudge(x = -.025),
+                width = .1) +
+  geom_errorbar(aes(ymin = coefs - apply(cfs, 1, sd)*t.crit, 
+                    ymax = coefs + apply(cfs, 1, sd)*t.crit, 
+                    col = "sd(coef)"),
+                width = .1, position = position_nudge(x = .025)) + 
   geom_point() +
-  geom_errorbar(aes(ymin = coefs - se, ymax = coefs + se, col = "t-test"), width = .1) +
-  geom_errorbar(aes(ymin = coefs - apply(cfs, 1, sd), 
-                    ymax = coefs + apply(cfs, 1, sd), 
-                    col = "sd(coef)"), width = .1)
+  labs(col = "95% CI", y = "coef", x = NULL, title = "H0: coef = 0")
 
+```
+
+```{r}
+# need to test against tony's code
+# source("")
+dat.map = data.frame(rel.est, location, land = ndvi_AK3000$land)
+library(geosphere)
+
+form = "rel.est ~ land"
+
+## Tony's code
+Z <- GLS.partition.data(formula = "rel.est ~ land", 
+                        formula0 = "rel.est ~ 1", 
+                        data = dat.map,
+                        spatial.autocor.FUN = "exponential-power",
+                        spatialcor = r.est$spatialcor,
+                        est.nugget = TRUE,
+                        npart = 4,
+                        partition = t(part.mat),
+                        nugget.tol = 1e-05,
+                        min.num.cross.part = 5,
+                        verbose = FALSE,
+                        rm.spatial.autocorrelation = FALSE
+)
+
+## nugget is not working properly
+rbind(Z$nugget.part, 
+      sapply(part.results, function(x)x$nugget))
+## coefficient estimates are also wrong.
+rbind(Z$coef, rowMeans(sapply(part.results, function(x)x$betahat)))
+
+## not working with nugget = 0
+# Z <- GLS.partition.data(formula = "rel.est ~ land", 
+#                         formula0 = "rel.est ~ 1", 
+#                         data = dat.map,
+#                         spatial.autocor.FUN = "exponential-power",
+#                         spatialcor = r.est$spatialcor,
+#                         est.nugget = FALSE,
+#                         fixed.nugget = 0,
+#                         npart = 4,
+#                         partition = t(part.mat),
+#                         nugget.tol = 1e-05,
+#                         min.num.cross.part = 5,
+#                         verbose = FALSE,
+#                         rm.spatial.autocorrelation = FALSE
+# )
+
+n1 = fitNugget(mod.mat, V, rel.est) # old from remoteSTAR
+n2 = fitNugget_Rcpp(mod.mat, V, rel.est) # uses loglik function
+n.tony = nugget.fit(form, data = dat.map, V = V) #tony's 
+# n.parts = optimize_nugget(mod.mat, V, rel.est) # C++ version: not working at all
+
+cbind(n1, n.tony)
 ```
 
 

@@ -152,7 +152,7 @@
 #' @param debug logical: debug mode?
 #'
 #' @examples #TBA
-.optimize_nugget_cpp <- function(X, V, y, lower = 0, upper = 1, tol = .00001, debug = FALSE) {
+.optimize_nugget_cpp <- function(X, V, y, lower, upper, tol, debug) {
     .Call(`_remoteSTAR_optimize_nugget_cpp`, X, V, y, lower, upper, tol, debug)
 }
 

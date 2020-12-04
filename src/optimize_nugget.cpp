@@ -22,8 +22,8 @@
 //' @examples #TBA
 // [[Rcpp::export(.optimize_nugget_cpp)]]
 double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
-                          double lower = 0, double upper = 1,
-                          double tol = .00001, bool debug = false){
+                          double lower, double upper,
+                          double tol, bool debug){
 
   // varible declaration
   double ax = lower;

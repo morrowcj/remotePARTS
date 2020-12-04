@@ -11,7 +11,7 @@
 #' Note: this function actually uses `LogLikGLS_cpp()` which should be swapped
 #' for `fitGLS_cpp()` once the correct functionality is added to the latter.
 #'
-#' @param X numeric (double) nxn matrix
+#' @param X numeric (double) nxp matrix
 #' @param V numeric (double) nxn matrix
 #' @param y numeric (double) nx1 column vector
 #' @param lower lower boundary for nugget search

@@ -253,10 +253,10 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
 #'
 #' @examples #TBA
 fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
-  N.opt <- optimize(f = function(nug){return(LogLikGLS_cpp(nugget = nug, X, V, y))},
+  N.opt <- optimize(f = function(nug){return(LogLikGLS(nugget = nug, X, V, y))},
                     interval = int, tol = tol, maximum = TRUE)
   if(N.opt$maximum < tol){
-    N0.LL <- LogLikGLS_cpp(nugget = 0, X, V, y)
+    N0.LL <- LogLikGLS(nugget = 0, X, V, y)
     if(N0.LL > N.opt$objective){
       N.opt$maximum <- 0
     }
