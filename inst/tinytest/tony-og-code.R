@@ -271,7 +271,7 @@ spatialcor.fit <- function(X, t.scale, Dist, r.start = 0.1, fit.n.sample, FUN = 
 	# subsample for r.fit
 	fit.pick <- sample.int(n = n, size = fit.n.sample)
 
-	resid <- matrix(0, nrow = fit.n.sample, ncol = n.obs - 1)
+	resid <- matrix(0, nrow = fit.n.sample, ncol = length(t.scale) - 1) # corrected
 	for (i in 1:fit.n.sample) {
 		x <- X[fit.pick[i], ]
 

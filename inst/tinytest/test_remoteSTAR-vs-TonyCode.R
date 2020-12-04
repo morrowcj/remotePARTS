@@ -23,6 +23,7 @@ test.land = test.df[, c("land")]
 test.X = as.matrix(test.df[, grep(pattern = "ndvi", names(test.df))])
 test.n = nrow(test.X); test.p = ncol(test.X)
 test.t = scale(seq_len(ncol(test.X)))
+test.D = geosphere::distm(test.coord)/1000
 
 # CLS functions ----
 ## Speed Test
@@ -35,4 +36,20 @@ expect_equivalent(old.CLS[, c("site", "mean", "c", "t", "p", "b", "MSE")],
 new.CLS[, c("site", "mean", "Est", "t", "p", "x_t0.EST", "MSE")])
 
 ## Assign y
-test.y = new.CLS$Est
+test.y = with(new.CLS, Est/mean)
+
+# spatial correlation functions ----
+
+spatcor.bench = microbenchmark(old.r <- spatialcor.fit(test.X, test.t, test.D,
+                                                      fit.n.sample = 100),
+                               new.r <- fit_spatialcor(test.X, test.t, dist = D,
+                                                      location = test.coord,
+                                                      fit.n = 100),
+                               times = 10L)
+
+expect_equivalent(old.r$spatialcor, new.r$spatialcor)
+expect_equivalent(old.r$spatialcor.sigma, sigma(new.r$mod))
+
+# V fitting functions ----
+# V.bench = microbenchmark(old.V = V.fit(test.D, spatialcor = r))
+
