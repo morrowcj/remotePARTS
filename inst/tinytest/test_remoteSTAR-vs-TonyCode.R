@@ -21,9 +21,10 @@ test.coord = test.df[, c("lng", "lat")]
 test.land = test.df[, c("land")]
 
 test.X = as.matrix(test.df[, grep(pattern = "ndvi", names(test.df))])
+test.modmat = model.matrix(~ 0 + test.land)
 test.n = nrow(test.X); test.p = ncol(test.X)
 test.t = scale(seq_len(ncol(test.X)))
-test.D = geosphere::distm(test.coord)/1000
+test.D = geosphere::distm(test.coord)/1000 # long time
 test.form = "test.y ~ 0 + test.land"
 
 # CLS functions ----
@@ -56,8 +57,8 @@ r = new.r$spatialcor
 
 # V fitting functions ----
 ## benchmark
-V.bench = microbenchmark(old.V <-  V.fit(test.D, r),
-                         new.V <- fitV(test.D, r),
+V.bench = microbenchmark(old.V = {old.V <-  V.fit(test.D, r)},
+                         new.V = {new.V <- fitV(test.D, r)},
                          times = 10L)
 ## compare output
 expect_equivalent(old.V, new.V)
@@ -69,8 +70,9 @@ test.V = new.V
 ## benchmark
 nug.bench = microbenchmark::microbenchmark(times = 10L,
   old.nug = {old.nug <- nugget.fit(test.form, test.df, test.V)},
-  # new.nug_C <- optimize_nugget(X = model.matrix(~ 0 + test.land), V = test.V, y = test.y),
-  new.nug = {new.nug_R <- fitNugget(X = model.matrix(~ 0 + test.land),
+  # new.nug_C = {new.nug_C <- optimize_nugget(X = model.matrix(~ 0 + test.land),
+  #                              V = test.V, y = test.y)},
+  new.nug = {new.nug_R <- fitNugget(X = test.modmat,
                                     V = test.V, y = test.y)}
 ) # C++ version wont' run for large data... why?
 ## compare output
@@ -82,9 +84,10 @@ expect_equivalent(old.nug, new.nug_R)
 GLS.bench = microbenchmark(times = 10L,
                            old.GLS = {old.GLS <- GLS.fit(test.form, data = test.df,  V = test.V,
                                               invcholV = invert_chol(test.V, new.nug_R))},
-                           new.GLS = {new.GLS <- fitGLS(X = model.matrix(~ 0 + test.land),
+                           new.GLS = {new.GLS <- fitGLS(X = test.modmat,
                                              y = test.y, V = test.V, nugget = new.nug_R,
-                                             X0 = cbind(rep(1, nrow(test.X))), save_xx = TRUE)})
+                                             X0 = cbind(rep(1, nrow(test.X))), save_xx = TRUE,
+                                             threads = 1)})
 ## compare output
 expect_equivalent(old.GLS$coef, new.GLS$betahat)
 expect_equivalent(old.GLS$t, new.GLS$tstat)
@@ -92,6 +95,12 @@ expect_equivalent(old.GLS$SSE, new.GLS$SSE)
 expect_equivalent(old.GLS$SSE0, new.GLS$SSE0)
 expect_equivalent(old.GLS$xx, new.GLS$xx)
 expect_equivalent(old.GLS$xx0, new.GLS$xx0)
-expect_equivalent(old.GLS$F, new.GLS$Fstat) # Slightly different F... why?
+expect_equivalent(old.GLS$F, new.GLS$Fstat)
 
-
+if(FALSE){
+  library(ggplot2)
+  autoplot(CLS.bench)
+  autoplot(V.bench)
+  autoplot(nug.bench) # new is faster
+  autoplot(GLS.bench) # new is marginally slower (N = 100, trheads = 4)
+}
