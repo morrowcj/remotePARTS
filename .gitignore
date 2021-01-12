@@ -13,5 +13,6 @@ inst/doc
 doc
 Meta
 code/data-backup/
+old-code/data-backup/
 .Rprofile
 .RData
