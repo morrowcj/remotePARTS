@@ -20,20 +20,20 @@ double LogLikGLS_cpp(double nugget,
                      const MapMatd& V,
                      const MapMatd& y){
 
-  const int nX = X.rows(); // dimensions of X
-  const MatrixXd tUinv = invchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
-  const MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
-  const MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
-  const MatrixXd varX = AtA(xx); // crossprod(xx)
-  const MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
+  int nX = X.rows(); // dimensions of X
+  MatrixXd tUinv = invchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))
+  MatrixXd xx = tUinv * X; // t(inv(U)) %*% X
+  MatrixXd yy = tUinv * y; // t(inv(U)) %*% y
+  MatrixXd varX = AtA(xx); // crossprod(xx)
+  MatrixXd XtY(xx.adjoint() * yy); // crossprod(xx, yy)
 
   // solve for betahat (using one specific solver - there are others)
-  const VectorXd betahat(varX.colPivHouseholderQr().solve(XtY));
+  VectorXd betahat(varX.colPivHouseholderQr().solve(XtY));
 
   // calculate some statistics
   int dft = nX - xx.cols();
-  const VectorXd SSE = AtA(yy - xx * betahat); // SSE
-  const VectorXd MSE = SSE/dft; // MSE
+  VectorXd SSE = AtA(yy - xx * betahat); // SSE
+  VectorXd MSE = SSE/dft; // MSE
   double logDetV = 0;
   for (int i = 0; i < tUinv.rows(); i++){
     logDetV += log(tUinv.diagonal()[i]);

@@ -32,6 +32,7 @@ Suggests:
     tinytest,
     raster,
     knitr,
-    rmarkdown
+    rmarkdown,
+    microbenchmark
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
