@@ -7,7 +7,7 @@
 optimize_nugget(X, V, y, lower = 0, upper = 1, tol = 1e-05, debug = FALSE)
 }
 \arguments{
-\item{X}{numeric (double) nxn matrix}
+\item{X}{numeric (double) nxp matrix}
 
 \item{V}{numeric (double) nxn matrix}
 

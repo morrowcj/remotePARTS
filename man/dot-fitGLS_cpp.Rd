@@ -4,7 +4,7 @@
 \alias{.fitGLS_cpp}
 \title{Fit GLS to remote sensing data}
 \usage{
-.fitGLS_cpp(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1L)
+.fitGLS_cpp(X, V, y, X0, nugget, save_xx, threads)
 }
 \arguments{
 \item{X}{numeric matrix}

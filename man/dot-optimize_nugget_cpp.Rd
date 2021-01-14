@@ -4,7 +4,7 @@
 \alias{.optimize_nugget_cpp}
 \title{Find the maximum likelihood estimate of the nugget}
 \usage{
-.optimize_nugget_cpp(X, V, y, lower = 0, upper = 1, tol = 1e-05, debug = FALSE)
+.optimize_nugget_cpp(X, V, y, lower, upper, tol, debug)
 }
 \arguments{
 \item{X}{numeric matrix}

@@ -9,6 +9,11 @@
 "remoteSTAR is a set of tools for analyzing sets of spatially 
   correlated time series data, collected via remote sensing methods."
 }
+\section{remoteSTAR functions}{
+
+\code{\link{cls_star}}
+}
+
 \author{
 \strong{Maintainer}: Clay Morrow \email{morrow5@wisc.edu} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
 
