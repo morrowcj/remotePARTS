@@ -97,6 +97,27 @@
     .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
 }
 
+#' Fit GLS to remote sensing data
+#'
+#' @details see `fitGLS()`
+#'
+#' @param X numeric matrix
+#' @param V numeric matrix
+#' @param y numeric vector
+#' @param X0 numeric matrix
+#' @param nugget numeric nugget to add to V
+#' @param save_xx logical: should xx, xx0, and invcholV be returned? This
+#' functionality is meant for use with the partitioned GLS whereby these
+#' values are used to calculate cross-partition statistics.
+#' @param threads integer indicating the number of threads to use. This current
+#' version does not have multi-thread functionality so this argument does
+#' nothing yet.
+#'
+#' @examples #TBA
+.fitGLS2_cpp <- function(L, X, V, y, X0, nugget, save_xx, threads) {
+    invisible(.Call(`_remoteSTAR_fitGLS2_cpp`, L, X, V, y, X0, nugget, save_xx, threads))
+}
+
 #' caculate t(A) \%*\% A
 #'
 #' @param A numeric matrix

@@ -77,6 +77,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fitGLS2_cpp
+void fitGLS2_cpp(List L, const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, const int threads);
+RcppExport SEXP _remoteSTAR_fitGLS2_cpp(SEXP LSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const MapMatd& >::type X0(X0SEXP);
+    Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
+    Rcpp::traits::input_parameter< bool >::type save_xx(save_xxSEXP);
+    Rcpp::traits::input_parameter< const int >::type threads(threadsSEXP);
+    fitGLS2_cpp(L, X, V, y, X0, nugget, save_xx, threads);
+    return R_NilValue;
+END_RCPP
+}
 // AtA
 MatrixXd AtA(const MatrixXd& A);
 RcppExport SEXP _remoteSTAR_AtA(SEXP ASEXP) {
@@ -146,6 +163,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remoteSTAR_LogLikGLS_cpp", (DL_FUNC) &_remoteSTAR_LogLikGLS_cpp, 4},
     {"_remoteSTAR_crosspart_worker_cpp", (DL_FUNC) &_remoteSTAR_crosspart_worker_cpp, 11},
     {"_remoteSTAR_fitGLS_cpp", (DL_FUNC) &_remoteSTAR_fitGLS_cpp, 7},
+    {"_remoteSTAR_fitGLS2_cpp", (DL_FUNC) &_remoteSTAR_fitGLS2_cpp, 8},
     {"_remoteSTAR_AtA", (DL_FUNC) &_remoteSTAR_AtA, 1},
     {"_remoteSTAR_solve_cpp", (DL_FUNC) &_remoteSTAR_solve_cpp, 2},
     {"_remoteSTAR_solve_ident_cpp", (DL_FUNC) &_remoteSTAR_solve_ident_cpp, 1},

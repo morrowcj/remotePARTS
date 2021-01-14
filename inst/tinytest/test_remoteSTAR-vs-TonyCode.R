@@ -3,7 +3,7 @@
 
 ## Load Tony's Code
 source("tony-og-code.R")
-load("data-for-tests.rda", verbose = TRUE)
+# load("data-for-tests.rda", verbose = TRUE)
 library(microbenchmark)
 
 # Test Data Setup ----
@@ -13,8 +13,9 @@ ndvi_data$land <- droplevels(ndvi_data$land)
 rm(ndvi_AK)
 
 
-N = 100
+N = 1000
 boot.n = 1L
+run.GLS = TRUE
 
 set.seed(916)
 
@@ -40,7 +41,7 @@ CLS.bench = microbenchmark(
 )
 ## compare output
 expect_equivalent(old.CLS[, c("site", "mean", "c", "t", "p", "b", "MSE")],
-new.CLS[, c("site", "mean", "Est", "t", "p", "x_t0.EST", "MSE")])
+                  new.CLS[, c("site", "mean", "Est", "t", "p", "x_t0.EST", "MSE")])
 ## assign y
 test.y = with(new.CLS, Est/mean)
 
@@ -69,38 +70,72 @@ expect_equivalent(old.V, new.V)
 ## assign V
 test.V = new.V
 
+if(run.GLS){
+  # nugget fitting functions ----
+  ## benchmark
+  nug.bench = microbenchmark::microbenchmark(
+    times = boot.n,
+    old.nug = {
+      old.nug <- nugget.fit(test.form, test.df, test.V)
+    },
+    new.nug_C = {
+      new.nug_C <- optimize_nugget(X = model.matrix(~ 0 + test.land),
+                                   V = test.V, y = test.y)
+    },
+    new.nug = {
+      new.nug_R <- fitNugget(X = test.modmat,
+                             V = test.V, y = test.y)
+    }
+  ) # C++ version wont' run for large data... why?
+  ## compare output
+  expect_equivalent(old.nug, new.nug_R, new.nug_C)
+  # expect_equivalent(old.nug, new.nug_C)
 
-# nugget fitting functions ----
-## benchmark
-nug.bench = microbenchmark::microbenchmark(times = boot.n,
-  old.nug = {old.nug <- nugget.fit(test.form, test.df, test.V)},
-  new.nug_C = {new.nug_C <- optimize_nugget(X = model.matrix(~ 0 + test.land),
-                               V = test.V, y = test.y)},
-  new.nug = {new.nug_R <- fitNugget(X = test.modmat,
-                                    V = test.V, y = test.y)}
-) # C++ version wont' run for large data... why?
-## compare output
-expect_equivalent(old.nug, new.nug_R, new.nug_C)
-# expect_equivalent(old.nug, new.nug_C)
+  # GLS functions ----
+  ## benchmark
+  GLS.bench = microbenchmark(
+    old.GLS = {
+      old.GLS <- GLS.fit(test.form, data = test.df,  V = test.V,
+                         invcholV = invert_chol(test.V, new.nug_R))
+    },
+    New.GLS.R = {
+      GLS.R <- fitGLS_R(X = test.modmat,
+                        V = test.V,
+                        y = test.y,
+                        X0 = cbind(rep(1, nrow(test.X))),
+                        nugget = new.nug_R)
+    },
+    new.GLS.C = {
+      new.GLS <- fitGLS(X = test.modmat,
+                        y = test.y,
+                        V = test.V,
+                        nugget = new.nug_R,
+                        X0 = cbind(rep(1, nrow(test.X))),
+                        save_xx = TRUE,
+                        threads = 1)
+    },
+    times = boot.n)
+  ## compare output
+  expect_equivalent(old.GLS$coef, new.GLS$betahat)
+  expect_equivalent(old.GLS$t, new.GLS$tstat)
+  expect_equivalent(old.GLS$SSE, new.GLS$SSE)
+  expect_equivalent(old.GLS$SSE0, new.GLS$SSE0)
+  expect_equivalent(old.GLS$xx, new.GLS$xx)
+  expect_equivalent(old.GLS$xx0, new.GLS$xx0)
+  expect_equivalent(old.GLS$F, new.GLS$Fstat)
 
-# GLS functions ----
-## benchmark
-GLS.bench = microbenchmark(
-  old.GLS = {old.GLS <- GLS.fit(test.form, data = test.df,  V = test.V,
-                                invcholV = invert_chol(test.V, new.nug_R))},
-  new.GLS = {new.GLS <- fitGLS(X = test.modmat,
-                               y = test.y, V = test.V, nugget = new.nug_R,
-                               X0 = cbind(rep(1, nrow(test.X))), save_xx = TRUE,
-                               threads = 1)},
-  times = boot.n)
-## compare output
-expect_equivalent(old.GLS$coef, new.GLS$betahat)
-expect_equivalent(old.GLS$t, new.GLS$tstat)
-expect_equivalent(old.GLS$SSE, new.GLS$SSE)
-expect_equivalent(old.GLS$SSE0, new.GLS$SSE0)
-expect_equivalent(old.GLS$xx, new.GLS$xx)
-expect_equivalent(old.GLS$xx0, new.GLS$xx0)
-expect_equivalent(old.GLS$F, new.GLS$Fstat)
+  ## Now just check the R function
+  expect_equivalent(GLS.R$betahat, new.GLS$betahat)
+  expect_equivalent(GLS.R$tstat, new.GLS$tstat)
+  expect_equivalent(GLS.R$SSE, new.GLS$SSE)
+  expect_equivalent(GLS.R$SSE0, new.GLS$SSE0)
+  expect_equivalent(GLS.R$Fstat, new.GLS$Fstat)
+}
+
+expect_true(FALSE, info = "need to write test for GLS partition comparison")
+# GLS.partition.data(formula = test.form, formula0 = NULL, data = test.df,
+#                    spatial.autocor.FUN = "exponential-power", spatialcor = r,
+#                    est.nugget = T, npart = 2,   )
 
 if(FALSE){
   library(ggplot2)
@@ -109,3 +144,7 @@ if(FALSE){
   autoplot(nug.bench) # C++ version is about 2x faster (only when compiled) N = 1000
   autoplot(GLS.bench) # C++ version is slightly slower (when compiled) N = 1000
 }
+
+### I should split this into 2 seperate test files:
+  ### * one that tests equivalence
+  ### * one that compares performance
