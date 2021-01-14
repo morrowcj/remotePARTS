@@ -16,7 +16,7 @@ remoteGLS <- function(form){
                "betahat0", "SSE0", "MSE0", "SE0",
                "MSR", "df0", "logLik0", "df.F",
                "Fstat","pval.F",
-               "xx", "xx0", "invcholV")
+               "xx", "xx0", "invcholV", "nugget")
   GLS.obj = vector("list", length(elements))
   names(GLS.obj) = elements
 
