@@ -60,39 +60,32 @@ fitGLS2 <- function(formula, data, V, nugget = 0,
     model.matrix(form.0, data)
 
   ## coerce to matrices ----
-  X = as(X, "matrix")
-  V = as(V, "matrix")
-  y = as(y, "matrix")
-  X0 = as(X0, "matrix")
+  # X = as(X, "matrix")
+  # V = as(V, "matrix")
+  # # y = as(y, "matrix")
+  # X0 = as(X0, "matrix")
 
   ## error handling ----
   stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
-  stopifnot(all.equal(nrow(X), nrow(V), nrow(X0), nrow(y)))
+  stopifnot(all.equal(nrow(X), nrow(V), nrow(X0), ny))
   stopifnot(all(check_posdef(V)))
 
-  out <- NULL
+  GLS <- remoteGLS(form = formula)
+  GLS$model.info$call <- call
 
   ## Run GLS ----
-  out <- .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
+  .Call(`_remoteSTAR_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, threads)
 
   # add in p values
-  out$pval.t <- 2 * pt(abs(out$tstat), df = out$dft, lower.tail = F)
-  out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
-
-  # Add in model info
-  out$model.info <- list(call = call,
-                         formula = formula,
-                         response = all.vars(formula(formula))[1],
-                         predictors = all.vars(formula(formula))[-1],
-                         coef.names = colnames(X))
-  class(out) <- "remoteGLS"
+  GLS$pval.t <- 2 * pt(abs(GLS$tstat), df = GLS$dft, lower.tail = F)
+  GLS$pval.F <- pf(GLS$Fstat, df1 = GLS$df.F[1], df2 = GLS$df.F[2], lower.tail = F)
 
   ## Return ----
-  return(out)
+  return(GLS)
 
 
-  return(list(test.out = list(X = X, y = y, X0 = X0),
-              out = out))
+  # return(list(test.out = list(X = X, y = y, X0 = X0),
+  #             out = out))
 
 }
 
