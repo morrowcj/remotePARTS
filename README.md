@@ -81,6 +81,8 @@ the next version as well.
 
   - [ ] make providing distance matrix **optional** instead of required
     for `fitGLS.partition_rcpp()` and the partitioned method as a whole.
+    (**note** this has been demonstrated in the vignette but has not yet
+    been turned into a function)
 
   - [ ] include parallelization and distributed comptuting options. If
     these are not natively implemented (i.e. using openMP in C++), then
@@ -101,6 +103,24 @@ the next version as well.
 
   - [ ] update documentation for every function to include output format
     and example usage.
+
+  - [ ] replace `fitGLS` with `fitGLS2` code and change the way all
+    other C++ functions handle lists. The C++ code in `fitGLS2` modifies
+    an existing list made in R rather than building one within the C++
+    code.
+
+  - [ ] create S3 constructors and methods (i.e. `print()`, `summary()`,
+    etc.) for all functions
+    
+      - [x] `remoteGLS()` constructs a GLS object and
+        `print.remoteGLS()` prints a compact and summarized display.
+    
+      - [ ] `remoteCLS()` constructor and methods for CLS objects
+    
+      - [ ] `remoteAR()` constructor and methods for AR\_REML objects
+    
+      - [ ] `PARTmat()`: partition matrix for the partitioned GLS
+        method.
 
 If there are any additional features that you would like to see
 implemented, or bugs/issues that you ran into, please submit an issue on
@@ -136,4 +156,4 @@ github.
 
 <!-- ``` -->
 
-<!-- In that case, don't forget to commit and push the resulting figure files, so they display on GitHub! -->
+# <!-- In that case, don't forget to commit and push the resulting figure files, so they display on GitHub! -->

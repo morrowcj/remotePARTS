@@ -124,9 +124,9 @@ all functions
 
   - [ ] `remoteCLS()` constructor and methods for CLS objects
   
-  - [ ] `remoteAR()` constructor and methods for AR_REML objects = = = 
-= =   
-  = - [ ] `PARTmat()`: partition matrix for the partitioned GLS method.
+  - [ ] `remoteAR()` constructor and methods for AR_REML objects
+  
+  - [ ] `PARTmat()`: partition matrix for the partitioned GLS method.
   
 If there are any additional features that you would like to see implemented, or
 bugs/issues that you ran into, please submit an issue on github. 
