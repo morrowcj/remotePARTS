@@ -43,7 +43,7 @@ fitGLS2 <- function(formula, data, V, nugget = 0,
   rm(mf) # delete the large model frame from memory
 
   ## Handle missing nugget (NULL or NA) ----
-  if (is.null(nugget) | is.na(nugget)){
+  if (is.null(nugget) || is.na(nugget)){
     nugget = optimize_nugget(X, V, y, ...)
   }
 
@@ -72,6 +72,7 @@ fitGLS2 <- function(formula, data, V, nugget = 0,
 
   GLS <- remoteGLS(form = formula)
   GLS$model.info$call <- call
+  GLS$nugget = nugget
 
   ## Run GLS ----
   .Call(`_remoteSTAR_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, threads)
