@@ -63,8 +63,9 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
   lab1:
     // cout << "Loop Start (lab1): iteration " <<i<<endl;
     if (debug) {
+      cout << "x = " << x << " fx = " << fx << endl;
       i += 1;
-      if (i >= 10) {
+      if (i >= 100) {
         cout << "breaking loop, too many iterations"<<endl;
         goto lab8;
       }
@@ -150,6 +151,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
               f_min = x;
             if (ax + tol >= f_min){
               if (fx <= -LogLikGLS_cpp(f_min, X, V, y)){
+                cout << "returning starting value instead of f_min" << endl;
                 return ax;
               }
             }
