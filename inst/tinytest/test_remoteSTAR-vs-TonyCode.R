@@ -13,7 +13,7 @@ ndvi_data$land <- droplevels(ndvi_data$land)
 rm(ndvi_AK)
 
 
-N = 1000
+N = 100
 boot.n = 1L
 run.GLS = TRUE
 
@@ -31,19 +31,27 @@ test.n = nrow(test.X); test.p = ncol(test.X)
 test.t = scale(seq_len(ncol(test.X)))
 test.D = geosphere::distm(test.coord)/1000 # long time
 test.form = "test.y ~ 0 + test.land"
+test.df$test.land = test.land
 
 # CLS functions ----
 ## benchmark
 CLS.bench = microbenchmark(
   old.CLS = {old.CLS <-  CLS.fit(test.X, test.t)},
-  new.CLS = {new.CLS <- cls_star(test.X, test.t)},
+  new.CLS = {new.CLS <- fitCLS.map(test.X, test.t,
+                                   TRUE, TRUE, TRUE, TRUE)},
   times = boot.n
 )
 ## compare output
-expect_equivalent(old.CLS[, c("site", "mean", "c", "t", "p", "b", "MSE")],
-                  new.CLS[, c("site", "mean", "Est", "t", "p", "x_t0.EST", "MSE")])
-## assign y
-test.y = with(new.CLS, Est/mean)
+expect_equivalent(old.CLS[, "mean"], new.CLS$mean)
+expect_equivalent(old.CLS[, c("c", "t", "p")],
+                  new.CLS$time.coef[, c("Est", "t", "p.t")])
+expect_equivalent(old.CLS[, c("b", "MSE")],
+                  data.frame(new.CLS$xi.coef[,"Est"], new.CLS[["MSE"]]))
+expect_equivalent(with(old.CLS, c/mean),
+                  with(new.CLS, time.coef$Est/mean))
+## assign y (rel.est)
+test.y = with(new.CLS, time.coef$Est/mean)
+test.df$test.y = test.y
 
 # spatial correlation functions ----
 ## benchmark
@@ -62,7 +70,7 @@ r = new.r$spatialcor
 
 # V fitting functions ----
 ## benchmark
-V.bench = microbenchmark(old.V = {old.V <-  V.fit(test.D, r)},
+V.bench = microbenchmark(old.V = {old.V <-  og.V.fit(test.D, r)},
                          new.V = {new.V <- fitV(test.D, r)},
                          times = boot.n)
 ## compare output
@@ -76,7 +84,7 @@ if(run.GLS){
   nug.bench = microbenchmark::microbenchmark(
     times = boot.n,
     old.nug = {
-      old.nug <- nugget.fit(test.form, test.df, test.V)
+      old.nug <- nugget.fit(formula = test.form, data = test.df, V = test.V)
     },
     new.nug_C = {
       new.nug_C <- optimize_nugget(X = model.matrix(~ 0 + test.land),

@@ -549,7 +549,7 @@ spatialcor.fit.data <- function(X, t.scale, data, r.start = 0.1, a.start = 1, fi
 
 
 #################################################
-V.fit <- function(Dist, spatialcor, FUN = "exponential") {
+og.V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 
 	if (FUN == "exponential")
 		return(exp(-Dist/spatialcor))
@@ -590,7 +590,7 @@ space.fit.funct <- function(par, formula, data, V, Dist, verbose = FALSE, fittin
   vc <- par[2]
   q <- par[-(1:2)]
 
-  Vc <- V.fit(Dist = Dist, spatialcor = max(Dist) * q, FUN = "exponential")
+  Vc <- og.V.fit(Dist = Dist, spatialcor = max(Dist) * q, FUN = "exponential")
 
   n <- ncol(V)
   VV <- nugget * diag(n) + (1 - nugget) * ((1-vc) * V + vc * Vc)
@@ -753,7 +753,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 			location <- data.part[, c("lng", "lat")]
 			Dist.part <- geosphere::distm(location, fun = distGeo)/1000
 
-			Vp <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+			Vp <- og.V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 			if (is.null(fixed.nugget) & est.nugget) {
 				nugget <- nugget.fit(formula, data.part, Vp, interval = nugget.interval, verbose = verbose)
 				nugget.interval <- c(0, max(1000 * nugget.tol, min(100 * nugget, 1)))
@@ -814,7 +814,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 		location1 <- data[partition[[i]], c("lng", "lat")]
 		location2 <- data[partition[[j]], c("lng", "lat")]
 		Dist.part <- geosphere::distm(location1, location2, fun = distGeo)/1000
-		V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+		V12 <- og.V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 		V12 <- sqrt((1 - nugget.part[i]) * (1 - nugget.part[j])) * V12
 
 		Rij <- crossprod(t(invcholV.part[[i]]), tcrossprod(V12, invcholV.part[[j]]))
@@ -924,7 +924,7 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 			location <- data.part[, c("lng", "lat")]
 			Dist.part <- geosphere::distm(location, fun = distGeo)/1000
 
-			Vp <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+			Vp <- og.V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 
 			if (is.null(fixed.nugget) & est.nugget) {
 				nugget <- nugget.fit(formula[[1]], data.part, Vp, interval = nugget.interval, verbose = verbose)
@@ -989,7 +989,7 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 		location1 <- data[pick[i, ], c("lng", "lat")]
 		location2 <- data[pick[j, ], c("lng", "lat")]
 		Dist.part <- geosphere::distm(location1, location2, fun = distGeo)/1000
-		V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+		V12 <- og.V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 		# this is only approximate, because nugget.part is esstiamted for each partition, but here the overall mean nugget is used.
 		V12 <- sqrt((1 - nugget.part[i]) * (1 - nugget.part[j])) * V12
 
@@ -1004,7 +1004,7 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 		location1 <- data[pick[i, ], c("lng", "lat")]
 		location2 <- data[pick[j, ], c("lng", "lat")]
 		Dist.part <- geosphere::distm(location1, location2, fun = distGeo)/1000
-		V12 <- V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
+		V12 <- og.V.fit(Dist.part, spatialcor = spatialcor, FUN = spatial.autocor.FUN)
 
 		# this is only approximate, because nugget.part is estimated for each partition.
 		V12 <- sqrt((1 - nugget.part[i]) * (1 - nugget.part[j])) * V12
@@ -1066,7 +1066,7 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 
 #################################################
 # bootstrap F-test
-correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot = 2000) {
+og.correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot = 2000) {
 	part <- rep(1:npart, each = df1)
 
 	rZ <- (rSSR/df1)^0.5
@@ -1098,7 +1098,7 @@ correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot
 
 #################################################
 # analytical chisq-test
-correlated.chisq <- function(Fmean.obs, rSSR, df1, npart) {
+og.correlated.chisq <- function(Fmean.obs, rSSR, df1, npart) {
 
 	require(CompQuadForm)
 
@@ -1125,7 +1125,7 @@ correlated.chisq <- function(Fmean.obs, rSSR, df1, npart) {
 
 #################################################
 # analytical t-test
-correlated.t <- function(coef, se.part, rcoef, df2, npart) {
+og.correlated.t <- function(coef, se.part, rcoef, df2, npart) {
 
 	secoef <- matrix(NA, length(coef), 1)
 	for (i.coef in 1:length(coef)) {
@@ -1145,10 +1145,10 @@ correlated.t <- function(coef, se.part, rcoef, df2, npart) {
 
 #################################################
 # wrapper for bootstrap test
-GLS.partition.pvalue <- function(z, doFtest = F, nboot = 1e+05) {
+og.GLS.partition.pvalue <- function(z, doFtest = F, nboot = 1e+05) {
 	if (doFtest) {
 		if (is.finite(z$rSSR)) {
-			p.Fmean <- correlated.F.bootstrap(Fmean.obs = z$Fmean, rSSR = z$rSSR, rSSE = z$rSSE, df1 = z$df1, df2 = z$df2, npart = z$npart, nboot = nboot)
+			p.Fmean <- og.correlated.F.bootstrap(Fmean.obs = z$Fmean, rSSR = z$rSSR, rSSE = z$rSSE, df1 = z$df1, df2 = z$df2, npart = z$npart, nboot = nboot)
 		} else {
 			p.Fmean <- list(NA, NA, NA)
 		}
@@ -1156,13 +1156,13 @@ GLS.partition.pvalue <- function(z, doFtest = F, nboot = 1e+05) {
 		p.Fmean <- list(NA, NA, NA)
 	}
 
-	p.chisq <- correlated.chisq(Fmean.obs = z$Fmean, rSSR = z$rSSR, df1 = z$df1, npart = z$npart)
+	p.chisq <- og.correlated.chisq(Fmean.obs = z$Fmean, rSSR = z$rSSR, df1 = z$df1, npart = z$npart)
 
 	p.Fhochberg <- min(p.adjust(z$p.F.part, "hochberg"))
 	p.Fhommel <- min(p.adjust(z$p.F.part, "hommel"))
 	p.Ffdr <- min(p.adjust(z$p.F.part, "fdr"))
 
-	p.t <- correlated.t(coef = z$coef, se.part = z$se.part, rcoef = z$rcoef, z$df2, npart = z$npart)
+	p.t <- og.correlated.t(coef = z$coef, se.part = z$se.part, rcoef = z$rcoef, z$df2, npart = z$npart)
 
 	return(list(p.Fmean = p.Fmean, p.chisq = p.chisq$pvalue, rank.deficient.MSR = p.chisq$rank.deficient.MSR, p.Fhochberg = p.Fhochberg, p.Fhommel = p.Fhommel, p.Ffdr = p.Ffdr, p.t = p.t))
 }
