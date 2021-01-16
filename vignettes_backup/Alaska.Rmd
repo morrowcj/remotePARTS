@@ -110,15 +110,19 @@ and then scale those regression coefficients `rel.est`:
 
 ```{r cls_star AK3000}
 # perform time series analysis for each site (no intercept)
-fm.cls <- cls_star(X, t = time.scaled) # can be slow
+fm.cls <- fitCLS.map(X, t = time.scaled, ret_xi.coef = TRUE) # can be slow
 
-rel.est <- with(fm.cls, Est/mean) # relative estimate
+rel.est <- with(fm.cls, time.coef$Est/mean) # relative estimate
 ```
 
 Here is what the first few results of `cls_star` look like:
 
 ```{r print cls_star output}
-head(fm.cls)
+## Effect of time
+head(fm.cls$time.coef)
+
+## effect of previous time point
+head(fm.cls$xi.coef)
 ```
 
 We can see that site 1 has an average NDVI of 
@@ -145,7 +149,7 @@ outl <- abs(scale(rel.est)) > -qnorm(p = 1/n/10) # criteria
 base.col = ifelse(test = outl, yes = "black",
                   no = colorRampPalette(
                     c("darkgoldenrod3", "grey70", "chartreuse3")
-                    )(nrow(fm.cls))[ordered(rel.est)]
+                    )(nrow(fm.cls$time.coef))[ordered(rel.est)]
 )
 
 # make legend labels from rel.est summary stats
@@ -220,7 +224,7 @@ tInvCholV <- invert_chol(V, nugget = 0)
 
 ## get model matrix from formulae
 # full model
-form = "rel.est ~ land" 
+form = "rel.est ~ 0 + land" 
 mod.mat <- model.matrix(object = formula(form), data = ndvi_AK3000)
 # null model
 form0 = "rel.est ~ 1"
@@ -230,7 +234,7 @@ X0 <- model.matrix(object = formula(form0), data = ndvi_AK3000)
 tolr = .00001 # precision of nugget search
 nugget.ml <- optimize_nugget(X = mod.mat, V = V, y = rel.est,
                                 lower = 0, upper = 1, tol = tolr)
-
+nugget.ml
 ## fit GLS 
 fm.gls <- fitGLS(X = mod.mat, V = V, y = rel.est, X0 = X0,
                      nugget = nugget.ml)
@@ -243,38 +247,59 @@ Now we'll use the results to formally test our hypotheses.
 First, we'll test $H_0:$ "land class *i* does not have a temporal trend in NDVI." 
 
 ```{r GLS t_pvalues}
-# add in pvalues (this will eventually be done with classes internally)
-fm.gls$pval.t <- sapply(fm.gls$tstat, function(x){
-  2 * pt(abs(x), df = fm.gls$dft, lower.tail = F)
-})
-# feature names
-names(fm.gls$pval.t) <- names(fm.gls$betahat) <- gsub(x = colnames(mod.mat),
-                                                      pattern = "land", 
-                                                      replacement = "")
+## Already Done
+# # add in pvalues (this will eventually be done with classes internally)
+# fm.gls$pval.t <- sapply(fm.gls$tstat, function(x){
+#   2 * pt(abs(x), df = fm.gls$dft, lower.tail = F)
+# })
+# # feature names
+# names(fm.gls$pval.t) <- names(fm.gls$betahat) <- gsub(x = colnames(mod.mat),
+#                                                       pattern = "land", 
+#                                                       replacement = "")
+# 
+# # print p-values
+# cbind("pt" = fm.gls$pval.t) # fail to reject H0 for all land classes
 
-# print p-values
-cbind("pt" = fm.gls$pval.t) # fail to reject H0 for all land classes
+
+## t-test of ndvi change by land class:
+t.table = cbind("coef" = fm.gls$betahat,
+                "SE" = fm.gls$SE,
+                "t stat" = fm.gls$tstat,
+                "t pval" = fm.gls$pval.t)
+rownames(t.table) = levels(ndvi_AK3000$land)
+t.table
 ```
-We are unable to reject $H_0$ at $\alpha = .05$ for any land class in this 
-data set. 
+We are not able to reject $H_0$ at $\alpha = .05$ for any land class.
 
 #### F-test
 
-Now, let's test $H_0:$ "there is no overall effect of land class on NDVI trend"
+But, let's test $H_0:$ "there is no overall effect of land class on NDVI trend"
 
-```{r}
-  # F-test
-fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], 
-                    lower.tail = FALSE)
+```{r GLS F_pvalues}
+## Already done
+#   # F-test
+# fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], 
+#                     lower.tail = FALSE)
+# 
+# # ## print the coefficients
+# # round(fm.gls$betahat, 4)
+# 
+# # F-test ## H0: no change in NDVI over time for all of AK3000
+# round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # reject H0
 
-# ## print the coefficients
-# round(fm.gls$betahat, 4)
-
-# F-test ## H0: no change in NDVI over time for all of AK3000
-round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # reject H0
+## F test of our land class model vs a null (intercept only) model
+F.table = data.frame("model" = c("full", "null"),
+                     "df" = fm.gls$df.F, 
+                     "SSE" = c(fm.gls$SSE, fm.gls$SSE0),
+                     "MSE" = c(fm.gls$MSE, fm.gls$MSE0),
+                     "loglik" = c(fm.gls$logLik, fm.gls$logLik0),
+                     "F stat" = c(fm.gls$Fstat, NA),
+                     "pval F" = c(fm.gls$pval.F, NA)
+                     )
+F.table
 ```
 
-We are, however, able to reject this $H_0$ for this data set at $\alpha = .05$. 
+We are, however, able to reject this $H_0$ that all land classes have the same effect on NDVI trend for this data set at $\alpha = .05$. 
 
 #### Partitioned GLS
 
@@ -289,6 +314,10 @@ The function that performs this analysis is the wrapper `fitGLS.partiion`. What
 follows is a short example of how to perform this method with the `Alaska3000` 
 data set but is not necessarily indicative of how users would want to use it 
 in practice. See "More on the partitioned GLS method" for further clarification.
+
+Note that, In the below function, a full distance matrix `Dist` is needed as an input.
+For larger data sets, it will not be feasible to include the full matrix. The 
+next section addresses this issue. 
 
 ```{r partitioned GLS}
 ## run the parittioned analysis
@@ -315,15 +344,16 @@ pval.Fpart <- GLS.partition.pvalue(results.cpp, nboot = 2000)
 round(cbind("Fmean" = results.cpp$Fmean, "pval" = pval.Fpart$pF.boot$pvalue), 4)
 ```
 
-
 ## More on the partitioned GLS method
 
 Here, we will provide a description of how to use the individual functions for
-the partitioned GLS method. 
+the partitioned GLS method. Using the following code will allow you to only use
+the relevant parts of the large matrices (e.g. `Dist`) at any given time to save
+memory. It also allows for parallelization possibilities. 
 
-First, we will use `sample_partitions()` to get a sample the pixels to use for each
-subset. The result is a matrix with columns containing pixel IDs. Each column
-corresponds to a different partition
+First, we will use `sample_partitions()` to get a sample of the pixels to use 
+for each subset. The result is a matrix with columns containing pixel IDs. 
+Each column corresponds to a different partition.
 
 ```{r}
 # segment dataset into 4 equal-sized partitions:
@@ -340,6 +370,34 @@ matrix `V`. Each input is partition-specific.
 The difference between `GLS_worker()` and `fitGLS()` is that 
 `fitGLS()` needs a nugget to be input (defaults to 0) while `GLS_worker()` finds
 the maximum likelihood estimator of the nugget internally.
+
+```{r}
+# optimize_nugget(mod.mat, V, rel.est)
+# nugget.fit(rel.est ~ 0 + mod.mat, data.frame(rel.est, mod.mat), V)
+
+# mod.mat
+# V
+# rel.est
+
+partition = part.mat[, 1]
+
+y.tmp = rel.est[partition]
+X.tmp = mod.mat[partition, ]
+D.tmp = D[partition, partition]
+V.tmp = V[partition, partition]
+
+loc.tmp = location[partition, ]
+
+D.tmp2 = geosphere::distm(loc.tmp)/1000
+all.equal(D.tmp, D.tmp2)
+V.tmp2 = fitV(D.tmp2, r.est$spatialcor, "exponential-power")
+all.equal(V.tmp, V.tmp2)
+
+optimize_nugget(X.tmp, V.tmp, y.tmp, debug = TRUE)
+# fitNugget(X.tmp, V.tmp, y.tmp)
+# nugget.fit(y.tmp ~ 0 + X.tmp, data = data.frame(y.tmp, X.tmp), V.tmp)
+```
+
 
 ```{r}
 # calculate degrees of freedom up front
@@ -359,11 +417,15 @@ for(part in seq_len(ncol(part.mat))){
   loc.sub = location[subs, ] # current coordinates
   X0.sub = X0[subs, ] # current subset of X0
   ## calculate variance matrix
-  D.sub = geosphere::distm(loc.sub) # distance between subset points
+  D.sub = geosphere::distm(loc.sub)/1000 # distance between subset points
   V.sub = fitV(D.sub, spatialcor = r.est$spatialcor, 
                fun = "exponential-power") # variance of subset points
   ## obtain GLS results
-  part.results[[part]] <- GLS_worker(y.sub, X.sub, V.sub, X0.sub, save_xx = TRUE) 
+  part.results[[part]] <- GLS_worker(y.sub, X.sub, V.sub, X0.sub,
+                                     save_xx = TRUE)
+  # part.results[[part]] = fitGLS2(formula = y.sub ~ 0 + X.sub,
+  #                                V = V.sub,
+  #                                nugget = NULL, save_xx = TRUE) # slower
 }
 ```
 
@@ -430,17 +492,18 @@ rSSE = mean(sapply(cross.results, function(x){x$rSSEij})) # residual sum of squa
 
 # calculate the correlated test statistics
 ## correlated chisquared test: are trends different among land class?
-( p.chisqr = correlated.chisq(F.mean, rSSR, df1, npart = ncol(part.mat)) )
+(p.chisqr = correlated.chisq(F.mean, rSSR, df1, npart = ncol(part.mat)) )
 # correlated F test: are trends different among land class?
-( p.corF = correlated.F.bootstrap(F.mean, rSSR, rSSE, df1, df2, 
+(p.corF = correlated.F.bootstrap(F.mean, rSSR, rSSE, df1, df2, 
                                   npart = ncol(part.mat), nboot = 2000) )
 # t-test: are trends in land classes different from 0?
-  (t.test = correlated.t(coefs = coef.means, part.SEs = part.SEs, rcoef = rcoef.mean, 
-                   df2 = df2, npart = ncol(part.mat)) )
+(t.test = remoteSTAR::correlated.t(coef = coef.means, part.SEs = part.SEs, rcoef = rcoef.mean, 
+                   df2 = df2, npart = ncol(part.mat)))
 ```
 
-`fitGLS_partition()` does (**WILL**) all of this behind the scenes but it may be important
-when analyzing extremely large data sets to know how the individual components
+`fitGLS_partition()` **WILL** (eventually) do all of this behind the scenes but 
+it may be important when analyzing extremely large data sets to know how the 
+individual components
 work together. The above steps could be easily extended for distributed or 
 parallel computing which may be necessary if (A) the entire data set cannot be
 processed in memory and/or (B) processing time is important and many individual 
@@ -460,14 +523,14 @@ We will not discuss this type of parallelization or distributed computing in
 detail here but simply note that implementing this functionality could be 
 trivially simple. That being said, minimal multi-core functionality is 
 implemented internally through the C++ libraries `Eigen` and `openMP` (**NOTE** 
-this is still not reliably present in the package). 
+this is still not reliably present in the package but will be soon). 
 
-# Debugging remoteSTAR fitGLS_parititon functions
+<!-- # Debugging remoteSTAR fitGLS_parititon functions -->
 
-There are some discrepancies between my output and Tony's, so I'm going to try
-to solve the problem. 
+<!-- There are some discrepancies between my output and Tony's, so I'm going to try -->
+<!-- to solve the problem.  -->
 
-```{r}
+```{r, eval = FALSE, echo = FALSE}
 ## Check that the correlated t-test would lead to the same conclusions overall
   ## as the tests for individual partitions:
 
@@ -493,43 +556,51 @@ t.crit = qt(1 - (.05 / 2), df = df2 * ncol(part.mat))
 library(ggplot2)
 
 ggplot(data.frame(t.test, var = factor(colnames(mod.mat), levels = colnames(mod.mat))), 
-       aes(x = var, y = coefs)) + 
+       aes(x = var, y = coef)) + 
   geom_hline(yintercept = 0, lty = 3, col = "black") + 
-  geom_errorbar(aes(ymin = coefs - se*t.crit, 
-                    ymax = coefs + se*t.crit, 
+  geom_errorbar(aes(ymin = coef - se*t.crit, 
+                    ymax = coef + se*t.crit, 
                     col = "correlated t-test", ), position = position_nudge(x = -.025),
                 width = .1) +
-  geom_errorbar(aes(ymin = coefs - apply(cfs, 1, sd)*t.crit, 
-                    ymax = coefs + apply(cfs, 1, sd)*t.crit, 
+  geom_errorbar(aes(ymin = coef - apply(cfs, 1, sd)*t.crit, 
+                    ymax = coef + apply(cfs, 1, sd)*t.crit, 
                     col = "sd(coef)"),
                 width = .1, position = position_nudge(x = .025)) + 
   geom_point() +
   labs(col = "95% CI", y = "coef", x = NULL, title = "H0: coef = 0")
 
+## FIXED!!!
+
 ```
 
-```{r}
+```{r, eval = FALSE, echo = FALSE}
 # need to test against tony's code
 # source("")
 dat.map = data.frame(rel.est, location, land = ndvi_AK3000$land)
 library(geosphere)
 
-form = "rel.est ~ land"
+form = "rel.est ~ 0 + land"
 
 ## Tony's code
-Z <- GLS.partition.data(formula = "rel.est ~ land", 
-                        formula0 = "rel.est ~ 1", 
-                        data = dat.map,
-                        spatial.autocor.FUN = "exponential-power",
-                        spatialcor = r.est$spatialcor,
-                        est.nugget = TRUE,
-                        npart = 4,
-                        partition = t(part.mat),
-                        nugget.tol = 1e-05,
-                        min.num.cross.part = 5,
-                        verbose = FALSE,
-                        rm.spatial.autocorrelation = FALSE
-)
+# source("../inst/tinytest/tony-og-code.R")
+Z = GLS.partition.data(formula = "rel.est ~ 0 + land", 
+                       formula0 = "rel.est ~ 1",
+                       data = dat.map, 
+                       spatialcor = r.est$spatialcor, 
+                       spatial.autocor.FUN = "exponential-power",
+                       est.nugget = TRUE, partition = part.mat)
+# Z <- GLS.partition.data(formula = "rel.est ~ land", 
+#                         formula0 = "rel.est ~ 1", 
+#                         data = dat.map,
+#                         spatial.autocor.FUN = "exponential-power",
+#                         spatialcor = r.est$spatialcor,
+#                         est.nugget = TRUE,
+#                         npart = 4,
+#                         partition = t(part.mat),
+#                         nugget.tol = 1e-05,
+#                         min.num.cross.part = 5,
+#                         verbose = FALSE,
+#                         rm.spatial.autocorrelation = FALSE)
 
 ## nugget is not working properly
 rbind(Z$nugget.part, 
@@ -584,14 +655,14 @@ RasterStack or CSV as input (to prevent loading the entire dataset into memory)
 
 
 
-```{r}
+```{r, eval = FALSE}
 ## Test of using a function as an argument to a function
 
 loc = location[sample(x = 1:nrow(location), size = 50), ]
 loc2 = location[sample(x = 1:nrow(location), size = 50),]
 
 
-D = distm(loc)
+D = geosphere::distm(loc)
 
 test.dist <- function(location, fun = "distm", ...){
   if(is.character(fun) && fun == "distm"){requireNamespace("geosphere")}
@@ -717,7 +788,7 @@ which(!is.na(values(tmp)))
 extract(tmp, 50)
 ```
 
-## Old Code / Test Code: 
+<!-- ## Old Code / Test Code:  -->
 
 ```{r, echo = FALSE, eval = FALSE}
 ## shows that the correlated chisqr test is randombly distributed about 0
