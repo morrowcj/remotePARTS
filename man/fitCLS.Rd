@@ -4,30 +4,54 @@
 \alias{fitCLS}
 \title{Fit a CLS regression to a time series}
 \usage{
-fitCLS(x, t, Z = NULL)
+fitCLS(x, t, Z = NULL, save_AR.df = FALSE)
 }
 \arguments{
-\item{x}{numeric vector of length p containing remote sensing data}
+\item{x}{numeric vector of length p containing time series data for one
+location (i.e. a pixel)}
 
-\item{t}{numeric vector of length p containing the values for time. Recommended:
-`scale(1:ncol(X))`}
+\item{t}{numeric vector of length p containing the values for time.}
 
-\item{Z}{(optional) a numeric vector/matrix with p columns and q rows. Each
-row contains a different covariate measured at the same site as x at the same
-p time points.}
+\item{Z}{(optional) a numeric vector/matrix with p rows and q columns. Each
+column contains a different covariate measured at the same site as x at the
+same p time points.}
+
+\item{save_AR.df}{should the auto-regression data frame be returned?
+default: FALSE}
 }
 \value{
-a list of 3 or 4 elements:
-`coef` the model coefficients from `summary(lm(...))$coef` where `x_t0` is the
-effect of a pixel's value at the previous time on its value  at the current
-time point and `time` is the effect of time.
-`MSE` means squared error of the regression model
-`resids` the residual errors of the model
-`Z` the coefficients for optional covariates
+list of 3 elements: \code{$call} the function call used to produce
+the output, \code{$fm} the model object fit using \code{stats::lm()}, and, if
+if \code{save_AR.df = TRUE}, \code{$AR.df} an AR data frame built with
+\code{AR_df()} .
 }
 \description{
 see `?cls_star()`
 }
 \examples{
-#TBA
+data(ndvi_AK3000)
+x = unlist(ndvi_AK3000[1, -c(1:6)]) # time series for first pixel only
+t = 1:length(x) # time points
+## CLS without covariates
+fitCLS(x = x, t = t)
+
+## now with 2 covariates
+Z = cbind(rnorm(length(x)), rnorm(length(x)))
+fitCLS(x = x, t = t, Z = Z)
+
+## get the AR data frame with save_AR.df = TRUE
+fitCLS(x = x, t = t, save_AR.df = TRUE)$AR.df
+
+## print a summary
+summary(fitCLS(x = x, t = t))
+
+## use get_fm() to extract $fm, which is a stats::lm() object
+fm = get_fm(fitCLS(x = x, t = t))
+## then treat it just like lm()
+summary(fm)
+resid(fm)
+}
+\seealso{
+[AR_df()] for AR data frames and [fitCLS.map()] for fitting full-map
+time series
 }
