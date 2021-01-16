@@ -119,10 +119,11 @@ made in R rather than building one within the C++ code.
 * [ ] create S3 constructors and methods (i.e. `print()`, `summary()`, etc.) for
 all functions
 
-  - [x] `remoteGLS()` constructs a GLS object and `print.remoteGLS()` prints a
-  compact and summarized display.
+  - [x] `remoteGLS()` constructs a GLS object and `print.remoteGLS()`
+  prints a compact and summarized display.
 
-  - [ ] `remoteCLS()` constructor and methods for CLS objects
+  - [x] `remoteCLS()` constructor and methods for CLS objects. Both the
+  pixel-level `fitCLS` and the map-level `fitCLS.map` have S3 methods. 
   
   - [ ] `remoteAR()` constructor and methods for AR_REML objects
   
