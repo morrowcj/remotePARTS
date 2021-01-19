@@ -9,14 +9,21 @@ AR_df(x, t, Z = NULL)
 \arguments{
 \item{x}{length p time series vector}
 
-\item{t}{length p vector of time}
+\item{t}{length p vector temporal vector}
 
 \item{Z}{optional vector or design matrix of covariates. if only one
 covariate, \code{length(Z)} = p. If more than one, \code{nrow(Z)} = p}
 }
 \value{
-
+an AR data frame with columns corresponding to the value of x
+at time t (\code{$x.tj}), the value of x at time t-1 (\code{$x.ti}),
+the temporal variable at time t (\code{$t.j}), and the value of Z
+at time t {\code{$Z.*}}.
 }
 \description{
 Build AR data frame
+}
+\examples{
+AR_df(x = rnorm(20), t = 1:20)
+AR_df(x = rnorm(20), t = 1:20, Z = cbind(rnorm(20), rnorm(20)))
 }

@@ -24,8 +24,9 @@
 #' time = 1:30
 #' x = rnorm(31)
 #' x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-#' u = model.matrix(formula(x ~ time))
-#' AR_funct(par = .2, x, u)
+#' U = model.matrix(formula(x ~ time))
+#' AR_funct(par = .2, x, U, LL.only = TRUE)
+#' AR_funct(par = .2, x, U, LL.only = FALSE)
 AR_funct <- function(par, x, U, LL.only = TRUE) {
   b <- par # parameter of interest
   n.obs <- length(x) # number of time points
@@ -59,8 +60,8 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
                  (n.obs - q))
   #show(c(LL,b))
 
-  # return log-likelihood
   if(LL.only){
+  # return log-likelihood
   return(as.vector(LL))
   } else {
     MSE <- as.numeric(s2) #MSE
@@ -82,7 +83,8 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
                     b = b,
                     MSE = MSE,
                     s2beta = s2beta,
-                    logLik = logLik)
+                    resids = as.vector(H),
+                    logLik = as.vector(logLik))
 
     class(out.list) <- c("remoteAR", "pixel")
 
@@ -139,4 +141,9 @@ fitAR <- function(formula, data){
   AR.out$call = call
 
   return(AR.out)
+}
+
+
+fitAR.map <- function(X, t, Z = NULL){
+  print("TBA")
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/S3-objects-and-methods.R
 \name{print.remoteCLS}
 \alias{print.remoteCLS}
-\title{print remoteCLS object}
+\title{printmethod for remoteCLS object}
 \usage{
 \method{print}{remoteCLS}(obj)
 }
@@ -10,5 +10,5 @@
 \item{obj}{remoteCLS object}
 }
 \description{
-print remoteCLS object
+printmethod for remoteCLS object
 }

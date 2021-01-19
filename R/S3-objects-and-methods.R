@@ -17,14 +17,21 @@ get_fm = function(object, ...){ ## get the model object from complex objects
 #' Build AR data frame
 #'
 #' @param x length p time series vector
-#' @param t length p vector of time
+#' @param t length p vector temporal vector
 #' @param Z optional vector or design matrix of covariates. if only one
 #' covariate, \code{length(Z)} = p. If more than one, \code{nrow(Z)} = p
 #'
-#' @return
+#' @return an AR data frame with columns corresponding to the value of x
+#' at time t (\code{$x.tj}), the value of x at time t-1 (\code{$x.ti}),
+#' the temporal variable at time t (\code{$t.j}), and the value of Z
+#' at time t {\code{$Z.*}}.
+#'
+#'
 #' @export
 #'
 #' @examples
+#' AR_df(x = rnorm(20), t = 1:20)
+#' AR_df(x = rnorm(20), t = 1:20, Z = cbind(rnorm(20), rnorm(20)))
 AR_df <- function(x, t, Z = NULL){
   # variables
   t_n = length(t)
@@ -67,7 +74,7 @@ get_fm.remoteCLS <- function(obj){
     NULL
 }
 
-#' print remoteCLS object
+#' printmethod for remoteCLS object
 #'
 #' @param obj remoteCLS object
 #' @export
@@ -77,17 +84,16 @@ print.remoteCLS <- function(obj){
   ## Pixel version
   if ("pixel" %in% class(obj)) {
     # call
-    print(obj$call)
-    cat("\n")
+    cat("Call: ",deparse(obj$call), "\n",
+        "CLS model: ", deparse(obj$fm$call$formula), "\n\n",
+        "Coefficeints:", "\n", sep = "")
     # then lm
-    cat("linear model: ")
-    print(obj$fm$call$formula)
     print(obj$fm$coefficients)
 
   } else if ("map" %in% class(obj)) {
     ## Map version
-    print(obj$call)
-    cat("\nEffect of time:\n")
+    cat("Call:",deparse(obj$call), "\n")
+    cat("\n","Effect of time:","\n", sep = "")
     print(obj$time.coef)
   }
 }
@@ -167,6 +173,89 @@ residuals.remoteCLS <- function(obj){
   }
 }
 
+
+# AR ----
+#' print method for remoteAR object
+#'
+#' @param obj remoteAR object
+#'
+#' @return
+#' @export
+print.remoteAR <- function(obj){
+  stopifnot("remoteAR" %in% class(obj))
+
+  ## Pixel version
+  if ("pixel" %in% class(obj)) {
+    # call
+    cat("Call:",deparse(obj$call), "\n")
+    # then lm
+    cat("\n","Coefficients:","\n", sep = "")
+    print(format(obj$coef, nsmall = 2, digits = 3, scientific = 1))
+    cat("\n",
+        "AR parameter estimate: ",
+        format(obj$b, digits = 3, nsmall = 2, scientific = 1),
+        "\n",
+        "MSE: ", obj$MSE, "\n",
+        "log-likelihood: ", obj$logLik, sep = "")
+
+
+  } else if ("map" %in% class(obj)) {
+    ## Map version
+    message("print() method for class 'remoteAR.map' not yet implemented")
+    print.default(obj)
+  }
+}
+
+#' return dataframe frome remoteAR.map object
+#'
+#' @param obj remoteAR object
+#'
+#' @return
+#' @export
+as.data.frame.remoteAR <- function(obj){
+  stopifnot("remoteAR" %in% class(obj))
+
+  ## Pixel version
+  if ("pixel" %in% class(obj)) {
+    stop("no applicable method for class remoteAR.pixel")
+  } else if ("map" %in% class(obj)) {
+    message("as.data.frame() method for class 'remoteAR.map' not yet implemented")
+  }
+}
+
+#' Extract coefficients from remoteAR object
+#'
+#' @param obj remoteAR object
+#'
+#' @return coefficeint table
+#' @export
+coef.remoteAR <- function(obj){
+  stopifnot("remoteAR" %in% class(obj))
+
+  ## Pixel version
+  if ("pixel" %in% class(obj)) {
+    return(obj$coef)
+  } else if ("map" %in% class(obj)) {
+    message("coefficient() method for class 'remoteAR.map' not yet implemented")
+  }
+}
+
+#' Extract residuals from remoteAR object
+#'
+#' @param obj remoteAR object
+#'
+#' @return residuals
+#' @export
+residuals.remoteAR <- function(obj){
+  stopifnot("remoteAR" %in% class(obj))
+
+  ## Pixel version
+  if ("pixel" %in% class(obj)) {
+    return(obj$resids)
+  } else if ("map" %in% class(obj)) {
+    message("coefficient() method for class 'remoteAR.map' not yet implemented")
+  }
+}
 
 # GLS ----
 
