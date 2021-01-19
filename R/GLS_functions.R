@@ -554,7 +554,7 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #' @export
 #'
 #' @examples #TBA
-correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2,
+boot_corF <- function(Fmean.obs, rSSR, rSSE, df1, df2,
                                    npart, nboot = 2000){
   part <- rep(1:npart, each=df1)
 
@@ -596,7 +596,7 @@ correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2,
 #' @param npart number of partitions used to split the data
 #'
 #' @export
-correlated.chisq <- function(Fmean, rSSR, df1, npart){
+cor_chisq <- function(Fmean, rSSR, df1, npart){
   rZ <- rSSR^.5/df1
   v.MSR <- diag(df1) - rZ
   V.MSR <- kronecker(diag(npart),v.MSR) + rZ
@@ -615,7 +615,7 @@ correlated.chisq <- function(Fmean, rSSR, df1, npart){
 #' @param npart number of partitions the data was split into
 #'
 #' @export
-correlated.t <- function(coefs, part.SEs, rcoef, df2, npart){
+cor_t <- function(coefs, part.SEs, rcoef, df2, npart){
 
   secoef <- matrix(NA, length(coefs), 1)
   for(i in seq_len(length(coefs))){
@@ -643,7 +643,7 @@ correlated.t <- function(coefs, part.SEs, rcoef, df2, npart){
 #' @examples #TBA
 GLS.partition.pvalue <- function(starpart, nboot = 2000){
   if(is.finite(starpart$rSSR) & !is.na(nboot)) {
-    p.Fmean <- correlated.F.bootstrap(Fmean.obs = starpart$Fmean,
+    p.Fmean <- boot_corF(Fmean.obs = starpart$Fmean,
                                       rSSR = starpart$rSSR,
                                       rSSE = starpart$rSSE,
                                       df1 = starpart$df1,
@@ -655,7 +655,7 @@ GLS.partition.pvalue <- function(starpart, nboot = 2000){
   }
   pF.part = sapply(starpart$part_results, function(x)x$pval.F)
 
-  pchisqr = correlated.chisq(starpart$Fmean, starpart$rSSR,
+  pchisqr = cor_chisq(starpart$Fmean, starpart$rSSR,
                              starpart$df1, starpart$npart)
 
   pF.hoch <- min(p.adjust(pF.part, "hochberg"))
@@ -665,7 +665,7 @@ GLS.partition.pvalue <- function(starpart, nboot = 2000){
   pF.adjust = c("hochberg" = pF.hoch, "hommel" = pF.homm, "fdr" = pF.fdr,
                 "boot" = p.Fmean$pvalue)
 
-  # p.t <- correlated.t(coef = z$coef, se.part = z$se.part,
+  # p.t <- cor_t(coef = z$coef, se.part = z$se.part,
   #                     rcoef = z$rcoef, z$df2, npart = z$npart)
 
 
