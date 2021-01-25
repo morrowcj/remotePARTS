@@ -1,38 +1,5 @@
 ## invert_choldec ----
 
-#' inverted cholesky decomposition of a matrix M
-#'
-#' @description
-#'
-#' Note: this should not be confused with the inverse of M derived from the
-#' cholesky decomposition (i.e. `chol2inv(M)`)
-#'
-#' @param M numeric matrix for which the inverse cholesky matrix is to be
-#' obtained.
-#' @param nugget a length 1 numeric vector containing the nugget that should
-#' be added to the var-cov matrix. Default is 0.
-#' @param debug logical: debug mode (print additional info)?
-#'
-#' @return the inverse (lower triangle only) of the cholesky decomposition of M
-#' @export
-#'
-#' @examples #TBA
-invert_cholR <- function(M, nugget = 0, debug = FALSE){
-  stopifnot(nrow(M) == ncol(M))
-
-  n = nrow(M)
-
-  # handle nugget
-  if(nugget != 0){
-    if (debug) {print("using nugget")}
-    M <- (1 - nugget) * M + nugget * diag(n)
-  }
-
-  # return the result
-  return(t(backsolve(chol(M), diag(n))))
-}
-
-
 ## fitGLS_R ----
 ## This function calls invert_cholR()
 
