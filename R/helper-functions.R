@@ -115,3 +115,138 @@ calc_dfpart <- function(partsize, p, p0){
   df1 = df0 - df2
   return(c("df1" = df1, "df2" = df2))
 }
+
+#' bootsrap test
+#'
+#' @param Fmean.obs Fmean
+#' @param rSSR rSSR
+#' @param rSSE rSSE
+#' @param df1 df1
+#' @param df2 df2
+#' @param npart partitions
+#' @param nboot bootstraps
+#'
+#' @return
+#' @export
+#'
+#' @examples #TBA
+boot_corF <- function(Fmean.obs, rSSR, rSSE, df1, df2,
+                      npart, nboot = 2000){
+  part <- rep(1:npart, each=df1)
+
+  rZ <- rSSR^.5/df1
+  v.MSR <- diag(df1) - rZ
+  v.MSR <- kronecker(diag(npart),v.MSR) + rZ
+  D.MSR <- t(chol(v.MSR, pivot=T))
+  if(attr(D.MSR, "rank") < npart){
+    rank.MSR <- attr(D.MSR, "rank")
+    v.MSR <- diag(df1) - .99/df1
+    v.MSR <- kronecker(diag(npart),v.MSR) + rZ
+    D.MSR <- t(chol(v.MSR, pivot=T))
+  }else{
+    rank.MSR <- NA
+  }
+
+  v.MSE <- (1-rSSE) * diag(npart) + rSSE
+  D.MSE <- t(chol(v.MSE))
+
+  count <- 0
+  for(boot in 1:nboot){
+    Z1 <- D.MSR %*% rnorm(npart*df1)
+    MSR.boot <- aggregate(Z1^2, by=list(part), FUN=sum)[,2]/df1
+    MSE.boot <- 1 + D.MSE %*% rnorm(npart, mean=0, sd=(2*df2)^.5/df2)
+    if(Fmean.obs < mean(MSR.boot/MSE.boot)) count <- count + 1
+  }
+  pval = ifelse(count/nboot == 0, 1/nboot, count/nboot)
+  return(list(pvalue = pval, nboot = nboot, rank.MSR = rank.MSR))
+}
+
+#' Correlated chi-squared test
+#'
+#' @details performs a correlated chi-squared test on cross-partition GLS
+#' results.
+#'
+#' @param Fmean average partition F value
+#' @param rSSR cross-partition regression sum of squares
+#' @param df1 first degrees of freedom
+#' @param npart number of partitions used to split the data
+#'
+#' @export
+cor_chisq <- function(Fmean, rSSR, df1, npart){
+  rZ <- rSSR^.5/df1
+  v.MSR <- diag(df1) - rZ
+  V.MSR <- kronecker(diag(npart),v.MSR) + rZ
+  lambda <- eigen(V.MSR)$values
+  pvalue <- suppressWarnings(CompQuadForm::imhof(q = npart * df1 * Fmean, lambda = lambda)$Qq)
+  pvalue = ifelse(pvalue <= 1e-06, 1e-06, pvalue) # prevent from being negative/too low
+  return(pvalue)
+}
+
+#' analytical t-test for partitioned GLS
+#'
+#' @param coefs the coefficients to test - averaged across partitions
+#' @param part.SEs matrix of partition standard errors (columns are partitions)
+#' @param rcoef cross-coefficient averaged across partition pairs
+#' @param df2 second degrees of freedom from partitioned GLS
+#' @param npart number of partitions the data was split into
+#'
+#' @export
+cor_t <- function(coefs, part.SEs, rcoef, df2, npart){
+
+  secoef <- matrix(NA, length(coefs), 1)
+  for(i in seq_len(length(coefs))){
+    R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1,npart,npart)
+    secoef[i,] <- (part.SEs[i,] %*% R %*% part.SEs[i,])^.5/npart
+  }
+
+  tscore <- coefs/secoef
+  pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = FALSE)
+
+  ttest <- cbind(coefs, secoef, tscore, pvalue)
+  colnames(ttest) <- c("coefs", "se", "tscore", "P")
+
+  return(p.t = ttest)
+}
+
+
+#' Wrapper for bootsrap test
+#'
+#' @param part.out output of partitioned GLS model...
+#' @param nboot number of bootstraps to run for F-test (NA skips bootstrap)
+#'
+#' @return
+#' @export
+#'
+#' @examples #TBA
+GLS.partition.pvalue <- function(part.out, nboot = 2000){
+  if(is.finite(part.out$rSSR) & !is.na(nboot)) {
+    p.Fmean <- boot_corF(Fmean.obs = part.out$Fmean,
+                         rSSR = part.out$rSSR,
+                         rSSE = part.out$rSSE,
+                         df1 = part.out$df1,
+                         df2 = part.out$df2,
+                         npart = part.out$npart,
+                         nboot = nboot)
+  }else{
+    p.Fmean <- list(NA,NA,NA)
+  }
+  pF.part = sapply(part.out$part_results, function(x)x$pval.F)
+
+  pchisqr = cor_chisq(part.out$Fmean, part.out$rSSR,
+                      part.out$df1, part.out$npart)
+
+  pF.hoch <- min(p.adjust(pF.part, "hochberg"))
+  pF.homm <- min(p.adjust(pF.part, "hommel"))
+  pF.fdr <- min(p.adjust(pF.part, "fdr"))
+
+  pF.adjust = c("hochberg" = pF.hoch, "hommel" = pF.homm, "fdr" = pF.fdr,
+                "boot" = p.Fmean$pvalue)
+
+  # p.t <- cor_t(coef = z$coef, se.part = z$se.part,
+  #                     rcoef = z$rcoef, z$df2, npart = z$npart)
+
+
+
+
+  return(list("pF.boot" = p.Fmean, "p.chisqr" = pchisqr, "pF.adj" = pF.adjust))
+}

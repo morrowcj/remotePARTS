@@ -163,3 +163,76 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #   f <- match.fun(func)
 #   f(part.i, ...)
 # }
+
+## OLD first attempt at fitGLS.partition() ----
+# #' fit GLS model by partitioning remote sensing data
+# #'
+# #' @details
+# #'
+# #' Note: This function is not complete yet. Use the C++ version instead
+# #'
+# #' @param X n x p numeric design matrix for predictor variables
+# #' @param V n x n numeric covariance matrix
+# #' @param y length n numeric resposne vector
+# #' @param X0 n x p0 null numeric design matrix
+# #' @param nugget nugget to be added to variance matrix. see `?invert_cholR()`
+# #' @param npart integer: number of of partitions to divide the data into
+# #' @param mincross intiger: minimum number of partition pairs from which to
+# #' calculate statistics (i.e. )
+# #' @param nug.int interval of nugget passed to fitGLS_R()
+# #' @param nug.tol accuracy of nugget calculation passed to fitGLS_R()
+# #'
+# #' @return list of GLS statistics
+# #' @export
+# #'
+# #' @examples #TBA
+# fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
+#                              nug.int = c(0, 1), nug.tol = 0.00001){
+#   ## Select random subsets according to the number of partitions
+#   n <- nrow(data) # full data n
+#   nn <- n - (n%%npart) # n divisible by npart
+#   n.p <- nn/npart # size of each partition
+#   shuff <- sample(n)[1:nn] # shuffled rows
+#   # shuff.mat <- matrix(shuff, nrow = npart)
+#   ## TBA: handle user-defined partitions?
+#
+#   ## calculate degrees of freedom
+#   df2 <- n.p - (ncol(X) - 1)
+#   df0 <- n.p - (ncol(X0) - 1)
+#   df1 <- df0 - df2
+#
+#   ## adjust the minimum number of crossed partitions
+#   if(mincross > npart | is.na(mincross)|is.null(mincross) | missing(mincross)){
+#     mincross <- npart
+#   }
+#
+#   ## loop through each partition and gather results
+#   # for(partition in seq_len(npart)){ ## lapply is better for now
+#   results <- lapply(seq_len(npart), function(partition){
+#     ## subset the full data according to the partion
+#     subset <- (partition - 1)*n.p + (seq_len(n.p))
+#     tmp <- fitGLS_R(X = X[subset, ], V = V[subset, subset], y = y[subset],
+#                     X0 = X0[subset, ], nugget = nugget)
+#
+#     ## TBA: fit V matrix to individual partitions
+#     ## TBA: allow for non-fixed nugget
+#
+#     out <- tmp[c("SSR", "SSE", "SSE0","betahat", "betahat0", "SE", "SE0",
+#                  "Fstat", "pval.F", "logLik", "logLik0")]
+#
+#     ## include incvhol, xx, and xx0 for the first few subsets
+#     if(!is.na(mincross) && partition <= mincross){
+#       out$invcholV <- invert_cholR(V[subset, subset], nugget = nugget)
+#       out$xx <- tmp$xx
+#       out$xx0 <- tmp$xx0
+#     } else{
+#       out$invcholV <- NULL
+#       out$xx <- NULL
+#       out$xx0 <- NULL
+#     }
+#     return(out)})
+#
+#   ## Calculate pairwise cross-partition statistics
+#   return(results)
+#
+# }
