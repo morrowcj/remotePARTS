@@ -1,81 +1,76 @@
-#' Worker function 2 for partitioned GLS
-#'
-#' @details this is the second worker function for the partitioned GLS analysis.
-#'
-#' NOTE: currently, there is no native parallel functionality and the partitioned
-#' form of the GLS is not implemented entirely in C++. Instead, the R function
-#' fitGLS.partition_rcpp() weaves between R and C++ on a single core. While
-#' this method is still much faster than the purely R implementation, migration
-#' to entirely C++ will greatly improve speed further. This migration requires
-#' calculating geographic distances with C++ which I've not yet written.
-#'
-#' Additionally, there seems to be a memory-related issue with the cpp version
-#' of this code. I've
-#' successfully used the function when partitions have 100 or fewer rows (too
-#' small). However, larger partitions cause a fatal error that causes a crash.
-#'
-#' @param xxi numeric matrix xx from  partition i
-#' @param xxj numeric matrix xx from  partition j
-#' @param xxi0 numeric matrix xx0 from  partition i
-#' @param xxj0 numeric matrix xx0 from  partition j
-#' @param tUinv_i numeric matrix tInvCholV from  partition i
-#' @param tUinv_j numeric matrix tInvCholV from  partition j
-#' @param Vsub numeric variance matrix for Xij (upper block)
-#' @param df1 first degree of freedom
-#' @param df2 second degree of freedom
-#'
-#' @export
-#' @examples #TBA
-crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
-                             Vsub,
-                             # nug_i, nug_j,
-                             df1, df2){
-  np = nrow(xxi)
-  # rescale nuggets
-  # nug_i = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
-  # nug_j = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+## Partitioned GLS ----
+# #' fit GLS model by partitioning remote sensing data
+# #'
+# #' @details
+# #'
+# #' Note: This function is not complete yet. Use the C++ version instead
+# #'
+# #' @param X n x p numeric design matrix for predictor variables
+# #' @param V n x n numeric covariance matrix
+# #' @param y length n numeric resposne vector
+# #' @param X0 n x p0 null numeric design matrix
+# #' @param nugget nugget to be added to variance matrix. see `?invert_cholR()`
+# #' @param npart integer: number of of partitions to divide the data into
+# #' @param mincross intiger: minimum number of partition pairs from which to
+# #' calculate statistics (i.e. )
+# #' @param nug.int interval of nugget passed to fitGLS_R()
+# #' @param nug.tol accuracy of nugget calculation passed to fitGLS_R()
+# #'
+# #' @return list of GLS statistics
+# #' @export
+# #'
+# #' @examples #TBA
+# fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
+#                              nug.int = c(0, 1), nug.tol = 0.00001){
+#   ## Select random subsets according to the number of partitions
+#   n <- nrow(data) # full data n
+#   nn <- n - (n%%npart) # n divisible by npart
+#   n.p <- nn/npart # size of each partition
+#   shuff <- sample(n)[1:nn] # shuffled rows
+#   # shuff.mat <- matrix(shuff, nrow = npart)
+#     ## TBA: handle user-defined partitions?
+#
+#   ## calculate degrees of freedom
+#   df2 <- n.p - (ncol(X) - 1)
+#   df0 <- n.p - (ncol(X0) - 1)
+#   df1 <- df0 - df2
+#
+#   ## adjust the minimum number of crossed partitions
+#   if(mincross > npart | is.na(mincross)|is.null(mincross) | missing(mincross)){
+#     mincross <- npart
+#   }
+#
+#   ## loop through each partition and gather results
+#   # for(partition in seq_len(npart)){ ## lapply is better for now
+#   results <- lapply(seq_len(npart), function(partition){
+#     ## subset the full data according to the partion
+#     subset <- (partition - 1)*n.p + (seq_len(n.p))
+#     tmp <- fitGLS_R(X = X[subset, ], V = V[subset, subset], y = y[subset],
+#                   X0 = X0[subset, ], nugget = nugget)
+#
+#       ## TBA: fit V matrix to individual partitions
+#       ## TBA: allow for non-fixed nugget
+#
+#     out <- tmp[c("SSR", "SSE", "SSE0","betahat", "betahat0", "SE", "SE0",
+#                       "Fstat", "pval.F", "logLik", "logLik0")]
+#
+#     ## include incvhol, xx, and xx0 for the first few subsets
+#     if(!is.na(mincross) && partition <= mincross){
+#       out$invcholV <- invert_cholR(V[subset, subset], nugget = nugget)
+#       out$xx <- tmp$xx
+#       out$xx0 <- tmp$xx0
+#     } else{
+#       out$invcholV <- NULL
+#       out$xx <- NULL
+#       out$xx0 <- NULL
+#     }
+#     return(out)})
+#
+#   ## Calculate pairwise cross-partition statistics
+# return(results)
+#
+# }
 
-  # variance matrix with nuggets (ARE NEVER USED)
-  # Vn <- diag(rep(c(nug_i, nug_j), each = np)) + Vij
-  # Vn <- Vn[1:np, (np+1):(2*np)] # upper right block
-
-  # calculate stats
-  Rij <- crossprod(t(tUinv_i), tcrossprod(Vsub, tUinv_j))
-
-  Hi <- xxi %*% solve(crossprod(xxi)) %*% t(xxi)
-  Hj <- xxj %*% solve(crossprod(xxj)) %*% t(xxj)
-
-  Hi0 <- xxi0 %*% solve(crossprod(xxi0)) %*% t(xxi0)
-  Hj0 <- xxj0 %*% solve(crossprod(xxj0)) %*% t(xxj0)
-
-  SiR <- Hi - Hi0
-  SjR <- Hj - Hj0
-
-  SiE <- diag(np) - Hi
-  SjE <- diag(np) - Hj
-
-  # rSSRij <- (SiR %*% (Rij %*% SjR %*% t(Rij)))/df1
-  # rSSEij <- (SiE %*% (Rij %*% SjE %*% t(Rij)))/df2
-
-  rSSRij <- matrix(SiR, nrow=1) %*%
-    matrix(Rij %*% SjR %*% t(Rij), ncol=1)/df1
-
-  rSSEij <- matrix(SiE, nrow=1) %*%
-    matrix(Rij %*% SjE %*% t(Rij), ncol=1)/df2
-
-
-  # output
-  out_lst <- list("Rij" = Rij,
-                  "Hi" = Hi,
-                  "Hj" = Hj,
-                  "Hi0" = Hi0,
-                  "Hj0" = Hj0,
-                  "SiR" = SiR,
-                  "SjR" = SjR,
-                  "rSSRij" = rSSRij,
-                  "rSSEij" = rSSEij)
-  return(out_lst)
-}
 
 #' fit GLS model by partitioning remote sensing data via Rcpp
 #'

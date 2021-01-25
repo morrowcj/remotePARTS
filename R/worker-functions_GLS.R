@@ -1,14 +1,7 @@
 # GLS worker function ----
 #' Worker function 1 for paritioned GLS
-#'
-#' @details this function is the first of 2 (maybe 3) worker functions that,
-#' together, perform the partitioned GLS analysis.
-#'
-#' This function is simply a wrapper for fitGLS_cpp() that finds the MLE nugget
-#' and adds it to the output.
-#'
-#' NOTE: eventually, the worker functions will perform the analysis using
-#' multiple cores but that has not yet been implemented.
+#' @rdname GLS_worker
+#' @family remoteGLS
 #'
 #' @param y numeric vector
 #' @param X numeric matrix
@@ -19,7 +12,19 @@
 #' @param nug_tol tolerance of nugget optimization
 #' @param save_xx logical: should xx, xx0, and invcholV be returned?
 #'
-#' @examples #TBA
+#' @details \code{GLS_worker()} is meant to be called by other functions
+#' and performs GLS similar to \code{fitGLS()}. However, unlike \code{fitGLS()},
+#' the nugget is optimized each time the function is called. This additional
+#' step is ideal for partitioned GLS.
+#'
+#' At present, \code{GLS_worker()} is only single-core natively but will have
+#' multi-core functionality eventually.
+#'
+#' @return a list of remoteGLS output
+#'
+#' @seealso [fitGLS()] and [fitGLS.parition_rcpp()]
+#'
+#' @examples
 #'
 #' @export
 GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
@@ -52,19 +57,8 @@ GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
 
 ## cross-partition worker ----
 #' Worker function 2 for partitioned GLS
-#'
-#' @details this is the second worker function for the partitioned GLS analysis.
-#'
-#' NOTE: currently, there is no parallel functionality and the partitioned
-#' form of the GLS is not implemented entirely in C++. Instead, the R function
-#' fitGLS.partition_rcpp() weaves between R and C++ on a single core. While
-#' this method is still much faster than the purely R implementation, migration
-#' to entirely C++ will greatly improve speed further. This migration requires
-#' calculating geographic distances with C++ which I've not yet written.
-#'
-#' Additionally, there seems to be a memory-related issue with this code. I've
-#' successfully used this function when partitions have 100 or fewer rows (too
-#' small). However, larger partitions cause a fatal error that causes a crash.
+#' @rdname crosspart_worker
+#' @family remoteGLS
 #'
 #' @param xxi numeric matrix xx from  partition i
 #' @param xxj numeric matrix xx from  partition j
@@ -78,7 +72,12 @@ GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
 #'
-#' @examples #TBA
+#' @return a list of cross-partition statistics
+#'
+#' @details Cross-partition statistics are calculated for a pair of partitions
+#' i and j.
+#'
+#' @examples
 #'
 #' @export
 crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
@@ -104,4 +103,60 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
 
   return(.Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
                invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2))
+}
+
+
+#' R version of cross-part worker
+#' @rdname crosspart_worker
+#'
+#' @details \code{crosspart_worker_R} is not exported by default and is just
+#' a reference function. is a purely R version and will be removed in future
+#' implementations.
+crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
+                               Vsub, df1, df2){
+  np = nrow(xxi)
+  # rescale nuggets
+  # nug_i = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+  # nug_j = ifelse(nug_i == 0, 0, (1 - nug_i)/nug_i)
+
+  # variance matrix with nuggets (ARE NEVER USED)
+  # Vn <- diag(rep(c(nug_i, nug_j), each = np)) + Vij
+  # Vn <- Vn[1:np, (np+1):(2*np)] # upper right block
+
+  # calculate stats
+  Rij <- crossprod(t(tUinv_i), tcrossprod(Vsub, tUinv_j))
+
+  Hi <- xxi %*% solve(crossprod(xxi)) %*% t(xxi)
+  Hj <- xxj %*% solve(crossprod(xxj)) %*% t(xxj)
+
+  Hi0 <- xxi0 %*% solve(crossprod(xxi0)) %*% t(xxi0)
+  Hj0 <- xxj0 %*% solve(crossprod(xxj0)) %*% t(xxj0)
+
+  SiR <- Hi - Hi0
+  SjR <- Hj - Hj0
+
+  SiE <- diag(np) - Hi
+  SjE <- diag(np) - Hj
+
+  # rSSRij <- (SiR %*% (Rij %*% SjR %*% t(Rij)))/df1
+  # rSSEij <- (SiE %*% (Rij %*% SjE %*% t(Rij)))/df2
+
+  rSSRij <- matrix(SiR, nrow=1) %*%
+    matrix(Rij %*% SjR %*% t(Rij), ncol=1)/df1
+
+  rSSEij <- matrix(SiE, nrow=1) %*%
+    matrix(Rij %*% SjE %*% t(Rij), ncol=1)/df2
+
+
+  # output
+  out_lst <- list("Rij" = Rij,
+                  "Hi" = Hi,
+                  "Hj" = Hj,
+                  "Hi0" = Hi0,
+                  "Hj0" = Hj0,
+                  "SiR" = SiR,
+                  "SjR" = SjR,
+                  "rSSRij" = rSSRij,
+                  "rSSEij" = rSSEij)
+  return(out_lst)
 }
