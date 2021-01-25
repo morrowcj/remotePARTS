@@ -93,22 +93,23 @@ print.remoteCLS <- function(obj){
   } else if ("map" %in% class(obj)) {
     ## Map version
     cat("Call:",deparse(obj$call), "\n")
-    cat("\n","Effect of time:","\n", sep = "")
-    print(obj$time.coef)
+    cat("\n","Time Coefficients:","\n", sep = "")
+    print(format(as.data.frame(obj$time.coef)), digits = 3, nsmall = 2, scientific = 1)
   }
 }
 
-#' return remoteCLS obj as data frame
+
+#' Extract coefficeints from remoteCLS object
 #'
-#' @param obj remoteCLS map object (see \code{fitCLS.map()})
+#' @param obj remoteCLS object
 #'
-#' @return as.data.frame(obj$time.coef)
+#' @return coefficient data frame
 #' @export
-as.data.frame.remoteCLS <- function(obj){
+coef.remoteCLS <- function(obj){
   stopifnot("remoteCLS" %in% class(obj))
 
   if ("pixel" %in% class(obj)) {
-   stop("no applicable method for as.data.frame()")
+   return(as.data.frame(obj$fm$coefficeints))
   } else if ("map" %in% class(obj)) {
     return(as.data.frame(obj$time.coef))
   }
@@ -140,18 +141,18 @@ summary.remoteCLS <- function(obj){
     ## Map version
     cat("Summary\n")
     cat("\neffect of time:\n")
-    print(summary(obj$time.coef))
+    print(summary(as.data.frame(obj$time.coef)))
     if(!is.null(obj$xi.coef)){
       cat("\neffect of previous x:\n")
-      print(summary(obj$xi.coef))
+      print(summary(as.data.frame(obj$xi.coef)))
     }
     if(!is.null(obj$int.coef)){
       cat("\nintercept:\n")
-      print(summary(obj$int.coef))
+      print(summary(as.data.frame(obj$int.coef)))
     }
     if(!is.null(obj$MSE)){
       cat("\nMSE:\n")
-      print(summary((obj$MSE)))
+      print(summary(as.data.frame(obj$MSE)))
     }
   }
 }
@@ -201,25 +202,9 @@ print.remoteAR <- function(obj){
 
   } else if ("map" %in% class(obj)) {
     ## Map version
-    message("print() method for class 'remoteAR.map' not yet implemented")
-    print.default(obj)
-  }
-}
-
-#' return dataframe frome remoteAR.map object
-#'
-#' @param obj remoteAR object
-#'
-#' @return
-#' @export
-as.data.frame.remoteAR <- function(obj){
-  stopifnot("remoteAR" %in% class(obj))
-
-  ## Pixel version
-  if ("pixel" %in% class(obj)) {
-    stop("no applicable method for class remoteAR.pixel")
-  } else if ("map" %in% class(obj)) {
-    message("as.data.frame() method for class 'remoteAR.map' not yet implemented")
+    cat("Call: ", deparse(obj$call), "\n\n",
+        "Time Coefficeints: ", "\n", sep = "")
+    print(format(as.data.frame(obj$time.coef)), digits = 3, nsmall = 2, scientific = 1)
   }
 }
 
@@ -227,7 +212,7 @@ as.data.frame.remoteAR <- function(obj){
 #'
 #' @param obj remoteAR object
 #'
-#' @return coefficeint table
+#' @return coefficeint data frame
 #' @export
 coef.remoteAR <- function(obj){
   stopifnot("remoteAR" %in% class(obj))
@@ -236,7 +221,7 @@ coef.remoteAR <- function(obj){
   if ("pixel" %in% class(obj)) {
     return(obj$coef)
   } else if ("map" %in% class(obj)) {
-    message("coefficient() method for class 'remoteAR.map' not yet implemented")
+    return(as.data.frame(obj$time.coef))
   }
 }
 
@@ -253,7 +238,7 @@ residuals.remoteAR <- function(obj){
   if ("pixel" %in% class(obj)) {
     return(obj$resids)
   } else if ("map" %in% class(obj)) {
-    message("coefficient() method for class 'remoteAR.map' not yet implemented")
+    return(obj$resids)
   }
 }
 
