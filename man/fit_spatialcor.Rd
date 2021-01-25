@@ -10,7 +10,7 @@ fit_spatialcor(
   r.start = 0.1,
   a.start = 1,
   fit.n = 1000,
-  fun = "exp",
+  method = "exp",
   dist,
   location,
   scale.dist = TRUE,
@@ -36,11 +36,6 @@ taken from n sites (rows) and p time points (columns).}
 \item{fit.n}{integer signifying the size of the random subset of X rows to be
 used in the estimation.}
 
-\item{fun}{character string indicating which function to use. Currently the available options are
-"exponential", "exponential-power", and "taper-spherical".
-
-Note: Currently, only "exponential-power" is working properly. I'm not sure why. - morrowcj}
-
 \item{dist}{n x n numeric distance matrix}
 
 \item{location}{n x 2 numeric matrix containing latitude and longitude respectively}
@@ -61,6 +56,11 @@ for an appropriate S3 class.}
 \item{cols.plot}{optional vector of colors to use in the plot (size n)}
 
 \item{...}{additional arguments passed to `nls()`}
+
+\item{fun}{character string indicating which function to use. Currently the available options are
+"exponential", "exponential-power", and "taper-spherical".
+
+Note: Currently, only "exponential-power" is working properly. I'm not sure why. - morrowcj}
 }
 \value{
 a list containing

@@ -17,7 +17,7 @@ invert_cholR(M, nugget = 0, debug = FALSE)
 \item{debug}{logical debug mode}
 }
 \value{
-numeric matrix: inverse of the Cholesky decomposition
+numeric matrix: inverse of the Cholesky decomposition (lower triangle)
 }
 \description{
 Invert the cholesky decomposition of V
@@ -27,7 +27,7 @@ Calculates the inverse of the Cholesky decomposition of M which
 should not be confused with the inverse of M *derived* from the
 Cholesky decomposition (i.e. `chol2inv(M)`).
 
-Note: \code{invert_chol()} is a C++ implementation of \code{invert_cholR()}
+\code{invert_chol()} is a C++ implementation of \code{invert_cholR()}.
 }
 \examples{
 M <- crossprod(matrix(1:6, 3))

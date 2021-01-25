@@ -2,48 +2,90 @@
 % Please edit documentation in R/fitGLS.R
 \name{fitGLS}
 \alias{fitGLS}
+\alias{fitGLS2}
 \alias{LogLikGLS}
+\alias{fitGLS_R}
 \title{Fit GLS to remote sensing data}
 \usage{
 fitGLS(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1)
 
+fitGLS2(
+  formula,
+  data,
+  V,
+  nugget = 0,
+  form.0 = NULL,
+  save_xx = FALSE,
+  threads = 1,
+  contrasts = NULL,
+  ...
+)
+
 LogLikGLS(nugget, X, V, y)
+
+fitGLS_R(X, V, y, X0 = NULL, nugget = 0)
 }
 \arguments{
-\item{X}{numeric matrix}
+\item{X}{model matrix (double)}
 
-\item{V}{numeric matrix}
+\item{V}{varcov matrix (double)}
 
-\item{y}{numeric vector}
+\item{y}{response vector (double)}
 
-\item{X0}{numeric (double) matrix}
+\item{X0}{null model matrix (double)}
 
-\item{nugget}{the nugget to add to V}
+\item{nugget}{nugget added to V (double)}
 
 \item{save_xx}{logical: should xx, xx0, and invcholV be returned? This
 functionality is meant for use with the partitioned GLS whereby these
 values are used to calculate cross-partition statistics.}
 
-\item{threads}{integer indicating the number of threads to use. This current
-version does not have multi-thread functionality so this argument does
-nothing yet.}
+\item{threads}{integer indicating the number of threads to use. Currently
+this parameter does nothin but multi-core functionality will be added soon.}
+
+\item{formula}{formula to build the model with}
+
+\item{data}{object containing the data}
+
+\item{form.0}{null model formula (default: "y ~ 1")}
+
+\item{contrasts}{optional linear contrasts to use}
+
+\item{...}{additional arguments passed to \code{\link{optimize_nugget}}}
+}
+\value{
+remoteGLS object
 }
 \description{
 Fit GLS to remote sensing data
 
+Alternative fitGLS function
+
 Caculate log-liklihood of GLS model
 }
 \details{
-see `fitGLS()`
 
-this function is mostly meant to optimize the nugget for a paritular
-set of data.
 
-Note: this function should be deprecated and simply added as functionality
-to `.fitGLS_cpp()`.
+\code{fitGLS2()} first creates an empty remoteGLS object
+(with \code{remoteGLS()}) and then fills in the elements by modifying
+the remoteGLS object in the C++ function.
+
+After further testing to determine which function is most efficient,
+either \code{fitGLS()} or \code{fitGLS2()} will be deprecated in favor
+of the other. Though, the formula notation of \code{fitGLS2()} will likely
+be kept in either case.
+
+\code{fitGLS2()} uses a slightly different C++ function from \code{fitGLS()}
+to achieve the different behavior.
+
+\code{LogLikGLS()} returns only the log-likelihood and is used to
+by other functions for optimization but should be deprecated and simply
+added as functionality to \code{fitGLS()} and/or \code{fitGLS2()} in future
+implementations.
+
+\code{fitGLS()} is a C++ implementation of \code{fitGLS_R()}.
 }
 \examples{
-#TBA
 
 #TBA
 }
