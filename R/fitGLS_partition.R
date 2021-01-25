@@ -4,12 +4,24 @@
 #'
 #' @param npix number of pixels in full dataset
 #' @param pixels vector of pixel indexes to sample from
-#' @examples
-#' dat.M <- matrix(rnorm(3000*20), ncol = 20)
-#' dat.rast <- raster::raster(dat.M)
-#'
 #' @export
-sample_partitions <- function(npix, pixels = NA, npart = 10, partsize = NA, verbose = TRUE){
+#'
+#' @examples
+#' # setup data
+#' dat.M <- matrix(rnorm(3000*20), ncol = 20)
+#' # 4 partitions (exhaustive)
+#' sample_partitions(npix = nrow(dat.M), npart = 4)
+#' # partitions with 500 pixels each (exhaustive)
+#' sample_partitions(npix = nrow(dat.M), partsize = 500)
+#' # 4 partitions each with 500 pixels (non-exhaustive)
+#' sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 500)
+#'
+#' # index of pixels to subset
+#' sub.indx <- 1:1000
+#' # 4 partitions (exhaustive) using only the specified pixels
+#' sample_partitions(npix = nrow(dat.M), npart = 4, pixels = sub.indx)
+sample_partitions <- function(npix, npart = 10, partsize = NA,
+                              pixels = NA, verbose = TRUE){
 
   if(!is.na(pixels) && length(pixels) > 1){
     npix = length(pixels)
@@ -54,10 +66,13 @@ sample_partitions <- function(npix, pixels = NA, npart = 10, partsize = NA, verb
 #' @param p0 number of parameters in null model
 #'
 #' @export
-calc_df <- function(part.size, p, p0){
-  stopifnot(length(part.size) == 1)
-  df2 = part.size - (p - 1)
-  df0 = part.size - (p0 - 1)
+#'
+#' @examples
+#' calc_df(partsize = 2000, p = 4, p0 = 1)
+calc_dfpart <- function(partsize, p, p0){
+  stopifnot(length(partsize) == 1)
+  df2 = partsize - (p - 1)
+  df0 = partsize - (p0 - 1)
   df1 = df0 - df2
   return(c("df1" = df1, "df2" = df2))
 }
@@ -68,13 +83,13 @@ calc_df <- function(part.size, p, p0){
 #' fit GLS model by partitioning remote sensing data via Rcpp
 #'
 #' @param X n x p numeric design matrix for predictor variables
-#' @param y length n numeric resposne vector
+#' @param y length n numeric response vector
 #' @param X0 n x p0 null numeric design matrix
 #' @param Dist distance matrix
 #' @param spatcor spatial correlation parameter(s)
 #' @param Vfit.fun function to use for Vfit() calculation
 #' @param npart number of partitions
-#' @param mincross minimum number of parition pairs from which to calculate
+#' @param mincross minimum number of partition pairs from which to calculate
 #' statistics
 #' @param nug.int interval of nugget search
 #' @param nug.tol accuracy of nugget estimate
@@ -188,3 +203,34 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
               "coef0" = coef0, "npart" = npart,
               "np" = n.p, "df1" = df1, "df2" = df2))
 }
+
+# # # Test how to call a function, passed as an argument: ----
+# # The best way I can think of to make a versatile and memory-limited
+# # fitGLS.partition() function is by taking a function as an argument.
+# # This function could be user-defined so that any input structure could
+# # be used. this user function func() would need the following characteristics
+# #
+# # 1) the first argument of the function should be a single integer that
+# # indicates which partition the function will be creating/revealing.
+# #
+#
+# # 2) the output should be a list that contains at least the following NAMED
+# # elements: "X" a design matrix of predictors with exactly n.p rows; "y"
+# # the GLS response vector (e.g. residuals from CLS) that is exactly length n.p;
+# # Either "D" an n.p x n.p distance matrix OR "V" a n.p x n.p Covariance matrix.
+# # if "D" is output instead of "V", an additional object "Vfit.meth" containing
+# # method by which "V" should be obtained from "D" (see Vfit()).
+# #
+# test.data <- as.data.frame(matrix(rnorm(1000*20), ncol = 20))
+#
+# test.partition = sample_partitions(1000, npart = 4)
+#
+# part_funct.A <- function(part.i, data, partition){
+#   sub.index = as.vector(partition[,part.i])
+#   return(data[sub.index, ])
+# }
+#
+# call_part_funct.A <- function(func, part.i, ...){
+#   f <- match.fun(func)
+#   f(part.i, ...)
+# }
