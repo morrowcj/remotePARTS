@@ -1,8 +1,6 @@
 # fitCLS ----
 #' Fit a CLS regression to a time series
 #'
-#' @description see `?cls_star()`
-#'
 #' @param x numeric vector of length p containing time series data for one
 #' location (i.e. a pixel)
 #' @param t numeric vector of length p containing the values for time.
@@ -12,13 +10,17 @@
 #' @param save_AR.df should the auto-regression data frame be returned?
 #' default: FALSE
 #'
-#' @return list of 3 elements: \code{$call} the function call used to produce
+#' @return list with the following elements: \code{$call} the function call used to produce
 #' the output, \code{$fm} the model object fit using \code{stats::lm()}, and, if
 #' if \code{save_AR.df = TRUE}, \code{$AR.df} an AR data frame built with
 #' \code{AR_df()} .
 #'
-#' @seealso [AR_df()] for AR data frames and [fitCLS.map()] for fitting full-map
-#' time series
+#' @details by default the print.remoteCLS() method does not show all output.
+#' to access individual components, use \code{names()} to see element names
+#' and the S3 \code{$} operator to access them.
+#'
+#' @seealso [AR_df()] for AR data frames, [fitCLS.map()] for fitting full-map
+#' time series CLS, [fitAR()] and [fitAR.map()] for using AR REML instead of CLS.
 #'
 #' @export
 #'
@@ -26,6 +28,7 @@
 #' data(ndvi_AK3000)
 #' x = unlist(ndvi_AK3000[1, -c(1:6)]) # time series for first pixel only
 #' t = 1:length(x) # time points
+#'
 #' ## CLS without covariates
 #' fitCLS(x = x, t = t)
 #'
@@ -77,15 +80,19 @@ fitCLS <- function(x, t, Z = NULL, save_AR.df = FALSE) {
 #' @param ret_MSE
 #' @param ret_resid
 #'
+#' @details by default the print.remoteCLS() method does not show all output.
+#' to access individual components, use \code{names()} to see element names
+#' and the S3 \code{$} operator to access them.
+#'
 #' @return
 #' @export
 #'
 #' @examples
 fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
                        ret_MSE = TRUE, ret_resid = TRUE){
+  stopifnot(ncol(X) == length(t))
   n.pixels = nrow(X)
   n.time = length(t)
-  stopifnot(ncol(X) == n.time)
 
   ## run CLS
   cls.list <- lapply(1:n.pixels, function(x){
@@ -99,12 +106,12 @@ fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
 
   ## setup coefficient tables
   out.list <- list(call = match.call(),
-                   time.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels)))
-  names(out.list$time.coef) <- c("Est", "SE", "t","p.t")
+                   time.coef = matrix(NA, ncol = 4, nrow = n.pixels))
+  colnames(out.list$time.coef) <- c("Est", "SE", "t","p.t")
   out.list$mean = rowMeans(X)
   if (ret_xi.coef){
-    out.list$xi.coef <- as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
-    names(out.list$xi.coef) <- c("Est", "SE", "t","p.t")
+    out.list$xi.coef <- matrix(NA, ncol = 4, nrow = n.pixels)
+    colnames(out.list$xi.coef) <- c("Est", "SE", "t","p.t")
   }
   if (ret_int.coef){
     out.list$int.coef <- as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
