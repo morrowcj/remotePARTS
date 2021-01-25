@@ -267,8 +267,9 @@ remoteGLS <- function(form){
   GLS.obj$model.info = list("call" = match.call(),
                             "formula" = NULL,
                             "response" = NULL,
-                            "predictors" = NULL,
-                            "coef.names" = NULL)
+                            "predictors" = NULL
+                            # "coef.names" = NULL
+                            )
   if(!missing(form)){
     GLS.obj$model.info$formula = formula(form)
     GLS.obj$model.info$response = all.vars(formula(form))[1]
