@@ -35,7 +35,7 @@ fitGLS.partition_rcpp(
 \arguments{
 \item{X}{n x p numeric design matrix for predictor variables}
 
-\item{y}{length n numeric resposne vector}
+\item{y}{length n numeric response vector}
 
 \item{X0}{n x p0 null numeric design matrix}
 
@@ -47,7 +47,7 @@ fitGLS.partition_rcpp(
 
 \item{npart}{number of partitions}
 
-\item{mincross}{minimum number of parition pairs from which to calculate
+\item{mincross}{minimum number of partition pairs from which to calculate
 statistics}
 
 \item{nug.int}{interval of nugget search}

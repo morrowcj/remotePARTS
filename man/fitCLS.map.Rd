@@ -22,3 +22,8 @@ fitCLS.map(
 \description{
 Title
 }
+\details{
+by default the print.remoteCLS() method does not show all output.
+to access individual components, use \code{names()} to see element names
+and the S3 \code{$} operator to access them.
+}

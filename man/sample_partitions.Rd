@@ -4,7 +4,7 @@
 \alias{sample_partitions}
 \title{function to calculate partition size or number of partitions}
 \usage{
-sample_partitions(npix, pixels = NA, npart = 10, partsize = NA, verbose = TRUE)
+sample_partitions(npix, npart = 10, partsize = NA, pixels = NA, verbose = TRUE)
 }
 \arguments{
 \item{npix}{number of pixels in full dataset}
@@ -15,7 +15,17 @@ sample_partitions(npix, pixels = NA, npart = 10, partsize = NA, verbose = TRUE)
 function to calculate partition size or number of partitions
 }
 \examples{
+# setup data
 dat.M <- matrix(rnorm(3000*20), ncol = 20)
-dat.rast <- raster::raster(dat.M)
+# 4 partitions (exhaustive)
+sample_partitions(npix = nrow(dat.M), npart = 4)
+# partitions with 500 pixels each (exhaustive)
+sample_partitions(npix = nrow(dat.M), partsize = 500)
+# 4 partitions each with 500 pixels (non-exhaustive)
+sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 500)
 
+# index of pixels to subset
+sub.indx <- 1:1000
+# 4 partitions (exhaustive) using only the specified pixels
+sample_partitions(npix = nrow(dat.M), npart = 4, pixels = sub.indx)
 }

@@ -1,5 +1,5 @@
 #' @section remoteSTAR functions:
-#' \code{\link{cls_star}}
+#' \code{\link{fitGLS}}
 
 #' @keywords internal
 "_PACKAGE"

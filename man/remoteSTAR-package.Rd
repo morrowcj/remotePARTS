@@ -11,7 +11,7 @@
 }
 \section{remoteSTAR functions}{
 
-\code{\link{cls_star}}
+\code{\link{fitGLS}}
 }
 
 \author{

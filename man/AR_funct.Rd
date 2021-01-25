@@ -33,7 +33,7 @@ used by \code{fitAR()}
 time = 1:30
 x = rnorm(31)
 x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-u = model.matrix(formula(x ~ time))
-AR_funct(par = .2, x, u, LL.only = TRUE)
-AR_funct(par = .2, x, u, LL.only = FALSE)
+U = model.matrix(formula(x ~ time))
+AR_funct(par = .2, x, U, LL.only = TRUE)
+AR_funct(par = .2, x, U, LL.only = FALSE)
 }

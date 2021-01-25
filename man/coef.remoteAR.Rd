@@ -10,7 +10,7 @@
 \item{obj}{remoteAR object}
 }
 \value{
-coefficeint table
+coefficeint data frame
 }
 \description{
 Extract coefficients from remoteAR object

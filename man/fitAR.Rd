@@ -21,6 +21,10 @@ likelihood
 }
 \details{
 [fitAR()] is a wrapper function for [AR_funct()].
+
+By default, the print.remoteAR() method does not show all output.
+to access individual components, use \code{names()} to see element names
+and the S3 \code{$} operator to access them.
 }
 \examples{
 time = 1:30

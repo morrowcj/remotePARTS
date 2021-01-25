@@ -20,18 +20,24 @@ same p time points.}
 default: FALSE}
 }
 \value{
-list of 3 elements: \code{$call} the function call used to produce
+list with the following elements: \code{$call} the function call used to produce
 the output, \code{$fm} the model object fit using \code{stats::lm()}, and, if
 if \code{save_AR.df = TRUE}, \code{$AR.df} an AR data frame built with
 \code{AR_df()} .
 }
 \description{
-see `?cls_star()`
+Fit a CLS regression to a time series
+}
+\details{
+by default the print.remoteCLS() method does not show all output.
+to access individual components, use \code{names()} to see element names
+and the S3 \code{$} operator to access them.
 }
 \examples{
 data(ndvi_AK3000)
 x = unlist(ndvi_AK3000[1, -c(1:6)]) # time series for first pixel only
 t = 1:length(x) # time points
+
 ## CLS without covariates
 fitCLS(x = x, t = t)
 
@@ -52,6 +58,6 @@ summary(fm)
 resid(fm)
 }
 \seealso{
-[AR_df()] for AR data frames and [fitCLS.map()] for fitting full-map
-time series
+[AR_df()] for AR data frames, [fitCLS.map()] for fitting full-map
+time series CLS, [fitAR()] and [fitAR.map()] for using AR REML instead of CLS.
 }
