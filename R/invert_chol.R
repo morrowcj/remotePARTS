@@ -12,8 +12,6 @@
 #' should not be confused with the inverse of M *derived* from the
 #' Cholesky decomposition (i.e. `chol2inv(M)`).
 #'
-#' Note: \code{invert_chol()} is a C++ implementation of \code{invert_cholR()}
-#'
 #' @examples
 #' M <- crossprod(matrix(1:6, 3))
 #' # without a nugget:
@@ -38,6 +36,8 @@ invert_chol <- function(M, nugget = 0){
 #' @rdname invert_chol
 #'
 #' @param debug logical debug mode
+#'
+#' @details \code{invert_chol()} is a C++ implementation of \code{invert_cholR()}.
 #'
 #' @export
 invert_cholR <- function(M, nugget = 0, debug = FALSE){
