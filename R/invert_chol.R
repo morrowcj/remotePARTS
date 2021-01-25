@@ -22,5 +22,5 @@ invert_chol <- function(M, nugget = 0){
 
   # execute the C++ function ----
   # return(.invchol_cpp(M, nugget))
-  return(.Call(`_remoteSTAR_invchol_cpp`, M, nugget))
+  return(.Call(`_remotePARTS_invchol_cpp`, M, nugget))
 }

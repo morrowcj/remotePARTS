@@ -39,7 +39,7 @@ GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
   stopifnot(nug.u <= 1)
 
   ## Execute C++ GLS worker function
-  out <- .Call(`_remoteSTAR_GLS_worker_cpp`, y, X, V, X0, nug.l, nug.u, nug.tol,
+  out <- .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug.l, nug.u, nug.tol,
                save_xx)
 
   ## calculate p values outside of C++

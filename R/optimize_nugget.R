@@ -37,7 +37,7 @@ optimize_nugget <- function(X, V, y, lower = 0, upper = 1, tol = 1e-5,
   stopifnot(upper <= 1)
 
   ## execute the function
-  return(.Call(`_remoteSTAR_optimize_nugget_cpp`, X, V, y, lower, upper,
+  return(.Call(`_remotePARTS_optimize_nugget_cpp`, X, V, y, lower, upper,
                tol, debug))
 }
 

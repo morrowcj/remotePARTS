@@ -75,7 +75,7 @@ fitGLS2 <- function(formula, data, V, nugget = 0,
   GLS$nugget = nugget
 
   ## Run GLS ----
-  .Call(`_remoteSTAR_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, threads)
+  .Call(`_remotePARTS_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, threads)
 
   # add in p values
   GLS$pval.t <- 2 * pt(abs(GLS$tstat), df = GLS$dft, lower.tail = F)
@@ -104,7 +104,7 @@ fitGLS2 <- function(formula, data, V, nugget = 0,
 # # test.GLS$model.info$call <- call
 #
 #
-# out <- .Call(`_remoteSTAR_fitGLS_cpp`,
+# out <- .Call(`_remotePARTS_fitGLS_cpp`,
 #              y = test.model$response,
 #              X = test.model$mod.mat,
 #              V = V,

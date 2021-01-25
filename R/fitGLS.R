@@ -36,7 +36,7 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 
   ## call the c++ function
   # return(.fitGLS_cpp) # contains additional function call
-  out <- .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
+  out <- .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
   ## add in p values
   out$pval.t <- 2 * pt(abs(out$tstat), df = out$dft, lower.tail = F)
   out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
@@ -70,5 +70,5 @@ LogLikGLS <- function(nugget, X, V, y){
   stopifnot(all.equal(nrow(X), nrow(V), nrow(y)))
   stopifnot(all(check_posdef(V)))
 
-  return(.Call(`_remoteSTAR_LogLikGLS_cpp`, nugget, X, V, y))
+  return(.Call(`_remotePARTS_LogLikGLS_cpp`, nugget, X, V, y))
 }

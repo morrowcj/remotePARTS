@@ -1,4 +1,4 @@
-#' @section remoteSTAR functions:
+#' @section remotePARTS functions:
 #' \code{\link{fitGLS}}
 
 #' @keywords internal
@@ -8,6 +8,6 @@
 #' @importFrom Rcpp evalCpp
 #' @docType package
 ## usethis namespace: start
-#' @useDynLib remoteSTAR, .registration = TRUE
+#' @useDynLib remotePARTS, .registration = TRUE
 ## usethis namespace: end
 NULL

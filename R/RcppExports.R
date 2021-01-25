@@ -23,7 +23,7 @@
 #'
 #' @examples #TBA
 .GLS_worker_cpp <- function(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx = FALSE) {
-    .Call(`_remoteSTAR_GLS_worker_cpp`, y, X, V, X0, nug_l, nug_u, nug_tol, save_xx)
+    .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug_l, nug_u, nug_tol, save_xx)
 }
 
 #' Caculate log-liklihood of GLS model
@@ -41,7 +41,7 @@
 #'
 #' @examples #TBA
 .LogLikGLS_cpp <- function(nugget, X, V, y) {
-    .Call(`_remoteSTAR_LogLikGLS_cpp`, nugget, X, V, y)
+    .Call(`_remotePARTS_LogLikGLS_cpp`, nugget, X, V, y)
 }
 
 #' Worker function 2 for partitioned GLS
@@ -73,7 +73,7 @@
 #'
 #' @examples #TBA
 .crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, nug_i, nug_j, df1, df2) {
-    .Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, nug_i, nug_j, df1, df2)
+    .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, nug_i, nug_j, df1, df2)
 }
 
 #' Fit GLS to remote sensing data
@@ -94,7 +94,7 @@
 #'
 #' @examples #TBA
 .fitGLS_cpp <- function(X, V, y, X0, nugget, save_xx, threads) {
-    .Call(`_remoteSTAR_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
+    .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
 }
 
 #' Fit GLS to remote sensing data
@@ -115,7 +115,7 @@
 #'
 #' @examples #TBA
 .fitGLS2_cpp <- function(L, X, V, y, X0, nugget, save_xx, threads) {
-    invisible(.Call(`_remoteSTAR_fitGLS2_cpp`, L, X, V, y, X0, nugget, save_xx, threads))
+    invisible(.Call(`_remotePARTS_fitGLS2_cpp`, L, X, V, y, X0, nugget, save_xx, threads))
 }
 
 #' caculate t(A) \%*\% A
@@ -123,7 +123,7 @@
 #' @param A numeric matrix
 #'
 .AtA <- function(A) {
-    .Call(`_remoteSTAR_AtA`, A)
+    .Call(`_remotePARTS_AtA`, A)
 }
 
 #' solve Ax = B for x
@@ -132,7 +132,7 @@
 #' @param B numeric matrix
 #'
 .solve_cpp <- function(A, B) {
-    .Call(`_remoteSTAR_solve_cpp`, A, B)
+    .Call(`_remotePARTS_solve_cpp`, A, B)
 }
 
 #' solve Ax = I for x
@@ -140,7 +140,7 @@
 #' @param A numeric matrix
 #'
 .solve_ident_cpp <- function(A) {
-    .Call(`_remoteSTAR_solve_ident_cpp`, A)
+    .Call(`_remotePARTS_solve_ident_cpp`, A)
 }
 
 #' Invert the cholesky decomposition of V
@@ -150,7 +150,7 @@
 #'
 #' @examples #TBA
 .invchol_cpp <- function(V, nugget = 0.) {
-    .Call(`_remoteSTAR_invchol_cpp`, V, nugget)
+    .Call(`_remotePARTS_invchol_cpp`, V, nugget)
 }
 
 #' Find the maximum likelihood estimate of the nugget
@@ -174,6 +174,6 @@
 #'
 #' @examples #TBA
 .optimize_nugget_cpp <- function(X, V, y, lower, upper, tol, debug) {
-    .Call(`_remoteSTAR_optimize_nugget_cpp`, X, V, y, lower, upper, tol, debug)
+    .Call(`_remotePARTS_optimize_nugget_cpp`, X, V, y, lower, upper, tol, debug)
 }
 

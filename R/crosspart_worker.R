@@ -51,6 +51,6 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
   stopifnot(all.equal(ncol(xxi0), ncol(xxj0)))
   # stopifnot(all(check_posdef(V)))
 
-  return(.Call(`_remoteSTAR_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
+  return(.Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
                invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2))
 }
