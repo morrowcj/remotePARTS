@@ -1,23 +1,23 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# remoteSTAR
+# remotePARTS
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-The goal of remoteSTAR is to …
+The goal of remotePARTS is to …
 
 ## Description
 
-`remoteSTAR` is currently in early development. Organization is less
+`remotePARTS` is currently in early development. Organization is less
 than ideal, official unit tests are not present, and C++ code has
 occasionally exhibited bugs.
 
 This package is not stable, consider it a beta. Please report any
 comments or bugs either directly to me `morrow5@wisc.edu` or through
-github: <https://github.com/morrowcj/remoteSTAR> (it is a private repo
+github: <https://github.com/morrowcj/remotePARTS> (it is a private repo
 so please send me a github username and I’ll add you to the repo).
 
 **Note** I plan to eventually show examples of importing rasters. Here
@@ -28,24 +28,24 @@ carpentry](http://datacarpentry.org/r-raster-vector-geospatial/)
 ## Installation
 
 Currently to install this package, the best way is to install with the
-`remoteSTAR_[version].tar.gz` file created with `R CMD check`.
+`remotePARTS_[version].tar.gz` file created with `R CMD check`.
 
 Once a user has the tar.gz file they can install it with
 
-    install.packages("remoteSTAR_[version].tar.gz", repos = NULL, type = "source")
+    install.packages("remotePARTS_[version].tar.gz", repos = NULL, type = "source")
 
 and then from the R console with load it with
 
-    library(remoteSTAR)
+    library(remotePARTS)
 
 <!-- Eventually, the following lines should replace the above installation info: -->
 
-<!-- You can install the released version of remoteSTAR from 
+<!-- You can install the released version of remotePARTS from 
 [CRAN](https://CRAN.R-project.org) with: -->
 
 <!-- ``` r -->
 
-<!-- install.packages("remoteSTAR") -->
+<!-- install.packages("remotePARTS") -->
 
 <!-- ``` -->
 
@@ -55,13 +55,13 @@ and then from the R console with load it with
 
 <!-- # install.packages("devtools") -->
 
-<!-- devtools::install_github("morrowcj/remoteSTAR") -->
+<!-- devtools::install_github("morrowcj/remotePARTS") -->
 
 <!-- ``` -->
 
 ## Example usage
 
-For examples on how to use `remoteSTAR` in it’s current state, see the
+For examples on how to use `remotePARTS` in it’s current state, see the
 `Alaska` vignette by using the following R code:
 
     vignette("Alaska")
@@ -97,7 +97,7 @@ the next version as well.
     at a time to save memory. Also, using `RcppEigen::fastLM()` may be
     better than `lm()` in terms of speed.
 
-  - [ ] **Break up C++ functions into more than 1 file**
+  - [x] **Break up C++ functions into more than 1 file**
 
   - [ ] **WRITE TESTS FOR EVERY FUNCTION\!\!\!**
 
@@ -119,7 +119,8 @@ the next version as well.
         the pixel-level `fitCLS` and the map-level `fitCLS.map` have S3
         methods.
     
-      - [ ] `remoteAR()` constructor and methods for AR\_REML objects
+      - [x] `remoteAR()` constructor and methods for AR\_REML objects.
+        Both pixel and map-level `fitAR()` have S3 methods.
     
       - [ ] `PARTmat()`: partition matrix for the partitioned GLS
         method.
@@ -134,7 +135,7 @@ github.
 
 <!-- ```{r example} -->
 
-<!-- library(remoteSTAR) -->
+<!-- library(remotePARTS) -->
 
 <!-- ## basic example code -->
 
