@@ -105,7 +105,7 @@ scale_dist <- function(location, scl = 1000){
 #'
 #' @examples #TBA
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
-                           fit.n = 1000, fun = "exp",
+                           fit.n = 1000, method = "exp",
                            dist, location,
                            scale.dist = TRUE, dist.scl = 1000, U = NULL,
                            covars = NULL, plot.fig = FALSE, cols.plot = NULL,
@@ -141,19 +141,19 @@ fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
 
 
   # perform nls regression to get the spatial correlation
-  if (fun == "exp" || fun == "exponential") {
+  if (method == "exp" || method == "exponential") {
     fit <- nls(cor ~ exp(-dist/r), data = w, start = list(r = r.start))
     spatialcor <- coef(fit) * max.d
     if (plot.fig){y <- exp(-x.dist/spatialcor)}
   }
-  if (fun ==  "exp-pwr" || fun == "exponential-power") {
+  if (method ==  "exp-pwr" || method == "exponential-power") {
     fit <- nls(cor ~ exp(-(dist/r)^a), data = w,
                start = list(r = r.start, a = a.start), nls.control(maxiter = 500))
     spatialcor <- coef(fit)
     spatialcor[1] <- spatialcor[1] * max.d
     if (plot.fig){y <- exp(-(x.dist/spatialcor[1])^spatialcor[2])}
   }
-  if (fun == "sphr" || fun ==  "taper" || fun == "taper-spherical") {
+  if (method == "sphr" || method ==  "taper" || method == "taper-spherical") {
     # fit <- nls(~taper.spherical.dif(d = dist, cor = cor, b = b), data = w,
     #            start = list(b = 0.5))
     fit <- nls(~taper_sphere(d = dist, beta = b, cor = cor), data = w,
