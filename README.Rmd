@@ -39,6 +39,21 @@ Then, upon successful installation, load the package with `library(remotePARTS)`
 The latest version of [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 is required for Windows and C++11 is required for other systems. 
 
+### Windows installation notes/troubleshooting:
+
+On my Windows 10 PC, I had to change the permission settings for R
+in order for `install_github()` to work:
+
+1) right click on "C:\\Program Files\\R\\R-4.0.2\\library\\base"
+
+2) click properties
+
+3) Select "Security" Tab 
+
+4) find and select select "Users" in the "Group or user names" scroll menu
+
+5) tick "Full control"
+
 ## Example usage
 
 For examples on how to use `remotePARTS` in it's current state, see the `Alaska`
