@@ -13,13 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, comment = "#>",
 # remotePARTS
 
 <!-- badges: start -->
-\lifecycle{maturing}
-```{r badge, echo = FALSE}
-if (TRUE) {
-  #use_cran_badge()
-  #use_lifecycle_badge("maturing")
-}
-```
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 <!-- badges: end -->
 
 `remotePARTS` is an `R` package that contains tools for running spatio-temporal 
