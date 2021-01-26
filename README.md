@@ -52,7 +52,7 @@ at present, tests have only been conducted in limited environments.
 
     Test Environments:
     
-    (Need to be added)
+    1. Windows 10.0.19041 x64
 
 Please report any bugs or suggested features as git issues.
 
