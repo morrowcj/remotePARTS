@@ -1,19 +1,14 @@
-^remoteSTAR\.Rproj$
+# R files
+.*Rproj
 ^\.Rproj\.user$
+.*.tar.gz
+.Rprofile
 
-NAMESPACE_.*
+# folders
 old-code/
-.*Rpackage/
 data-raw/
-readme_19-aug-2020
-Readme.Rmd
-^doc$
-^Meta$
-
-remoteSTAR.*.tar.gz
-Readme*
-
 src_old
 vignettes_backup
+
+# specific files
 ^README\.Rmd$
-.Rprofile
