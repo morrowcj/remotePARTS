@@ -15,11 +15,11 @@
 #' @export
 fitV <- function(Dist, spatialcor, method = "exponential") {
 
-  if (FUN == "exponential") {
+  if (method == "exponential") {
     return(exp(-Dist/spatialcor))
-  } else if (FUN == "exponential-power") {
+  } else if (method == "exponential-power") {
     return(exp(-(Dist/spatialcor[1])^spatialcor[2]))
-  } else if (FUN == "taper-spherical") {
+  } else if (method == "taper-spherical") {
     return(taper.spherical(Dist, spatialcor))
   } else {
     stop(paste0("method '", method, "' not recognized."))
@@ -35,7 +35,7 @@ fitV <- function(Dist, spatialcor, method = "exponential") {
 #' \code{fitV()} but uses \code{switch()} instead of \code{if else} statements.
 #' \code{fitV.switch()} will likely be removed in future implementations.
 fitV.switch <- function(Dist, spatialcor, method = "exponential"){
-  switch(fun,
+  switch(method,
          # exponential (with alias)
          "exponential" = exp(-Dist/spatialcor), ## This version yeilds non positive-definitive matrix!!!
          "exp" = exp(-Dist/spatialcor),
