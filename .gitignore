@@ -1,14 +1,23 @@
+# R files
 .Rproj.user
-data-raw/north_america_checked.csv
-R/arcive
-data-raw
+.Rprofile
+.RData
 .Rhistory
-*.html
+
+# C++ files
 *.o*
 *.dll
 .*.so
-NAMESPACE_backup
-inst/doc
-doc
+
+# folders
+data-raw/north_america_checked.csv
+R/arcive
+data-raw
+old-code/data-backup/
 Meta
+
+# file types
+*.html
+
+# specific files
 !vignettes/Alaska.html

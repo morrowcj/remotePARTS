@@ -1,6 +1,6 @@
 ---
 title: "Alaska"
-subtitle: "NDVI analysis {remoteSTAR}"
+subtitle: "NDVI analysis {remotePARTS}"
 author: "Clay Morrow"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -22,74 +22,29 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo = FALSE}
 options(digits = 4, scipen = 1)
-library(remoteSTAR) # load the package
+library(remotePARTS) # load the package
 ```
 
 ```{r random seed}
 set.seed(58) # set the random seed for this document
 ```
 
-```{r data setup, echo = FALSE, eval = FALSE}
-## Full data ----
-# read in the data
-ndvi <- data.table::fread(file = "../data-raw/north_america_checked.csv")
-
-# convert $land column to a factor
-land.classes = c("Evergr needle","Evergr broad","Decid needle","Decid broad",
-                 "Mixed forest","Shrubland","Savanna","Grassland","Cropland",
-                 "Cropland mosaics") # all land classes (in order of lvs)
-
-ndvi$land <- factor(ndvi$land, labels = land.classes)
-
-# save the rdata file
-if(!file.exists("../data/ndvi.rda")){
-  save(ndvi, file =  "../data/ndvi.rda", compress = "xz")
-}
-
-## Alaska subset ----
-ndvi_AK <- ndvi[ndvi$lng < -141, ] #North Am. west of -141 is approx. AK
-ndvi_AK$land <- droplevels(ndvi_AK$land)
- 
-# relative contirbution of each land class to AK
-tmp <- aggregate(
-  x = ndvi_AK$land,
-  by = list(landclass = ndvi_AK$land),
-  FUN = function(x)length(x)/nrow(ndvi_AK)
-)
-
-# any land class that occurs less than 2% is rare
-ndvi_AK$rare.land <- tmp[match(ndvi_AK$land, tmp$landclass), "x"] <= 0.02
-
-# reorder columns so ndvi are all at the end
-ord <- c(grep("ndvi", names(ndvi_AK), invert = TRUE), #columns without 'ndvi'
-         grep("ndvi", names(ndvi_AK))) # cols with ndvi
-ndvi_AK <- ndvi_AK[, ..ord] #..x is data.table notation
-
-# save AK data file
-if(!file.exists("../data/ndvi_AK.rda")){
-  save(ndvi_AK, file = "../data/ndvi_AK.rda", compress = "xz")
-}
-
-## subset AK further
-ndvi_AK3000 <- ndvi_AK[!ndvi_AK$rare.land, ] # only common land classes
-ndvi_AK3000 <- ndvi_AK3000[sample.int(n = nrow(ndvi_AK3000), size = 3000), ] # 3000 pts
-
-# save small AK data file
-if(!file.exists("../data/ndvi_AK3000.rda")){
-  save(ndvi_AK3000, file = "../data/ndvi_AK3000.rda", compress = "xz")
-}
-```
-
 ## Alaska 3000
 
-The `ndvi_AK3000` data set contains NDVI remote sensing data for Alaska from a 
-random 3000 pixels over the time period of 1982 through 2013 as a `data.table`.
+This document will use the `ndvi_AK3000` data set to demonstrate the 
+functionality of `remotePARTS`. 
 
-**More info TBD**
+`ndvi_AK3000` contains NDVI remote sensing data for Alaska from 
+3000 random pixels over the time period of 1982 through 2013 as a `data.table`.
+For speed and efficiency, 3000 pixels were selected, but the 
+following steps can also be applied to the full `ndvi_AK` dataset, 
+which contains all Alaska pixels. Only land that occur in at least 2% of the 
+pixels in Alaska are included in `ndvi_AK3000`. 
+
+### Data Preparation
 
 First, we'll extract only the NDVI columns (`X`) and scale and center the time 
 points:
-
 
 ```{r ndvi_AK3000 data}
 # load the dataset
@@ -105,134 +60,157 @@ time.scaled = scale(time.int) # scaled and centered time
 
 ### Analysis of NDVI at the pixel level
 
-Next we will get the average change in NDVI over time at *each site* (`fm.cls$Est`) 
-and then scale those regression coefficients `rel.est`:
+Next we will get the average change in NDVI over time at *each site* using 
+constrained least squares (CLS) regression using `fitCLS.map()`
 
-```{r cls_star AK3000}
+```{r CLS_Map AK3000}
 # perform time series analysis for each site (no intercept)
-fm.cls <- cls_star(X, t = time.scaled) # can be slow
+fm.cls <- fitCLS.map(X, t = time.scaled, ret_xi.coef = TRUE) # can be slow
 
-rel.est <- with(fm.cls, Est/mean) # relative estimate
+rel.est <- with(fm.cls, time.coef[,"Est"]/mean) # relative estimate
 ```
 
-Here is what the first few results of `cls_star` look like:
+Let's look at the results for the first 5 pixels. Here are the values of x 
+averaged across time:
 
 ```{r print cls_star output}
-head(fm.cls)
+## X averaged across time:
+fm.cls$mean[1:5]
 ```
 
-We can see that site 1 has an average NDVI of 
-`r round(fm.cls[1, "mean"], 2)` over the `r p` year time period. We can also 
-see that, on average, NDVI decreased by `r round(abs(fm.cls[1, "Est"]), 2)` 
-(`Est`) with a standard error of `r round(fm.cls[1, "SE"], 2)` (`SE`) over the 
-entire time from 1982 to 2013. 
+and the effect of `t` on `x`:
 
-The t-test statistic and associated two-tailed p-value (`t` and `p`) indicate that
-this change is significantly different from 0 (`p` $\leq .05 $. Finally, we can see that an 
-increase in NDVI of 1 in the previous year is estimated to increase NDVI in 
-the current year by `r round(fm.cls[1, "x_t0.EST"], 2)` at site 1 (`x_t0.EST`).
-
-#### Check for outliers
-
-Next we'll check for, and remove, outliers based on `rel.est`:
-
-```{r plot AK3000 outl map}
-# index of possible outliers
-outl <- abs(scale(rel.est)) > -qnorm(p = 1/n/10) # criteria
-
-## Make a plot to visualize where outliers are
-# define color of points low NDVI = orange, high NDVI = green
-base.col = ifelse(test = outl, yes = "black",
-                  no = colorRampPalette(
-                    c("darkgoldenrod3", "grey70", "chartreuse3")
-                    )(nrow(fm.cls))[ordered(rel.est)]
-)
-
-# make legend labels from rel.est summary stats
-labels <- round(c(max = max(rel.est), # boundaries of color changes
-                  mid = median(rel.est), 
-                  min = min(rel.est)), 2)
-labels <- c(labels, outl = "outlier") # outliers
-
-# build the plot
-plot(y = ndvi_AK3000$lat, x = ndvi_AK3000$lng, pch = 15, cex = .5, 
-     col = base.col,
-     xlab = "longitude", ylab = "latitude")
-legend(x = "bottomright", fill = c("chartreuse3", "grey70",
-                                   "darkgoldenrod", "black"),
-       legend = labels, title = "NDVI change")
+```{r}
+## Effect of time:
+head(fm.cls$time.coef, n = 5)
 ```
 
-We can see from the above figure that the outliers seem to occur at the edges of
-the map - adjacent to missing data. This would be easier to see with the full
-data set (`ndvi_AK`).
+and the effect of $x_{j}$ on $x_{i}$.
 
-Let's see where they fall relative to the other data:
-
-```{r outl hist}
-## value of outliers relative to overall distribution
-hist(fm.cls$mean[outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = "grey",
-     lty = 3, xlab = "site average NDVI", main = "Histogram of NDVI")
-hist(fm.cls$mean[!outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = NULL,
-     add = TRUE)
-legend("topright", legend = c("TRUE","FALSE"), fill = c("grey", "white"),
-       title = "outlier")
+```{r}
+## Auto-regressive effect:
+head(fm.cls$xi.coef, n = 5)
 ```
 
-This histogram doesn't seem to indicate that the outliers exhibit any pattern. 
-However, this is not true for the full data set (**TBA: add a figure**)
+To use AR REML instead of CLS, see documentation for `fitAR.map()`.
 
-For the purposes of this document, we will not remove the potential outliers 
-but it may be a good idea depending on the dataset. 
+<!-- #### Check for outliers-->
+<!-- #### This section should be moved to a diagnostics vignette -->
+
+
+<!-- Next we'll check for, and remove, outliers based on `rel.est`. This will -->
+<!-- also demonstrate allow us to visualize the CLS estimates: -->
+
+<!-- ```{r plot AK3000 outl map} -->
+<!-- # index of possible outliers -->
+<!-- outl <- abs(scale(rel.est)) > -qnorm(p = 1/n/10) # criteria -->
+
+<!-- ## Make a plot to visualize where outliers are -->
+<!-- # define color of points low NDVI = orange, high NDVI = green -->
+<!-- base.col = ifelse(test = outl, yes = "black", -->
+<!--                   no = colorRampPalette( -->
+<!--                     c("darkgoldenrod3", "grey70", "chartreuse3") -->
+<!--                     )(nrow(fm.cls$time.coef))[ordered(rel.est)] -->
+<!-- ) -->
+
+<!-- # make legend labels from rel.est summary stats -->
+<!-- labels <- round(c(max = max(rel.est), # boundaries of color changes -->
+<!--                   mid = median(rel.est),  -->
+<!--                   min = min(rel.est)), 2) -->
+<!-- labels <- c(labels, outl = "outlier") # outliers -->
+
+<!-- # build the plot -->
+<!-- plot(y = ndvi_AK3000$lat, x = ndvi_AK3000$lng, pch = 15, cex = .5,  -->
+<!--      col = base.col, -->
+<!--      xlab = "longitude", ylab = "latitude") -->
+<!-- legend(x = "bottomright", fill = c("chartreuse3", "grey70", -->
+<!--                                    "darkgoldenrod", "black"), -->
+<!--        legend = labels, title = "NDVI change") -->
+<!-- ``` -->
+
+<!-- We can see from the above figure that the outliers seem to occur at the edges of -->
+<!-- the map - adjacent to missing data. This would be easier to see with the full -->
+<!-- data set (`ndvi_AK`). -->
+
+<!-- Let's see where they fall relative to the other data: -->
+
+<!-- ```{r outl hist} -->
+<!-- ## value of outliers relative to overall distribution -->
+<!-- hist(fm.cls$mean[outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = "grey", -->
+<!--      lty = 3, xlab = "site average NDVI", main = "Histogram of NDVI") -->
+<!-- hist(fm.cls$mean[!outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = NULL, -->
+<!--      add = TRUE) -->
+<!-- legend("topright", legend = c("TRUE","FALSE"), fill = c("grey", "white"), -->
+<!--        title = "outlier") -->
+<!-- ``` -->
+
+<!-- This histogram doesn't seem to indicate that the outliers exhibit any pattern.  -->
+<!-- However, this is not true for the full data set (**TBA: add a figure**) -->
+
+<!-- For the purposes of this document, we will not remove the potential outliers  -->
+<!-- but it may be a good idea depending on the dataset.  -->
 
 ### Using GLS regression
 
-Now, we will use `remoteSTAR`'s GLS regression to test whether there is a 
+Now, we will use Generalized LS regression to test whether there is a 
 significant trend in NDVI for this subset of Alaska:
 
 The first step is to estimate the spatial correlation with `fit_spatialcor()`:
 
 ```{r fit_spatialcor}
-# calculate distance matrix (km) to use later
-D = geosphere::distm(location)/1000
 meth = "exponential-power" # transformation method
 
 # estimate spatial correlation
-(r.est <- fit_spatialcor(X, time.scaled, location = location, 
-                         fun = meth)) #calculates D internally
+r.est <- fit_spatialcor(X, time.scaled, location = location, 
+                         method = meth) #calculates D internally
+r.est$spatialcor #two spatial correlation parameters: range (r) and shape (a)
 ```
 
-which gets used when fitting a covariance matrix by `fitV()`:
+which gets used when fitting a covariance matrix with `fitV()`. `fitV()` 
+needs a geographic distance matrix. Here we use `geosphere::distm()` but any
+distance matrix should work. 
 
 ```{r fitV}
+# calculate distance matrix (km) to use later
+D = geosphere::distm(location)/1000
 ## Fit variance matrix
-V <- fitV(D, spatialcor = r.est$spatialcor, fun = meth)
+V <- fitV(D, spatialcor = r.est$spatialcor, method = meth)
 ```
 
-Then we can use `fitGLS_cpp()` to get our results. Here we also calculate some
-values that `fitGLS_cpp` uses. 
+```{r, echo = FALSE}
+# get the inverse of the chol decomp of V (can be time consuming)
+tInvCholV <- invert_chol(V, nugget = 0)
+```
 
-**More info TBA**
+In this example, we'll use GLS to compare the CLS coefficients among land cover 
+classes. Here's how we set up the alternate and null models to be compared:
 
 ```{r}
-# get the inverse of the chol decomp of V (can be time consuming)
-tInvCholV <- tinvchol_cpp(V, nugget = 0)
-
-## get model matrix from formulae
+## get model matrix from formula
 # full model
 form = "rel.est ~ 0 + land" 
 mod.mat <- model.matrix(object = formula(form), data = ndvi_AK3000)
-# null model
-form0 = "rel.est ~ 1"
+# null model 
+form0 = "rel.est ~ 1" #(intercept only)
 X0 <- model.matrix(object = formula(form0), data = ndvi_AK3000)
+```
 
+Then we have to estimate a maximum likelihood nugget that absorbs variance 
+not contained in the spatial covariance matrix:
+
+```{r}
 ## estimate maximum likelihood nugget
 tolr = .00001 # precision of nugget search
-nugget.ml <- optimizeNugget_cpp(X = mod.mat, V = V, y = rel.est,
+nugget.ml <- optimize_nugget(X = mod.mat, V = V, y = rel.est,
                                 lower = 0, upper = 1, tol = tolr)
+nugget.ml
+```
 
+Then we can use `fitGLS` to obtain results. 
+
+```{r}
 ## fit GLS 
-fm.gls <- fitGLS_cpp(X = mod.mat, V = V, y = rel.est, X0 = X0,
+fm.gls <- fitGLS(X = mod.mat, V = V, y = rel.est, X0 = X0,
                      nugget = nugget.ml)
 ```
 
@@ -243,48 +221,107 @@ Now we'll use the results to formally test our hypotheses.
 First, we'll test $H_0:$ "land class *i* does not have a temporal trend in NDVI." 
 
 ```{r GLS t_pvalues}
-# add in pvalues (this will eventually be done with classes internally)
-fm.gls$pval.t <- sapply(fm.gls$tstat, function(x){
-  2 * pt(abs(x), df = fm.gls$dft, lower.tail = F)
-})
-# feature names
-names(fm.gls$pval.t) <- names(fm.gls$betahat) <- gsub(x = colnames(mod.mat),
-                                                      pattern = "land", 
-                                                      replacement = "")
+## Already Done
+# # add in pvalues (this will eventually be done with classes internally)
+# fm.gls$pval.t <- sapply(fm.gls$tstat, function(x){
+#   2 * pt(abs(x), df = fm.gls$dft, lower.tail = F)
+# })
+# # feature names
+# names(fm.gls$pval.t) <- names(fm.gls$betahat) <- gsub(x = colnames(mod.mat),
+#                                                       pattern = "land", 
+#                                                       replacement = "")
+# 
+# # print p-values
+# cbind("pt" = fm.gls$pval.t) # fail to reject H0 for all land classes
 
-# print p-values
-cbind("pt" = fm.gls$pval.t) # fail to reject H0 for all land classes
+
+## t-test of ndvi change by land class:
+t.table = cbind("coef" = fm.gls$betahat,
+                "SE" = fm.gls$SE,
+                "t stat" = fm.gls$tstat,
+                "t pval" = fm.gls$pval.t)
+rownames(t.table) = levels(ndvi_AK3000$land)
+t.table
 ```
-We are unable to reject $H_0$ at $\alpha = .05$ for any land class in this 
-data set. 
+
+We are not able to reject $H_0$ at $\alpha = .05$ for any land class.
 
 #### F-test
 
-Now, let's test $H_0:$ "there is no overall temporal trend in NDVI"
+But, let's test $H_0:$ "there is no overall effect of land class on NDVI trend"
 
-```{r}
-  # F-test
-fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], 
-                    lower.tail = FALSE)
+```{r GLS F_pvalues}
+## Already done
+#   # F-test
+# fm.gls$pval.F <- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], 
+#                     lower.tail = FALSE)
+# 
+# # ## print the coefficients
+# # round(fm.gls$betahat, 4)
+# 
+# # F-test ## H0: no change in NDVI over time for all of AK3000
+# round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # reject H0
 
-# ## print the coefficients
-# round(fm.gls$betahat, 4)
-
-# F-test ## H0: no change in NDVI over time for all of AK3000
-round(cbind("F" = fm.gls$Fstat, "pval" = fm.gls$pval.F), 4) # fail to reject H0
+## F test of our land class model vs a null (intercept only) model
+F.table = data.frame("model" = c("full", "null"),
+                     "df" = fm.gls$df.F, 
+                     "SSE" = c(fm.gls$SSE, fm.gls$SSE0),
+                     "MSE" = c(fm.gls$MSE, fm.gls$MSE0),
+                     "loglik" = c(fm.gls$logLik, fm.gls$logLik0),
+                     "F stat" = c(fm.gls$Fstat, NA),
+                     "pval F" = c(fm.gls$pval.F, NA)
+                     )
+F.table
 ```
 
-We are, however, able to reject this $H_0$ for this data set at $\alpha = .05$. 
+We are, however, able to reject this $H_0$ that all land classes have the same 
+effect on NDVI trend for this data set at $\alpha = .05$. 
 
-#### Partitioned version
+#### Overall time trend effect
 
-For extremely large data sets computational constraints, such as limited memory,
+Next, we will redo the GLS steps to test the hypothesis $H_0$: "there is no
+overall time trend in NDVI for the map"
+
+```{r}
+## build model matrix
+form2 = "rel.est ~ 1" # same as null model
+mod.mat2 <- model.matrix(object = formula(form2), data = ndvi_AK3000)
+#@ null model 
+form02 = "rel.est ~ 1" #(intercept only)
+X02 <- model.matrix(object = formula(form02), data = ndvi_AK3000)
+## ML nugget
+nugget.ml2 <- optimize_nugget(X = mod.mat2, V = V, y = rel.est,
+                                lower = 0, upper = 1, tol = tolr)
+## GLS
+fm.gls2 <- fitGLS(X = mod.mat2, V = V, y = rel.est, X0 = X02,
+                     nugget = nugget.ml2)
+## t-test of ndvi change by land class:
+t.table2 = cbind("coef" = fm.gls2$betahat,
+                "SE" = fm.gls2$SE,
+                "t stat" = fm.gls2$tstat,
+                "t pval" = fm.gls2$pval.t)
+t.table2
+```
+
+We are unable to reject $H_0$.
+
+#### Partitioned GLS
+
+For extremely large data sets, computational constraints such as limited memory,
 make it desirable to use a partitioned version of the GLS analysis. This version
-splits the data into `npart` random and non-overlapping sub-sets by site and then
-calculates cross-partition statistics on *nc* pairs of partitions (according to 
-`mincross`) and summarizes the results with a correlated F-test.
+of the method splits the data into `npart` random and non-overlapping sub-sets 
+by site and then calculates cross-partition statistics on *nc* pairs of 
+partitions (according to `mincross`) and summarizes the results with a 
+correlated F-test.
 
-The function that performs this analysis is the wrapper `fitGLS.partiion_rcpp()`:
+The function that performs this analysis is the wrapper `fitGLS.partition`. What
+follows is a short example of how to perform this method with the `Alaska3000` 
+data set but is not necessarily indicative of how users would want to use it 
+in practice. See "More on the partitioned GLS method" for further clarification.
+
+Note that, In the below function, a full distance matrix `Dist` is needed as an input.
+For larger data sets, it will not be feasible to include the full matrix. The 
+next section addresses this issue. 
 
 ```{r partitioned GLS}
 ## run the parittioned analysis
@@ -294,7 +331,7 @@ results.cpp <- fitGLS.partition_rcpp(X = mod.mat, y = rel.est, X0 = X0, Dist = D
                                  nug.tol = tolr, workerB_cpp = TRUE)
 ```
 
-Here are the F-test results for each parition:
+Here are the F-test results for each partition:
 
 ```{r}
 # F tests for each partition
@@ -310,122 +347,582 @@ pval.Fpart <- GLS.partition.pvalue(results.cpp, nboot = 2000)
 
 round(cbind("Fmean" = results.cpp$Fmean, "pval" = pval.Fpart$pF.boot$pvalue), 4)
 ```
-<!-- However, this dataset is very small and results can vary: lets look at a few -->
-<!-- different subsets of `ndvi_AK`, each of 3000 sites. -->
 
-```{r, eval = FALSE, echo = FALSE}
-data("ndvi_AK")
-ndvi_AK <- ndvi_AK[!ndvi_AK$rare.land, ]
-ndvi_AK$land <- droplevels(ndvi_AK$land)
+## More on the partitioned GLS method
 
-## 4 different subsets
-subs <- matrix(sample.int(n = nrow(ndvi_AK), size = 3000 * 4, replace = FALSE), 
-               nrow = 3000)
+Here, we will provide a description of how to use the individual functions for
+the partitioned GLS method. Using the following code will allow you to only use
+the relevant parts of the large matrices (e.g. `Dist`) at any given time to save
+memory. It also allows for parallelization possibilities. 
 
-## Apply the test to 4 different subsets of 3000 AK sites
-Ftest_sub <- sapply(1:ncol(subs), function(i){
-  ss = sample.int(n = nrow(ndvi_AK), size = 3000, replace = FALSE)
-  AKsub <- ndvi_AK[ss, ]
-  loc_i <- AKsub[, c("lng", "lat")]
-  Xsub <-  as.matrix(AKsub[, 7:38])
-  sc_i <- fit_spatialcor(X = Xsub, t = time.scaled, 
-                         location = loc_i, fun = meth)$spatialcor
-  D_i <- geosphere::distm(loc_i)/1000
-  fm.cls_i <- cls_star(Xsub, t = time.scaled)
-  y_i <- with(fm.cls_i, Est/mean)
-  fm_i <- fitGLS.partition_rcpp(X = Xsub, y = y_i, X0 = X0, Dist = D_i, 
-                                spatcor = sc_i, Vfit.fun = meth, npart = 5, 
-                                mincross = 4, workerB_cpp = TRUE)
-  F_i <- fm_i$Fmean
-  p_i <- GLS.partition.pvalue(fm_i, nboot = 2000)$pF.boot$pvalue
-  
-  return(c("F" = F_i, "pval" = p_i))
-})
+First, we will use `sample_partitions()` to get a sample of the pixels to use 
+for each subset. The result is a matrix with columns containing pixel IDs. 
+Each column corresponds to a different partition.
 
-print(Ftest_sub)
+```{r}
+# segment dataset into 4 equal-sized partitions:
+part.mat <- sample_partitions(nrow(mod.mat), npart = 4)
+# part.mat <- sample_partitions(nrow(mod.mat), partsize = 1000)
+```
 
-rm("ndvi_AK")
+Then, we will calculate the degrees of freedom with `calc_df()`, and perform 
+GLS on each partition with `GLS_worker()`. The main arguments that `GLS_worker()`
+needs are similar to those needed by `fitGLS()`: a response `y`, a model matrix
+of predictors `X`, a null model matrix `X0` to compare against, and a variance 
+matrix `V`. Each input is partition-specific. 
+
+The difference between `GLS_worker()` and `fitGLS()` is that 
+`fitGLS()` needs a nugget to be input (defaults to 0) while `GLS_worker()` finds
+the maximum likelihood estimator of the nugget internally.
+
+```{r}
+# optimize_nugget(mod.mat, V, rel.est)
+# nugget.fit(rel.est ~ 0 + mod.mat, data.frame(rel.est, mod.mat), V)
+
+# mod.mat
+# V
+# rel.est
+
+partition = part.mat[, 1]
+
+y.tmp = rel.est[partition]
+X.tmp = mod.mat[partition, ]
+D.tmp = D[partition, partition]
+V.tmp = V[partition, partition]
+
+loc.tmp = location[partition, ]
+
+D.tmp2 = geosphere::distm(loc.tmp)/1000
+all.equal(D.tmp, D.tmp2)
+V.tmp2 = fitV(D.tmp2, r.est$spatialcor, "exponential-power")
+all.equal(V.tmp, V.tmp2)
+
+optimize_nugget(X.tmp, V.tmp, y.tmp, debug = TRUE)
+# fitNugget(X.tmp, V.tmp, y.tmp)
+# nugget.fit(y.tmp ~ 0 + X.tmp, data = data.frame(y.tmp, X.tmp), V.tmp)
 ```
 
 
-<!-- I'm still working on the partitioned version -->
+```{r}
+# calculate degrees of freedom up front
+dfs <- calc_dfpart(partsize = nrow(part.mat), 
+               p = ncol(mod.mat), 
+               p0 = ncol(X0))
+df1 <- dfs[1]
+df2 <- dfs[2]
 
-```{r GLS_partition, eval = FALSE, echo = FALSE}
-n.p = 50; n.part = 3
-partition <- matrix(sample(1:nrow(ndvi_AK3000), size = n.p * n.part), ncol = n.part)
-x.1 = as.vector(partition[, 1])
-x.2 = as.vector(partition[, 2])
-x.12 = c(x.1, x.2)
-## For now, I'm going to explore the distributed computing option
+# make empty list to store the output
+part.results <- list() 
 
-### partition 1
-y1 <- rnorm(n.p)
-X1 <- as.matrix(ndvi_AK3000[x.1, -c(1:6)])
-loc1 <- ndvi_AK3000[x.1, c("lat","lng")]
-V1 <- fitV(D[x.1, x.1],
-            spatialcor = r.est$spatialcor, fun = "exponential-power")
+# Use GLS worker function on each partition
+for(part in seq_len(ncol(part.mat))){
+  ## index setup
+  subs = part.mat[, part] # current subset index
+  X.sub = mod.mat[subs, ] # current subset of model matrix
+  y.sub = rel.est[subs] # current subset of Y
+  loc.sub = location[subs, ] # current coordinates
+  X0.sub = X0[subs, ] # current subset of X0
+  ## calculate variance matrix
+  D.sub = geosphere::distm(loc.sub)/1000 # distance between subset points
+  V.sub = fitV(D.sub, spatialcor = r.est$spatialcor, 
+               method = "exponential-power") # variance of subset points
+  ## obtain GLS results
+  part.results[[part]] <- GLS_worker(y.sub, X.sub, V.sub, X0.sub,
+                                     save_xx = TRUE)
+}
+```
 
-### partition 2
-y2 <- rnorm(n.p)
-X2 <- as.matrix(ndvi_AK3000[x.2, -c(1:6)])
-loc2 <- ndvi_AK3000[x.2, c("lat","lng")]
-V2 <- fitV(D[x.2, x.2],
-            spatialcor = r.est$spatialcor, fun = "exponential-power")
+The list `part.results` now has 4 elements - one for each partition - which are
+GLS output lists (i.e. results for partition 1 are stored in 
+`part.results[[1]]`).
 
-## cross partition
-V12 <- fitV(D[x.12, x.12],
-             spatialcor = r.est$spatialcor, fun = "exponential-power")
-Vsub <- V12[1:n.p, (n.p+1):(2*n.p)]
+Then, for each pair of GLS partition results, we can get the cross-partition
+statistics with `crosspart_worker()`. This function takes as input (1) 
+statistics returned by `GLS_worker()` (including the nugget estimate), (2) 
+degrees of freedom, and (3) the cross-partition variance matrix `V.ij` which 
+can be obtained from a matrix of distances between points from subsets `i` and 
+`j`: 
 
-Xnull <- matrix(1, nrow = nrow(X1))
+```{r}
+# make empty list for cross-partition results
+cross.results = list()
 
-df2 <- n.p - (ncol(X1) - 1)
-df0 <- n.p - (ncol(Xnull) - 1)
-df1 <- df0 - df2
+# use crosspart_worker() to get cross-partition statistics
+for(cross in seq_len(length(part.results) - 1)){ # each consecutive pair of partitions
+  ## index setup
+  i = cross # first partition
+  j = cross + 1 # second partition
+  subs.i = part.mat[, i] # index for part i
+  subs.j = part.mat[, j] # index for part j
+  ## GLS_worker() output
+  Li = part.results[[i]] # list containing partition results i
+  Lj = part.results[[j]] # list containing partition results j
+  ## Obtain V.ij
+  loc.i = location[subs.i, ] # coordinates of i
+  loc.j = location[subs.j, ] # coordinates of j
+  D.ij = geosphere::distm(loc.i, loc.j) # distance between i and j
+  V.ij = fitV(D.ij, r.est$spatialcor) # variance matrix ij
+  ## obtain cross-partition results
+  cross.results[[cross]] = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
+                                            xxi0 = Li$xx0, xxj0 = Lj$xx0,
+                                            invChol_i = Li$invcholV,
+                                            invChol_j = Lj$invcholV,
+                                            nug_i = Li$nugget,
+                                            nug_j = Lj$nugget,
+                                            Vsub = V.ij,
+                                            df1 = df1, df2 = df2)
+}
+```
+
+`crosspart_worker()` is usually much faster than `GLS_worker()`.
+
+Finally, we can calculate some average statistics for the entire analysis by
+using `sapply()` to summarize across lists and then perform our hypothesis
+test:
+
+```{r}
+## Average partition stats 
+F.mean = mean(sapply(part.results, function(x){x$Fstat})) # average partition F
+coef.means = rowMeans(sapply(part.results, function(x){x$betahat})) # coef est (land class)
+coef0.mean = mean(sapply(part.results, function(x){x$betahat0})) # null coefs
+part.SEs = sapply(part.results, function(x){x$SE}) # partition standard errors
+
+## average cross-partition stats
+rcoef.mean = rowMeans(sapply(cross.results, function(x){x$rcoef})) #cross-coef for conf ints
+rSSR = mean(sapply(cross.results, function(x){x$rSSRij})) # regression sum of squares
+rSSE = mean(sapply(cross.results, function(x){x$rSSEij})) # residual sum of squares
+
+
+# calculate the correlated test statistics
+## correlated chisquared test: are trends different among land class?
+(p.chisqr = cor_chisq(F.mean, rSSR, df1, npart = ncol(part.mat)) )
+# correlated F test: are trends different among land class?
+(p.corF = boot_corF(F.mean, rSSR, rSSE, df1, df2, 
+                                  npart = ncol(part.mat), nboot = 2000) )
+# t-test: are trends in land classes different from 0?
+(t.test = cor_t(coef = coef.means, part.SEs = part.SEs, 
+                                   rcoef = rcoef.mean, 
+                   df2 = df2, npart = ncol(part.mat)))
+```
+
+`fitGLS_partition()` **WILL** (eventually) do all of this  behind the scenes but 
+it may be important when analyzing extremely large data sets to know how the 
+individual components
+work together. The above steps could be easily extended for distributed or 
+parallel computing which may be necessary if (A) the entire data set cannot be
+processed in memory and/or (B) processing time is important and many individual 
+computers or cores are available. 
+
+For example, each subset partition (say, 100K pixels) could be run 
+through `GLS_worker()` separately, output could be saved to individual files, 
+memory could be cleaned or recycled at each step. Then, you could load the 
+output files, 2 at a time, and run them through `crosspart_worker()`, saving the
+cross-partition results to files and cleaning up memory after each pair. 
+
+Average statistics (`F.mean`, `rSSR`, etc) could then be calculated by looping
+through the files and keeping only the relevant statistics in memory (or writing
+them to separate files). 
+
+We will not discuss this type of parallelization or distributed computing in 
+detail here but simply note that implementing this functionality could be 
+trivially simple. That being said, minimal multi-core functionality is 
+implemented internally through the C++ libraries `Eigen` and `openMP` (**NOTE** 
+this is still not reliably present in the package but will be soon). 
+
+<!-- # Debugging remotePARTS fitGLS_parititon functions -->
+
+<!-- There are some discrepancies between my output and Tony's, so I'm going to try -->
+<!-- to solve the problem.  -->
+
+```{r, eval = FALSE, echo = FALSE}
+## Check that the correlated t-test would lead to the same conclusions overall
+  ## as the tests for individual partitions:
+
+# coeficients
+cfs = sapply(part.results, function(x)x$betahat)
+rownames(cfs) = colnames(mod.mat)
+colnames(cfs) = paste0("part",1:ncol(cfs))
+# p values
+pts = sapply(part.results, function(x){x$pval.t})
+rownames(pts) = colnames(mod.mat)
+colnames(pts) = paste0("part",1:ncol(pts))
+# t scores
+tscrs = sapply(part.results, function(x){x$tstat})
+rownames(tscrs) = colnames(mod.mat)
+colnames(tscrs) = paste0("part",1:ncol(tscrs))
+# se
+SEs = sapply(part.results, function(x){x$SE})
+rownames(SEs) = colnames(mod.mat)
+colnames(SEs) = paste0("part",1:ncol(SEs))
+
+t.crit = qt(1 - (.05 / 2), df = df2 * ncol(part.mat))
+
+library(ggplot2)
+
+ggplot(data.frame(t.test, var = factor(colnames(mod.mat), 
+                                       levels = colnames(mod.mat))), 
+       aes(x = var, y = coef)) + 
+  geom_hline(yintercept = 0, lty = 3, col = "black") + 
+  geom_errorbar(aes(ymin = coef - se*t.crit, 
+                    ymax = coef + se*t.crit, 
+                    col = "correlated t-test", ), 
+                position = position_nudge(x = -.025),
+                width = .1) +
+  geom_errorbar(aes(ymin = coef - apply(cfs, 1, sd)*t.crit, 
+                    ymax = coef + apply(cfs, 1, sd)*t.crit, 
+                    col = "sd(coef)"),
+                width = .1, position = position_nudge(x = .025)) + 
+  geom_point() +
+  labs(col = "95% CI", y = "coef", x = NULL, title = "H0: coef = 0")
+
+## FIXED!!!
+
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-## results
-out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE)
-out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE)
+# need to test against tony's code
+# source("")
+dat.map = data.frame(rel.est, location, land = ndvi_AK3000$land)
+library(geosphere)
 
-## The cross-partition step is where it breaks down
-## last worked when n.p was 400 but no larger
-out.cross.cpp <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx,
-                                  xxi0 = out1$xx0, xxj0 = out2$xx0,
-                                  tUinv_i = out1$tInvCholV, 
-                                  tUinv_j = out2$tInvCholV, 
-                                  Vsub = Vsub, 
-                                  df1 = df1, df2 = df2) # not working yet
+form = "rel.est ~ 0 + land"
 
-out.cross <- crosspart_worker(xxi = out1$xx, xxj = out2$xx,
-                                  xxi0 = out1$xx0, xxj0 = out2$xx0,
-                                  tUinv_i = out1$tInvCholV, 
-                                  tUinv_j = out2$tInvCholV, 
-                                  Vsub = Vsub, 
-                                  df1 = df1, df2 = df2) # not working yet
+## Tony's code
+# source("../inst/tinytest/tony-og-code.R")
+Z = GLS.partition.data(formula = "rel.est ~ 0 + land", 
+                       formula0 = "rel.est ~ 1",
+                       data = dat.map, 
+                       spatialcor = r.est$spatialcor, 
+                       spatial.autocor.FUN = "exponential-power",
+                       est.nugget = TRUE, partition = part.mat)
+# Z <- GLS.partition.data(formula = "rel.est ~ land", 
+#                         formula0 = "rel.est ~ 1", 
+#                         data = dat.map,
+#                         spatial.autocor.FUN = "exponential-power",
+#                         spatialcor = r.est$spatialcor,
+#                         est.nugget = TRUE,
+#                         npart = 4,
+#                         partition = t(part.mat),
+#                         nugget.tol = 1e-05,
+#                         min.num.cross.part = 5,
+#                         verbose = FALSE,
+#                         rm.spatial.autocorrelation = FALSE)
 
-## test that the 2 versions give the same output
-for(i in 1:length(out.cross)){
-  print(names(out.cross)[i])
-  print(all.equal(out.cross[[i]], out.cross.cpp[[i]]))
+## nugget is not working properly
+rbind(Z$nugget.part, 
+      sapply(part.results, function(x)x$nugget))
+## coefficient estimates are also wrong.
+rbind(Z$coef, rowMeans(sapply(part.results, function(x)x$betahat)))
+
+## not working with nugget = 0
+# Z <- GLS.partition.data(formula = "rel.est ~ land", 
+#                         formula0 = "rel.est ~ 1", 
+#                         data = dat.map,
+#                         spatial.autocor.FUN = "exponential-power",
+#                         spatialcor = r.est$spatialcor,
+#                         est.nugget = FALSE,
+#                         fixed.nugget = 0,
+#                         npart = 4,
+#                         partition = t(part.mat),
+#                         nugget.tol = 1e-05,
+#                         min.num.cross.part = 5,
+#                         verbose = FALSE,
+#                         rm.spatial.autocorrelation = FALSE
+# )
+
+n1 = fitNugget(mod.mat, V, rel.est) # old from remotePARTS
+n2 = fitNugget_Rcpp(mod.mat, V, rel.est) # uses loglik function
+n.tony = nugget.fit(form, data = dat.map, V = V) #tony's 
+# n.parts = optimize_nugget(mod.mat, V, rel.est) # C++ version: not working at all
+
+cbind(n1, n.tony)
+```
+
+
+
+```{r save alaska vignette data, eval = FALSE, echo = FALSE}
+save(list = ls(), file = "alaska-vignette-data.RData")
+
+load("alaska-vignette-data.RData", verbose = TRUE)
+```
+
+### `fitGLS_partition()`
+
+**NOTE** This section still needs work
+
+The previous example of `fitGLS_partiton()` was performed on the AK3000 dataset
+which was loaded into memory. As stated earlier, this may not be feasible for 
+large datasets. Luckily, `fitGLS_partition()` has functionality to address this
+problem. 
+
+but requires a 
+RasterStack or CSV as input (to prevent loading the entire dataset into memory)
+
+
+
+
+```{r, eval = FALSE}
+## Test of using a function as an argument to a function
+
+loc = location[sample(x = 1:nrow(location), size = 50), ]
+loc2 = location[sample(x = 1:nrow(location), size = 50),]
+
+
+D = geosphere::distm(loc)
+
+test.dist <- function(location, fun = "distm", ...){
+  if(is.character(fun) && fun == "distm"){requireNamespace("geosphere")}
+  fun <- match.fun(fun)
+  D = fun(location, ...)
+  return(D)
 }
 
 
+all(D == test.dist(loc))
+
+D2 <- distm(loc, loc2)
+
+D.test <- test.dist(loc, y = loc2, fun = function(x, y){
+  distm(x, y)
+})
+
+all(D2 == D.test)
+
+D3 <- dist(loc)
 ```
 
-```{r, eval = FALSE, echo = FALSE}
-size.Mb <- function(x){format(object.size(x), units = "Kb")}
-sizes <- data.frame(obj = c("out1", "out2", "outcross"), 
-                    MB = c(size.Mb(out1), size.Mb(out2), size.Mb(out.cross))
-                    )
-sizes
 
-## could it be a memory issue? MB is the size of out.cross with different n.p values
-curve = data.frame(n.p = c(100, 80, 60), MB = c(3.5, 2.2, 1.2))
-fm <- lm(curve$MB ~ curve$n.p)
-plot(curve$MB ~ curve$n.p); abline(fm)
-pred <- function(np){(np * coef(fm)[2]) + coef(fm)[1]}
-pred(c(150, 300, 600))
-```
+<!-- ## Using Rasters -->
+
+<!-- ```{r, eval = FALSE} -->
+<!-- ## convert data to raster format -->
+<!-- library(raster) -->
+<!-- # make backbone -->
+<!-- rast.backbone <- raster(xmn = min(location$lng), xmx = max(location$lng), -->
+<!--                         ymn = min(location$lat), ymx = max(location$lat), -->
+<!--                         ncol = length(unique(location$lng)), -->
+<!--                         nrow = length(unique(location$lat)), -->
+<!--                         # nrow = 1e4, ncol = 1e4 ## use 1e8 pixels -->
+<!--                         ) -->
+
+<!-- # initialize RasterStack -->
+<!-- AK.stack <- stack() -->
+
+<!-- # add layer for each column of X -->
+<!-- for(i in 1:ncol(X)){ -->
+<!--   # create raster from data and raster backbone -->
+<!--   AK.rast <- rasterize(as.matrix(location), rast.backbone, X[,i], fun = mean) -->
+<!--   AK.rast <- trim(AK.rast, internal = TRUE) -->
+<!--   names(AK.rast) <- colnames(X)[i] -->
+<!--   # add raster as layer to the stack -->
+<!--   AK.stack <- addLayer(AK.stack, AK.rast) -->
+<!-- } -->
+
+<!-- writeRaster(AK.stack, "../data/AK-RasterStack.grd", overwrite = TRUE) -->
+
+<!-- AK.stack <- brick("../data/AK-RasterStack.grd") -->
+
+<!-- canProcessInMemory(AK.stack) -->
+
+<!-- land.class <- factor((mod.mat %*% (1:ncol(mod.mat))) + 1,  -->
+<!--          labels = c(colnames(mod.mat))) -->
+
+<!-- land.raster <- rasterize(as.matrix(location), rast.backbone, as.numeric(land.class)) -->
+<!-- ``` -->
+
+<!-- Since our raster files are mostly ocean, the grid is comprised of mostly empty cells: -->
+
+<!-- ```{r, eval = FALSE} -->
+<!-- summary(AK.stack[[1]]) -->
+<!-- ``` -->
+
+
+<!-- ```{r, eval = FALSE} -->
+<!-- # calculate the CLS coefficient for the raster file -->
+<!-- CLS.rast = calc(AK.stack,  -->
+<!--                 function(x){if(is.na(x[1])){NA -->
+<!--                 }else{ -->
+<!--                   fitCLS(x, t = 1:nlayers(AK.stack))$coef["time", "Estimate"]} -->
+<!--                 }) -->
+<!-- ## First, make a list of the data cells to include -->
+
+
+<!-- # I'll simply do this by selecting the cells that are not NA in the first layer -->
+<!-- dat.indx <- which(!is.na(values(AK.stack[[1]]))) -->
+
+<!-- part.mat <- sample_partitions(pixels = dat.indx, npart = 4) -->
+
+<!-- # exctract pixels from first partition -->
+<!-- rast.sub <- extract(AK.stack, part.mat[,1]) -->
+
+
+<!-- rast.sub[1:5, 1:5] #head(rast.sub) -->
+<!-- y.sub = extract(CLS.rast, part.mat[,1]) -->
+<!-- land  = extract(land.raster, part.mat[, 1]) -->
+<!-- mm = model.matrix(~ 0 + factor(land)) -->
+<!-- colnames(mm) <- levels(land.class) -->
+
+<!-- loc = xyFromCell(CLS.rast, cell = part.mat[, 1]) -->
+
+<!-- r.est = fit_spatialcor(X = rast.sub, t = 1:nlayers(AK.stack), location = loc) -->
+
+<!-- D = geosphere::distm(loc) -->
+<!-- V = fitV(D, spatialcor = r.est$spatialcor) -->
+<!-- dfs <- calc_df(nrow(part.mat), p = ncol(X), p0 = ncol(X0)) -->
+<!-- ## and then the rast.sub can be used just like a matrix in GLS -->
+<!-- X0 = cbind(rep(1, length(y.sub))) -->
+
+<!-- (out.GLS <- GLS_worker(y = y.sub, X = mm, V = V, X0 = X0)) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE} -->
+<!-- N = 2e8 #200Mill pixels -->
+
+<!-- rasterfile = "../raster-test.grd" -->
+
+<!-- tmp <- raster(ncol = sqrt(N), nrow = sqrt(N)) -->
+
+<!-- writeRaster(x = tmp, filename = rasterfile, overwrite = TRUE) -->
+
+<!-- tmp <- raster(rasterfile) -->
+
+
+<!-- tmp[50] <-  1 -->
+
+<!-- which(!is.na(values(tmp))) -->
+
+<!-- extract(tmp, 50) -->
+<!-- ``` -->
+
+<!-- <!-- ## Old Code / Test Code:  --> -->
+
+<!-- ```{r, echo = FALSE, eval = FALSE} -->
+<!-- ## shows that the correlated chisqr test is randombly distributed about 0 -->
+<!-- ## when it is sufficiently low.  -->
+
+<!-- F.means = seq(50, .1, length.out = 100) -->
+<!-- p.vals <- sapply(F.means, function(x){ -->
+<!--   correlated.chisq(x, rSSR, df1, ncol(part.mat)) -->
+<!-- }) -->
+
+<!-- plot(x = F.means[1:95], y = p.vals[1:95]) -->
+<!-- ``` -->
+
+<!-- <!-- However, this dataset is very small and results can vary: lets look at a few --> -->
+<!-- <!-- different subsets of `ndvi_AK`, each of 3000 sites. --> -->
+
+<!-- ```{r, eval = FALSE, echo = FALSE} -->
+<!-- data("ndvi_AK") -->
+<!-- ndvi_AK <- ndvi_AK[!ndvi_AK$rare.land, ] -->
+<!-- ndvi_AK$land <- droplevels(ndvi_AK$land) -->
+
+<!-- ## 4 different subsets -->
+<!-- subs <- matrix(sample.int(n = nrow(ndvi_AK), size = 3000 * 4, replace = FALSE),  -->
+<!--                nrow = 3000) -->
+
+<!-- ## Apply the test to 4 different subsets of 3000 AK sites -->
+<!-- Ftest_sub <- sapply(1:ncol(subs), function(i){ -->
+<!--   ss = sample.int(n = nrow(ndvi_AK), size = 3000, replace = FALSE) -->
+<!--   AKsub <- ndvi_AK[ss, ] -->
+<!--   loc_i <- AKsub[, c("lng", "lat")] -->
+<!--   Xsub <-  as.matrix(AKsub[, 7:38]) -->
+<!--   sc_i <- fit_spatialcor(X = Xsub, t = time.scaled,  -->
+<!--                          location = loc_i, fun = meth)$spatialcor -->
+<!--   D_i <- geosphere::distm(loc_i)/1000 -->
+<!--   fm.cls_i <- cls_star(Xsub, t = time.scaled) -->
+<!--   y_i <- with(fm.cls_i, Est/mean) -->
+<!--   fm_i <- fitGLS.partition_rcpp(X = Xsub, y = y_i, X0 = X0, Dist = D_i,  -->
+<!--                                 spatcor = sc_i, Vfit.fun = meth, npart = 5,  -->
+<!--                                 mincross = 4, workerB_cpp = TRUE) -->
+<!--   F_i <- fm_i$Fmean -->
+<!--   p_i <- GLS.partition.pvalue(fm_i, nboot = 2000)$pF.boot$pvalue -->
+
+<!--   return(c("F" = F_i, "pval" = p_i)) -->
+<!-- }) -->
+
+<!-- print(Ftest_sub) -->
+
+<!-- rm("ndvi_AK") -->
+<!-- ``` -->
+
+<!-- <!-- I'm still working on the partitioned version --> -->
+
+<!-- ```{r GLS_partition, eval = FALSE, echo = FALSE} -->
+<!-- n.p = 50; n.part = 3 -->
+<!-- partition <- matrix(sample(1:nrow(ndvi_AK3000), size = n.p * n.part), ncol = n.part) -->
+<!-- x.1 = as.vector(partition[, 1]) -->
+<!-- x.2 = as.vector(partition[, 2]) -->
+<!-- x.12 = c(x.1, x.2) -->
+<!-- ## For now, I'm going to explore the distributed computing option -->
+
+<!-- ### partition 1 -->
+<!-- y1 <- rnorm(n.p) -->
+<!-- X1 <- as.matrix(ndvi_AK3000[x.1, -c(1:6)]) -->
+<!-- loc1 <- ndvi_AK3000[x.1, c("lat","lng")] -->
+<!-- V1 <- fitV(D[x.1, x.1], -->
+<!--             spatialcor = r.est$spatialcor, fun = "exponential-power") -->
+
+<!-- ### partition 2 -->
+<!-- y2 <- rnorm(n.p) -->
+<!-- X2 <- as.matrix(ndvi_AK3000[x.2, -c(1:6)]) -->
+<!-- loc2 <- ndvi_AK3000[x.2, c("lat","lng")] -->
+<!-- V2 <- fitV(D[x.2, x.2], -->
+<!--             spatialcor = r.est$spatialcor, fun = "exponential-power") -->
+
+<!-- ## cross partition -->
+<!-- V12 <- fitV(D[x.12, x.12], -->
+<!--              spatialcor = r.est$spatialcor, fun = "exponential-power") -->
+<!-- Vsub <- V12[1:n.p, (n.p+1):(2*n.p)] -->
+
+<!-- Xnull <- matrix(1, nrow = nrow(X1)) -->
+
+<!-- df2 <- n.p - (ncol(X1) - 1) -->
+<!-- df0 <- n.p - (ncol(Xnull) - 1) -->
+<!-- df1 <- df0 - df2 -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, echo = FALSE} -->
+<!-- ## results -->
+<!-- out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE) -->
+<!-- out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE) -->
+
+<!-- ## The cross-partition step is where it breaks down -->
+<!-- ## last worked when n.p was 400 but no larger -->
+<!-- out.cross.cpp <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx, -->
+<!--                                   xxi0 = out1$xx0, xxj0 = out2$xx0, -->
+<!--                                   tUinv_i = out1$tInvCholV,  -->
+<!--                                   tUinv_j = out2$tInvCholV,  -->
+<!--                                   Vsub = Vsub,  -->
+<!--                                   df1 = df1, df2 = df2) # not working yet -->
+
+<!-- out.cross <- crosspart_worker(xxi = out1$xx, xxj = out2$xx, -->
+<!--                                   xxi0 = out1$xx0, xxj0 = out2$xx0, -->
+<!--                                   tUinv_i = out1$tInvCholV,  -->
+<!--                                   tUinv_j = out2$tInvCholV,  -->
+<!--                                   Vsub = Vsub,  -->
+<!--                                   df1 = df1, df2 = df2) # not working yet -->
+
+<!-- ## test that the 2 versions give the same output -->
+<!-- for(i in 1:length(out.cross)){ -->
+<!--   print(names(out.cross)[i]) -->
+<!--   print(all.equal(out.cross[[i]], out.cross.cpp[[i]])) -->
+<!-- } -->
+
+
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, echo = FALSE} -->
+<!-- size.Mb <- function(x){format(object.size(x), units = "Kb")} -->
+<!-- sizes <- data.frame(obj = c("out1", "out2", "outcross"),  -->
+<!--                     MB = c(size.Mb(out1), size.Mb(out2), size.Mb(out.cross)) -->
+<!--                     ) -->
+<!-- sizes -->
+
+<!-- ## could it be a memory issue? MB is the size of out.cross with different n.p values -->
+<!-- curve = data.frame(n.p = c(100, 80, 60), MB = c(3.5, 2.2, 1.2)) -->
+<!-- fm <- lm(curve$MB ~ curve$n.p) -->
+<!-- plot(curve$MB ~ curve$n.p); abline(fm) -->
+<!-- pred <- function(np){(np * coef(fm)[2]) + coef(fm)[1]} -->
+<!-- pred(c(150, 300, 600)) -->
+<!-- ``` -->
 

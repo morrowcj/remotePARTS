@@ -1,18 +1,18 @@
-#' NDVI Remote sensing data for North America
-#'
-#' NDVI data for sites over time
-#'
-#' @format data frame with 348137 rows corresponding to sites and 37 columns:
-#' \describe{
-#'   \item{row}{grid row of the pixel}
-#'   \item{col}{grid column of the pixel}
-#'   \item{lng}{longitude of the pixel}
-#'   \item{lat}{latitude of the pixel}
-#'   \item{land}{dominant land class of the pixel}
-#'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
-#' }
-
-"ndvi"
+# #' NDVI Remote sensing data for North America
+# #'
+# #' NDVI data for sites over time
+# #'
+# #' @format data frame with 348137 rows corresponding to sites and 37 columns:
+# #' \describe{
+# #'   \item{row}{grid row of the pixel}
+# #'   \item{col}{grid column of the pixel}
+# #'   \item{lng}{longitude of the pixel}
+# #'   \item{lat}{latitude of the pixel}
+# #'   \item{land}{dominant land class of the pixel}
+# #'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
+# #' }
+#
+# "ndvi"
 
 #' NDVI Remote sensing data for Alaska
 #'
