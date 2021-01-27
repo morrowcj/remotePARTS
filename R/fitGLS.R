@@ -43,8 +43,8 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
   out$pval.t <- 2 * pt(abs(out$tstat), df = out$dft, lower.tail = F)
   out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
   class(out) <- "remoteGLS"
-  GLS$model.info$call <- match.call()
-  GLS$nugget = nugget
+  out$model.info$call <- match.call()
+  out$nugget = nugget
 
   return(out)
 }
