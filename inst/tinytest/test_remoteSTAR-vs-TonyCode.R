@@ -43,14 +43,14 @@ CLS.bench = microbenchmark(
 )
 ## compare output
 expect_equivalent(old.CLS[, "mean"], new.CLS$mean)
-expect_equivalent(old.CLS[, c("c", "t", "p")],
+expect_equivalent(as.matrix(old.CLS[, c("c", "t", "p")]),
                   new.CLS$time.coef[, c("Est", "t", "p.t")])
 expect_equivalent(old.CLS[, c("b", "MSE")],
                   data.frame(new.CLS$xi.coef[,"Est"], new.CLS[["MSE"]]))
 expect_equivalent(with(old.CLS, c/mean),
-                  with(new.CLS, time.coef$Est/mean))
+                  with(new.CLS, time.coef[, "Est"]/mean))
 ## assign y (rel.est)
-test.y = with(new.CLS, time.coef$Est/mean)
+test.y = with(new.CLS, time.coef[, "Est"]/mean)
 test.df$test.y = test.y
 
 # spatial correlation functions ----
