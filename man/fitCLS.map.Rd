@@ -2,7 +2,7 @@
 % Please edit documentation in R/CLS_functions.R
 \name{fitCLS.map}
 \alias{fitCLS.map}
-\title{fit a CLS model to an entire map or map subset}
+\title{Map CLS}
 \usage{
 fitCLS.map(
   X,
@@ -43,7 +43,7 @@ points}
 }
 }
 \description{
-fit a CLS model to an entire map or map subset
+Fit a CLS model to an entire map or map subset
 }
 \details{
 \code{fitCLS.map()} is a vectorized version of \code{fitCLS()},

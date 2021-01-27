@@ -2,7 +2,7 @@
 % Please edit documentation in R/CLS_functions.R
 \name{fitCLS}
 \alias{fitCLS}
-\title{Fit a CLS regression to a time series}
+\title{Pixel CLS}
 \usage{
 fitCLS(x, t, Z = NULL, save_AR.df = FALSE)
 }
@@ -20,7 +20,7 @@ same p time points.}
 default: FALSE}
 }
 \value{
-\code{remoteCLS} object. A list with the following elements:
+\code{remoteCLS.pixel} object. A list with the following elements:
 \describe{
     \item{\code{$call}}{the matched call to this function}
     \item{\code{$fm}}{the model object fit using \code{stats::lm()}}

@@ -1,5 +1,6 @@
-# fitCLS ----
-#' Fit a CLS regression to a time series
+# pixel level CLS ----
+#' @title Pixel CLS
+#' @description Fit a CLS regression to a time series
 #' @family remoteCLS
 #'
 #' @param x numeric vector of length p containing time series data for one
@@ -11,7 +12,7 @@
 #' @param save_AR.df should the auto-regression data frame be returned?
 #' default: FALSE
 #'
-#' @return \code{remoteCLS} object. A list with the following elements:
+#' @return \code{remoteCLS.pixel} object. A list with the following elements:
 #' \describe{
 #'     \item{\code{$call}}{the matched call to this function}
 #'     \item{\code{$fm}}{the model object fit using \code{stats::lm()}}
@@ -80,8 +81,9 @@ fitCLS <- function(x, t, Z = NULL, save_AR.df = FALSE) {
   return(out)
 }
 
-## Function to replace cls_star ----
-#' fit a CLS model to an entire map or map subset
+## map level CLS ----
+#' @title Map CLS
+#' @description Fit a CLS model to an entire map or map subset
 #'
 #' @param X \eqn{n x p} matrix of data with 1-n rows of pixels and 1-p columns of time
 #' points

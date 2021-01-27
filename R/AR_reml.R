@@ -1,31 +1,104 @@
-## AR function ----
-#' restricted maximum likelihood of an AR model
+
+## Pixel AR REML----
+#' @title Pixel AR REML
+#' @description Fit an Auto-regressive time series analysis using restricted
+#' maximum likelihood
+#' @rdname fitAR
 #'
-#' @param par AR parameter value
-#' @param x vector of time series (response)
-#' @param U model matrix (predictors)
+#' @param formula model formula
+#' @param data object in which the model will first look for data
 #'
-#' @return
+#' @return \code{AR_funct()} will return only the log-likelihood
+#' if \code{LL.only = TRUE}.
 #'
-#' if \code{LL.only = TRUE}: returns log-likelihood of \code{par}
-#' given \code{x} and \code{u}.
+#' Otherwise, a \code{remoteAR.pixel} object is returned,
+#' which is a list with the following elements:
 #'
-#' otherwise, returns a "remoteAR.pixel" object which is a list of a
-#' regression coefficeint table (\code{$coef}), the REML AR parameter (\code{$b}),
-#' model MSE (\code{$MSE}),
-#' estimated coefficeint covariance matrix (\code{$s2beta}),
-#' and the model log-likelihood (\code{$logLik}).
+#' \describe{
+#'     \item{\code{$call}}{matched function call}
+#'     \item{\code{$coef}}{regression coefficeint table}
+#'     \item{\code{$b}}{REML AR parameter}
+#'     \item{\code{$MSE}}{model MSE}
+#'     \item{\code{$resids}}{model residuals}
+#'     \item{\code{$s2beta}}{estimated coefficient covariance matrix}
+#'     \item{\code{$logLik}}{model log-likelihood}
+#' }
 #'
-#' @details used by \code{fitAR()}
+#' @details \code{fitAR()} obtains the REML AR parameter by performing
+#' mathematical optimization for \code{par} in \code{AR_funct(LL.only = TRUE)}.
+#' Once the REML parameter is obtained, \code{AR_funct(LL.only = FALSE)} is
+#' called.
+#'
+#' By default, the print.remoteAR() method does not show all output.
+#' to access individual components, use \code{names()} to see element names
+#' and the S3 \code{$} operator to access them.
+#'
+#' @seealso [fitAR.map()] for fitting to a full map and [fitCLS()] &
+#' [fitCLS.map()] for CLS versions.
 #'
 #' @export
+#'
 #' @examples
 #' time = 1:30
 #' x = rnorm(31)
 #' x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
 #' U = model.matrix(formula(x ~ time))
+#'
+#' # using the AR function with a given paramter
 #' AR_funct(par = .2, x, U, LL.only = TRUE)
 #' AR_funct(par = .2, x, U, LL.only = FALSE)
+#'
+#' # find the REML solution for par and save results
+#' AR <- fitAR(x ~ time)
+#'
+#' # extract info
+#' coef(AR) # time coefficient table; also AR$coef
+#' AR$MSE # model MSE
+#' AR$resids # model residuals
+#' AR$b # AR parameter estimate
+#' AR$logLik  # log-likelihood of the model
+fitAR <- function(formula, data){
+  ## Produce model matrix and model frame from call ----
+  call <- match.call() # function call
+  mf <- match.call(expand.dots = FALSE) # don't expand ...
+  m <- match(c("formula", "data", "subset",
+               "weights", "na.action", "offset"),
+             names(mf), 0L) # match arguments provided by call
+  mf <- mf[c(1L, m)] #function name, plus arguments matched
+  mf$drop.unused.levels <- TRUE # show that we dropped levels
+  mf[[1L]] <- quote(stats::model.frame) # rename the function call
+  mf <- eval(mf, parent.frame()) # evaluate the model frame with the data
+  mt <- attr(mf, "terms") # model terms
+  y <- model.response(mf, "numeric") # response (vector)
+  # w <- as.vector(model.weights(mf)) # model.weights
+  # offset <- model.offset(mf) # model offset
+  if (is.matrix(y)){stop("response is a matrix: must be a vector")}
+  ny <- length(y)
+  U <- model.matrix(mt, mf, contrasts = NULL) # create model matrix
+
+  ## Optimize AR_funct() for par ----
+  opt <- optim(fn = AR_funct, par = 0.2, x = y, U = U, LL.only = TRUE,
+               method = "Brent", upper = 1, lower = -1,
+               control = list(maxit = 10^4))
+
+  b <- opt$par # optimized parameter
+
+  ## Perform the AR regression with the optimized parameter ----
+  AR.out = AR_funct(par = b, x = y, U = U, LL.only = FALSE)
+  AR.out$call = call
+
+  return(AR.out)
+}
+
+## AR function ----
+#' @rdname fitAR
+#' @family remoteAR
+#'
+#' @param par AR parameter value
+#' @param x vector of time series (response)
+#' @param U model matrix (predictors)
+#'
+#' @export
 AR_funct <- function(par, x, U, LL.only = TRUE) {
   b <- par # parameter of interest
   n.obs <- length(x) # number of time points
@@ -92,61 +165,9 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
   }
 }
 
-## AR Wrapper----
-#' Fit an Auto-regressive time series analysis using restricted maximum
-#' likelihood
-#'
-#' @param formula model formula
-#' @param data object in which the model will first look for data
-#'
-#' @return a "remoteAR.pixel" object. See [AR_funct()] for more details.
-#'
-#' @details [fitAR()] is a wrapper function for [AR_funct()].
-#'
-#' By default, the print.remoteAR() method does not show all output.
-#' to access individual components, use \code{names()} to see element names
-#' and the S3 \code{$} operator to access them.
-#'
-#' @export
-#' @examples
-#' time = 1:30
-#' x = rnorm(31)
-#' x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-#' fitAR(x ~ time)
-fitAR <- function(formula, data){
-  ## Produce model matrix and model frame from call ----
-  call <- match.call() # function call
-  mf <- match.call(expand.dots = FALSE) # don't expand ...
-  m <- match(c("formula", "data", "subset",
-               "weights", "na.action", "offset"),
-             names(mf), 0L) # match arguments provided by call
-  mf <- mf[c(1L, m)] #function name, plus arguments matched
-  mf$drop.unused.levels <- TRUE # show that we dropped levels
-  mf[[1L]] <- quote(stats::model.frame) # rename the function call
-  mf <- eval(mf, parent.frame()) # evaluate the model frame with the data
-  mt <- attr(mf, "terms") # model terms
-  y <- model.response(mf, "numeric") # response (vector)
-  # w <- as.vector(model.weights(mf)) # model.weights
-  # offset <- model.offset(mf) # model offset
-  if (is.matrix(y)){stop("response is a matrix: must be a vector")}
-  ny <- length(y)
-  U <- model.matrix(mt, mf, contrasts = NULL) # create model matrix
-
-  ## Optimize AR_funct() for par ----
-  opt <- optim(fn = AR_funct, par = 0.2, x = y, U = U, LL.only = TRUE,
-               method = "Brent", upper = 1, lower = -1,
-               control = list(maxit = 10^4))
-
-  b <- opt$par # optimized parameter
-
-  ## Perform the AR regression with the optimized parameter ----
-  AR.out = AR_funct(par = b, x = y, U = U, LL.only = FALSE)
-  AR.out$call = call
-
-  return(AR.out)
-}
-
-#' Fit AR REML models to a time series matrix
+## Full map AR ----
+#' @title Map AR REML
+#' @description Fit AR REML models to a time series matrix
 #'
 #' @param X nxp time series response matrix with p columns corresponding to time
 #'  points and n columns corresponding to the number of pixels
@@ -158,12 +179,15 @@ fitAR <- function(formula, data){
 #' @param ret_resid should the model residuals be returned? logical
 #' @param ret_logLik should the model log-likelihoods be returned? logical
 #'
-#' @return a list with the following elements: the initial function call
-#' (\code{$call}), a coefficient matrix for the temporal variable
-#' (\code{$time.coef}), an optional vector of the AR parameters (\code{$AR.par}),
-#' an optional vector of MSEs (\code{$MSE}), an optional vector of
-#' log-likelihoods (\code{$logLik}), and an optional nxp matrix of model
-#' residuals (\code{$resids}).
+#' @return \code{remoteAR.map} object. A list with the following elements:
+#' \describe{
+#'     \item{\code{$call}}{matched function call}
+#'     \item{\code{$time.coef}}{coefficient matrix for the temporal variable}
+#'     \item{\code{$AR.par}}{an optional vector of the AR parameters}
+#'     \item{\code{$MSE}}{an optional vector of model MSEs}
+#'     \item{\code{$logLik}}{optional vector of log-likelihoods}
+#'     \item{\code{$resids}}{optional nxp matrix of model residuals}
+#' }
 #'
 #' @details by default the print.remoteAR() method does not show all output.
 #' to access individual components, use \code{names()} to see element names

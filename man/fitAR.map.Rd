@@ -2,7 +2,7 @@
 % Please edit documentation in R/AR_reml.R
 \name{fitAR.map}
 \alias{fitAR.map}
-\title{Fit AR REML models to a time series matrix}
+\title{Map AR REML}
 \usage{
 fitAR.map(
   X,
@@ -32,12 +32,15 @@ points and n columns corresponding to the number of pixels}
 \item{ret_logLik}{should the model log-likelihoods be returned? logical}
 }
 \value{
-a list with the following elements: the initial function call
-(\code{$call}), a coefficient matrix for the temporal variable
-(\code{$time.coef}), an optional vector of the AR parameters (\code{$AR.par}),
-an optional vector of MSEs (\code{$MSE}), an optional vector of
-log-likelihoods (\code{$logLik}), and an optional nxp matrix of model
-residuals (\code{$resids}).
+\code{remoteAR.map} object. A list with the following elements:
+\describe{
+    \item{\code{$call}}{matched function call}
+    \item{\code{$time.coef}}{coefficient matrix for the temporal variable}
+    \item{\code{$AR.par}}{an optional vector of the AR parameters}
+    \item{\code{$MSE}}{an optional vector of model MSEs}
+    \item{\code{$logLik}}{optional vector of log-likelihoods}
+    \item{\code{$resids}}{optional nxp matrix of model residuals}
+}
 }
 \description{
 Fit AR REML models to a time series matrix
