@@ -1,5 +1,7 @@
 # Create data for remotePARTS package
   ## All paths are relative to the romotePARTS root directory
+library(data.table)
+
 
 ## Full data ----
 # read in the data
