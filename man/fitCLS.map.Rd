@@ -2,7 +2,7 @@
 % Please edit documentation in R/CLS_functions.R
 \name{fitCLS.map}
 \alias{fitCLS.map}
-\title{Title}
+\title{fit a CLS model to an entire map or map subset}
 \usage{
 fitCLS.map(
   X,
@@ -14,16 +14,69 @@ fitCLS.map(
 )
 }
 \arguments{
-\item{ret_resid}{}
+\item{X}{\eqn{n x p} matrix of data with 1-n rows of pixels and 1-p columns of time
+points}
+
+\item{t}{time vector of length p}
+
+\item{ret_xi.coef}{logical: return/save coefficient table for xi?}
+
+\item{ret_int.coef}{logical: return/save coefficient table for intercept?}
+
+\item{ret_MSE}{logical: return/save model MSE?}
+
+\item{ret_resid}{logical: return/save model residuals?}
 }
 \value{
-
+\code{remoteCLS.map} object. A list with the following elements:
+\describe{
+   \item{\code{$call}}{the matched call to this function}
+   \item{\code{$time.coef}}{coefficient table for the effect of time
+   (1 row per pixel)}
+   \item{\code{$mean}}{mean of X at each pixel, averaged across time}
+   \item{\code{$xi.coef}}{optional coefficient table for the effect of x at
+   time i
+   on x at time j (one row per pixel)}
+   \item{\code{$int.coef}}{optional coefficient table for the intercept}
+   \item{\code{$MSE}}{model MSE for each pixel}
+   \item{\code{$residuals}}{matrix of model residuals (1 row per pixel)}
+}
 }
 \description{
-Title
+fit a CLS model to an entire map or map subset
 }
 \details{
-by default the print.remoteCLS() method does not show all output.
-to access individual components, use \code{names()} to see element names
-and the S3 \code{$} operator to access them.
+\code{fitCLS.map()} is a vectorized version of \code{fitCLS()},
+which is called internally for each row of \code{X}.
+
+By default the print.remoteCLS() method does not *show* all output,
+even if the ret_* flags are set to TRUE. Use the S3 \code{$} operator to
+access elements by name or use one of the extractor functions
+(shown in examples below).
+}
+\examples{
+data(ndvi_AK3000)
+X = (ndvi_AK3000[, -c(1:6)])
+t = 1:length(x) # time points
+
+# fit CLS (only save time coefficient)
+CLS <- fitCLS.map(X, t)
+CLS # print.remoteCLS() only prints model info and time coefficients by default
+coef(CLS) # coefficient table as data frame
+
+# fit again, but save all possible output
+CLS.full <- fitCLS.map(X, t, ret_xi.coef = TRUE, ret_int.coef = TRUE,
+                       ret_MSE = TRUE, ret_resid = TRUE)
+CLS.full # still only prints model info and time coefficients by default
+summary(CLS.full) # summary tables
+## access other elements
+coef(CLS.full) # time coefficient table; also coef(CLS.full, "time") or CLS.full$time.coef
+coef(CLS.full, "xi") # extract coefficient table for xi; also CLS.full$xi.coef
+coef(CLS.full, "intercept") # extract the coefficient table for intercept; also CLS.full$int.coef
+resid(CLS.full) # residual matrix; also CLS.full$residuals
+CLS.full$MSE # vector of MSEs
+}
+\seealso{
+[fitCLS()] for fitting CLS on individual time series and [fitAR()]
+& [fitAR.map()] for AR REML time series analysis.
 }

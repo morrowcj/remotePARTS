@@ -69,7 +69,7 @@ get_fm.remoteCLS <- function(obj){
   if ("pixel" %in% class(obj)) {
     return(obj$fm)
   } else if ("map" %in% class(obj)) {
-
+    stop("no applicable method for remoteCLS.map")
   } else
     NULL
 }
@@ -102,16 +102,24 @@ print.remoteCLS <- function(obj){
 #' Extract coefficeints from remoteCLS object
 #'
 #' @param obj remoteCLS object
+#' @param var desired coefficients from remoteCLS.map object. One of "time"
+#' (default), "xi", or "intercept".
 #'
 #' @return coefficient data frame
 #' @export
-coef.remoteCLS <- function(obj){
+coef.remoteCLS <- function(obj, map.var){
   stopifnot("remoteCLS" %in% class(obj))
 
   if ("pixel" %in% class(obj)) {
    return(as.data.frame(obj$fm$coefficeints))
   } else if ("map" %in% class(obj)) {
-    return(as.data.frame(obj$time.coef))
+    if(missing(map.var) || map.var == "time"){
+      return(as.data.frame(obj$time.coef))
+    } else if (map.var == "xi") {
+      return(as.data.frame(obj$xi.coef))
+    } else if (map.var == "intercept") {
+      return(as.data.frame(obj$int.coef))
+    }
   }
 }
 

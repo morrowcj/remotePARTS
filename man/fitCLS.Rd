@@ -20,18 +20,27 @@ same p time points.}
 default: FALSE}
 }
 \value{
-list with the following elements: \code{$call} the function call used to produce
-the output, \code{$fm} the model object fit using \code{stats::lm()}, and, if
-if \code{save_AR.df = TRUE}, \code{$AR.df} an AR data frame built with
-\code{AR_df()} .
+\code{remoteCLS} object. A list with the following elements:
+\describe{
+    \item{\code{$call}}{the matched call to this function}
+    \item{\code{$fm}}{the model object fit using \code{stats::lm()}}
+    \item{\code{$AR.df}}{an optionally returned AR data frame built with
+    \code{AR_df()}}
+}
 }
 \description{
 Fit a CLS regression to a time series
 }
 \details{
-by default the print.remoteCLS() method does not show all output.
-to access individual components, use \code{names()} to see element names
-and the S3 \code{$} operator to access them.
+CLS is fit to a time series \code{x} by first building an AR
+data frame with \code{AR_df()}. Then, \code{x} at time j (\code{x.tj})
+is regressed on \code{x} at time i (\code{x.ti}) and \code{t} at time j
+(\code{t.j}).
+
+By default the print.remoteCLS() method does not *show* all output,
+even if the ret_* flags are set to TRUE. Use the S3 \code{$} operator to
+access elements by name or use one of the extractor functions
+(shown in examples below).
 }
 \examples{
 data(ndvi_AK3000)
@@ -59,5 +68,6 @@ resid(fm)
 }
 \seealso{
 [AR_df()] for AR data frames, [fitCLS.map()] for fitting full-map
-time series CLS, [fitAR()] and [fitAR.map()] for using AR REML instead of CLS.
+time series CLS, [fitAR()] & [fitAR.map()] for using AR REML instead of CLS.
 }
+\concept{remoteCLS}

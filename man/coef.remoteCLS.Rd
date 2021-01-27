@@ -4,10 +4,13 @@
 \alias{coef.remoteCLS}
 \title{Extract coefficeints from remoteCLS object}
 \usage{
-\method{coef}{remoteCLS}(obj)
+\method{coef}{remoteCLS}(obj, map.var)
 }
 \arguments{
 \item{obj}{remoteCLS object}
+
+\item{var}{desired coefficients from remoteCLS.map object. One of "time"
+(default), "xi", or "intercept".}
 }
 \value{
 coefficient data frame

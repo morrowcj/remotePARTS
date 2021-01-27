@@ -1,5 +1,6 @@
 # fitCLS ----
 #' Fit a CLS regression to a time series
+#' @family remoteCLS
 #'
 #' @param x numeric vector of length p containing time series data for one
 #' location (i.e. a pixel)
@@ -10,17 +11,26 @@
 #' @param save_AR.df should the auto-regression data frame be returned?
 #' default: FALSE
 #'
-#' @return list with the following elements: \code{$call} the function call used to produce
-#' the output, \code{$fm} the model object fit using \code{stats::lm()}, and, if
-#' if \code{save_AR.df = TRUE}, \code{$AR.df} an AR data frame built with
-#' \code{AR_df()} .
+#' @return \code{remoteCLS} object. A list with the following elements:
+#' \describe{
+#'     \item{\code{$call}}{the matched call to this function}
+#'     \item{\code{$fm}}{the model object fit using \code{stats::lm()}}
+#'     \item{\code{$AR.df}}{an optionally returned AR data frame built with
+#'     \code{AR_df()}}
+#' }
 #'
-#' @details by default the print.remoteCLS() method does not show all output.
-#' to access individual components, use \code{names()} to see element names
-#' and the S3 \code{$} operator to access them.
+#' @details CLS is fit to a time series \code{x} by first building an AR
+#' data frame with \code{AR_df()}. Then, \code{x} at time j (\code{x.tj})
+#' is regressed on \code{x} at time i (\code{x.ti}) and \code{t} at time j
+#' (\code{t.j}).
+#'
+#' By default the print.remoteCLS() method does not *show* all output,
+#' even if the ret_* flags are set to TRUE. Use the S3 \code{$} operator to
+#' access elements by name or use one of the extractor functions
+#' (shown in examples below).
 #'
 #' @seealso [AR_df()] for AR data frames, [fitCLS.map()] for fitting full-map
-#' time series CLS, [fitAR()] and [fitAR.map()] for using AR REML instead of CLS.
+#' time series CLS, [fitAR()] & [fitAR.map()] for using AR REML instead of CLS.
 #'
 #' @export
 #'
@@ -71,23 +81,64 @@ fitCLS <- function(x, t, Z = NULL, save_AR.df = FALSE) {
 }
 
 ## Function to replace cls_star ----
-#' Title
+#' fit a CLS model to an entire map or map subset
 #'
-#' @param X
-#' @param t
-#' @param ret_xi.coef
-#' @param ret_int.coef
-#' @param ret_MSE
-#' @param ret_resid
+#' @param X \eqn{n x p} matrix of data with 1-n rows of pixels and 1-p columns of time
+#' points
+#' @param t time vector of length p
+#' @param ret_xi.coef logical: return/save coefficient table for xi?
+#' @param ret_int.coef logical: return/save coefficient table for intercept?
+#' @param ret_MSE logical: return/save model MSE?
+#' @param ret_resid logical: return/save model residuals?
 #'
-#' @details by default the print.remoteCLS() method does not show all output.
-#' to access individual components, use \code{names()} to see element names
-#' and the S3 \code{$} operator to access them.
+#' @return \code{remoteCLS.map} object. A list with the following elements:
+#' \describe{
+#'    \item{\code{$call}}{the matched call to this function}
+#'    \item{\code{$time.coef}}{coefficient table for the effect of time
+#'    (1 row per pixel)}
+#'    \item{\code{$mean}}{mean of X at each pixel, averaged across time}
+#'    \item{\code{$xi.coef}}{optional coefficient table for the effect of x at
+#'    time i
+#'    on x at time j (one row per pixel)}
+#'    \item{\code{$int.coef}}{optional coefficient table for the intercept}
+#'    \item{\code{$MSE}}{model MSE for each pixel}
+#'    \item{\code{$residuals}}{matrix of model residuals (1 row per pixel)}
+#' }
 #'
-#' @return
+#' @details \code{fitCLS.map()} is a vectorized version of \code{fitCLS()},
+#' which is called internally for each row of \code{X}.
+#'
+#' By default the print.remoteCLS() method does not *show* all output,
+#' even if the ret_* flags are set to TRUE. Use the S3 \code{$} operator to
+#' access elements by name or use one of the extractor functions
+#' (shown in examples below).
+#'
+#' @seealso [fitCLS()] for fitting CLS on individual time series and [fitAR()]
+#' & [fitAR.map()] for AR REML time series analysis.
+#'
 #' @export
 #'
 #' @examples
+#' data(ndvi_AK3000)
+#' X = (ndvi_AK3000[, -c(1:6)])
+#' t = 1:length(x) # time points
+#'
+#' # fit CLS (only save time coefficient)
+#' CLS <- fitCLS.map(X, t)
+#' CLS # print.remoteCLS() only prints model info and time coefficients by default
+#' coef(CLS) # coefficient table as data frame
+#'
+#' # fit again, but save all possible output
+#' CLS.full <- fitCLS.map(X, t, ret_xi.coef = TRUE, ret_int.coef = TRUE,
+#'                        ret_MSE = TRUE, ret_resid = TRUE)
+#' CLS.full # still only prints model info and time coefficients by default
+#' summary(CLS.full) # summary tables
+#' ## access other elements
+#' coef(CLS.full) # time coefficient table; also coef(CLS.full, "time") or CLS.full$time.coef
+#' coef(CLS.full, "xi") # extract coefficient table for xi; also CLS.full$xi.coef
+#' coef(CLS.full, "intercept") # extract the coefficient table for intercept; also CLS.full$int.coef
+#' resid(CLS.full) # residual matrix; also CLS.full$residuals
+#' CLS.full$MSE # vector of MSEs
 fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
                        ret_MSE = TRUE, ret_resid = TRUE){
   stopifnot(ncol(X) == length(t))
@@ -96,7 +147,7 @@ fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
 
   ## run CLS
   cls.list <- lapply(1:n.pixels, function(x){
-    fitCLS(X[x,], t, save_AR.df = TRUE)
+    fitCLS(unlist(X[x,]), t, save_AR.df = TRUE)
   })
 
   ## get coefficients from cls
@@ -115,16 +166,16 @@ fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
   }
   if (ret_int.coef){
     out.list$int.coef <- as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
-    names(out.list$int.coef) <- c("Est", "SE", "t","p.t")
+    colnames(out.list$int.coef) <- c("Est", "SE", "t","p.t")
   }
   if (ret_MSE) {out.list$MSE = vector("numeric", n.pixels)}
   if (ret_resid) {out.list$residuals = matrix(NA, ncol = n.time - 1, nrow = n.pixels)}
 
   # build the tables
   for (i in 1:n.pixels){
-    out.list$time.coef[i, ] <- coef.list[[i]]["t.j", ]
-    if (ret_int.coef) {out.list$int.coef[i, ] <- coef.list[[i]]["(Intercept)", ]}
-    if (ret_xi.coef) {out.list$xi.coef[i, ] <- coef.list[[i]]["x.ti", ]}
+    out.list$time.coef[i, ] <- unlist(coef.list[[i]]["t.j", ])
+    if (ret_xi.coef) {out.list$xi.coef[i, ] <- unlist(coef.list[[i]]["x.ti", ])}
+    if (ret_int.coef) {out.list$int.coef[i, ] <- unlist(coef.list[[i]]["(Intercept)", ])}
     if (ret_MSE) {out.list$MSE[i] <- sigma(get_fm(cls.list[[i]]))^2}
     if (ret_resid) {out.list$residuals[i, ] <- residuals(get_fm(cls.list[[i]]))}
   }
