@@ -20,3 +20,6 @@ old-code/data-backup/
 
 # specific files
 !vignettes/Alaska.html
+!docs/*.html
+doc
+Meta
