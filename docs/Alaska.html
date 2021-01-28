@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Clay Morrow" />
+
+<meta name="date" content="2021-01-28" />
+
+<title>Alaska</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Alaska</h1>
+<h3 class="subtitle">NDVI analysis {remotePARTS}</h3>
+<h4 class="author">Clay Morrow</h4>
+<h4 class="date">2021-01-28</h4>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">set.seed</span>(<span class="dv">58</span>) <span class="co"># set the random seed for this document</span></span></code></pre></div>
+<div id="alaska-3000" class="section level2">
+<h2>Alaska 3000</h2>
+<p>This document will use the <code>ndvi_AK3000</code> data set to demonstrate the functionality of <code>remotePARTS</code>.</p>
+<p><code>ndvi_AK3000</code> contains NDVI remote sensing data for Alaska from 3000 random pixels over the time period of 1982 through 2013 as a <code>data.table</code>. For speed and efficiency, 3000 pixels were selected, but the following steps can also be applied to the full <code>ndvi_AK</code> dataset, which contains all Alaska pixels. Only land that occur in at least 2% of the pixels in Alaska are included in <code>ndvi_AK3000</code>.</p>
+<div id="data-preparation" class="section level3">
+<h3>Data Preparation</h3>
+<p>First, we’ll extract only the NDVI columns (<code>X</code>) and scale and center the time points:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># load the dataset</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">data</span>(<span class="st">&quot;ndvi_AK3000&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># extract some useful info</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>X &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(ndvi_AK3000[, <span class="op">-</span><span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>)]) <span class="co"># columns containing NDVI measurements</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>n =<span class="st"> </span><span class="kw">nrow</span>(X); p =<span class="st"> </span><span class="kw">ncol</span>(X) <span class="co"># dimensions of X</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>location =<span class="st"> </span>ndvi_AK3000[, <span class="kw">c</span>(<span class="st">&quot;lng&quot;</span>, <span class="st">&quot;lat&quot;</span>)] <span class="co"># geographic location of each site</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>time.int =<span class="st"> </span><span class="dv">1</span><span class="op">:</span>p <span class="co"># time points as standard integers</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>time.scaled =<span class="st"> </span><span class="kw">scale</span>(time.int) <span class="co"># scaled and centered time</span></span></code></pre></div>
+</div>
+<div id="analysis-of-ndvi-at-the-pixel-level" class="section level3">
+<h3>Analysis of NDVI at the pixel level</h3>
+<p>Next we will get the average change in NDVI over time at <em>each site</em> using constrained least squares (CLS) regression using <code>fitCLS.map()</code></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># perform time series analysis for each site (no intercept)</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>fm.cls &lt;-<span class="st"> </span><span class="kw">fitCLS.map</span>(X, <span class="dt">t =</span> time.scaled, <span class="dt">ret_xi.coef =</span> <span class="ot">TRUE</span>) <span class="co"># can be slow</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a>rel.est &lt;-<span class="st"> </span><span class="kw">with</span>(fm.cls, time.coef[,<span class="st">&quot;Est&quot;</span>]<span class="op">/</span>mean) <span class="co"># relative estimate</span></span></code></pre></div>
+<p>Let’s look at the results for the first 5 pixels. Here are the values of x averaged across time:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">## X averaged across time:</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>fm.cls<span class="op">$</span>mean[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">#&gt; [1]  6.359  1.168 12.800 13.244 11.368</span></span></code></pre></div>
+<p>and the effect of <code>t</code> on <code>x</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## Effect of time:</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">head</span>(fm.cls<span class="op">$</span>time.coef, <span class="dt">n =</span> <span class="dv">5</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="co">#&gt;           Est      SE       t      p.t</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co">#&gt; [1,] -0.22922 0.10869 -2.1090 0.044020</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="co">#&gt; [2,]  0.02476 0.03813  0.6492 0.521473</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co">#&gt; [3,]  0.15561 0.09809  1.5864 0.123868</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt; [4,] -0.78963 0.28122 -2.8079 0.008983</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt; [5,] -0.11754 0.05066 -2.3203 0.027830</span></span></code></pre></div>
+<p>and the effect of <span class="math inline">\(x_{j}\)</span> on <span class="math inline">\(x_{i}\)</span>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">## Auto-regressive effect:</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">head</span>(fm.cls<span class="op">$</span>xi.coef, <span class="dt">n =</span> <span class="dv">5</span>)</span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co">#&gt;           Est     SE       t       p.t</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co">#&gt; [1,]  0.57097 0.1548  3.6891 0.0009609</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co">#&gt; [2,]  0.10799 0.1915  0.5640 0.5772631</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co">#&gt; [3,] -0.03857 0.1926 -0.2003 0.8427146</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; [4,]  0.20350 0.1820  1.1179 0.2731260</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; [5,] -0.06431 0.1874 -0.3431 0.7340808</span></span></code></pre></div>
+<p>To use AR REML instead of CLS, see documentation for <code>fitAR.map()</code>.</p>
+<!-- #### Check for outliers-->
+<!-- #### This section should be moved to a diagnostics vignette -->
+<!-- Next we'll check for, and remove, outliers based on `rel.est`. This will -->
+<!-- also demonstrate allow us to visualize the CLS estimates: -->
+<!-- ```{r plot AK3000 outl map} -->
+<!-- # index of possible outliers -->
+<!-- outl <- abs(scale(rel.est)) > -qnorm(p = 1/n/10) # criteria -->
+<!-- ## Make a plot to visualize where outliers are -->
+<!-- # define color of points low NDVI = orange, high NDVI = green -->
+<!-- base.col = ifelse(test = outl, yes = "black", -->
+<!--                   no = colorRampPalette( -->
+<!--                     c("darkgoldenrod3", "grey70", "chartreuse3") -->
+<!--                     )(nrow(fm.cls$time.coef))[ordered(rel.est)] -->
+<!-- ) -->
+<!-- # make legend labels from rel.est summary stats -->
+<!-- labels <- round(c(max = max(rel.est), # boundaries of color changes -->
+<!--                   mid = median(rel.est),  -->
+<!--                   min = min(rel.est)), 2) -->
+<!-- labels <- c(labels, outl = "outlier") # outliers -->
+<!-- # build the plot -->
+<!-- plot(y = ndvi_AK3000$lat, x = ndvi_AK3000$lng, pch = 15, cex = .5,  -->
+<!--      col = base.col, -->
+<!--      xlab = "longitude", ylab = "latitude") -->
+<!-- legend(x = "bottomright", fill = c("chartreuse3", "grey70", -->
+<!--                                    "darkgoldenrod", "black"), -->
+<!--        legend = labels, title = "NDVI change") -->
+<!-- ``` -->
+<!-- We can see from the above figure that the outliers seem to occur at the edges of -->
+<!-- the map - adjacent to missing data. This would be easier to see with the full -->
+<!-- data set (`ndvi_AK`). -->
+<!-- Let's see where they fall relative to the other data: -->
+<!-- ```{r outl hist} -->
+<!-- ## value of outliers relative to overall distribution -->
+<!-- hist(fm.cls$mean[outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = "grey", -->
+<!--      lty = 3, xlab = "site average NDVI", main = "Histogram of NDVI") -->
+<!-- hist(fm.cls$mean[!outl], freq = FALSE, breaks = 0:20, ylim = c(0,.5), col = NULL, -->
+<!--      add = TRUE) -->
+<!-- legend("topright", legend = c("TRUE","FALSE"), fill = c("grey", "white"), -->
+<!--        title = "outlier") -->
+<!-- ``` -->
+<!-- This histogram doesn't seem to indicate that the outliers exhibit any pattern.  -->
+<!-- However, this is not true for the full data set (**TBA: add a figure**) -->
+<!-- For the purposes of this document, we will not remove the potential outliers  -->
+<!-- but it may be a good idea depending on the dataset.  -->
+</div>
+<div id="using-gls-regression" class="section level3">
+<h3>Using GLS regression</h3>
+<p>Now, we will use Generalized LS regression to test whether there is a significant trend in NDVI for this subset of Alaska:</p>
+<p>The first step is to estimate the spatial correlation with <code>fit_spatialcor()</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>meth =<span class="st"> &quot;exponential-power&quot;</span> <span class="co"># transformation method</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co"># estimate spatial correlation</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>r.est &lt;-<span class="st"> </span><span class="kw">fit_spatialcor</span>(X, time.scaled, <span class="dt">location =</span> location, </span>
+<span id="cb7-5"><a href="#cb7-5"></a>                         <span class="dt">method =</span> meth) <span class="co">#calculates D internally</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>r.est<span class="op">$</span>spatialcor <span class="co">#two spatial correlation parameters: range (r) and shape (a)</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co">#&gt;        r        a </span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">#&gt; 226.3696   0.5543</span></span></code></pre></div>
+<p>which gets used when fitting a covariance matrix with <code>fitV()</code>. <code>fitV()</code> needs a geographic distance matrix. Here we use <code>geosphere::distm()</code> but any distance matrix should work.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># calculate distance matrix (km) to use later</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>D =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(location)<span class="op">/</span><span class="dv">1000</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co">## Fit variance matrix</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>V &lt;-<span class="st"> </span><span class="kw">fitV</span>(D, <span class="dt">spatialcor =</span> r.est<span class="op">$</span>spatialcor, <span class="dt">method =</span> meth)</span></code></pre></div>
+<p>In this example, we’ll use GLS to compare the CLS coefficients among land cover classes. Here’s how we set up the alternate and null models to be compared:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">## get model matrix from formula</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="co"># full model</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>form =<span class="st"> &quot;rel.est ~ 0 + land&quot;</span> </span>
+<span id="cb9-4"><a href="#cb9-4"></a>mod.mat &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(<span class="dt">object =</span> <span class="kw">formula</span>(form), <span class="dt">data =</span> ndvi_AK3000)</span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="co"># null model </span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>form0 =<span class="st"> &quot;rel.est ~ 1&quot;</span> <span class="co">#(intercept only)</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>X0 &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(<span class="dt">object =</span> <span class="kw">formula</span>(form0), <span class="dt">data =</span> ndvi_AK3000)</span></code></pre></div>
+<p>Then we have to estimate a maximum likelihood nugget that absorbs variance not contained in the spatial covariance matrix:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">## estimate maximum likelihood nugget</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>tolr =<span class="st"> </span><span class="fl">.00001</span> <span class="co"># precision of nugget search</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>nugget.ml &lt;-<span class="st"> </span><span class="kw">optimize_nugget</span>(<span class="dt">X =</span> mod.mat, <span class="dt">V =</span> V, <span class="dt">y =</span> rel.est,</span>
+<span id="cb10-4"><a href="#cb10-4"></a>                                <span class="dt">lower =</span> <span class="dv">0</span>, <span class="dt">upper =</span> <span class="dv">1</span>, <span class="dt">tol =</span> tolr)</span>
+<span id="cb10-5"><a href="#cb10-5"></a>nugget.ml</span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="co">#&gt; [1] 0.168</span></span></code></pre></div>
+<p>Then we can use <code>fitGLS</code> to obtain results.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">## fit GLS </span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>fm.gls &lt;-<span class="st"> </span><span class="kw">fitGLS</span>(<span class="dt">X =</span> mod.mat, <span class="dt">V =</span> V, <span class="dt">y =</span> rel.est, <span class="dt">X0 =</span> X0,</span>
+<span id="cb11-3"><a href="#cb11-3"></a>                     <span class="dt">nugget =</span> nugget.ml)</span></code></pre></div>
+<div id="t-test" class="section level4">
+<h4>t-test</h4>
+<p>Now we’ll use the results to formally test our hypotheses.</p>
+<p>First, we’ll test <span class="math inline">\(H_0:\)</span> “land class <em>i</em> does not have a temporal trend in NDVI.”</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">## Already Done</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="co"># # add in pvalues (this will eventually be done with classes internally)</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="co"># fm.gls$pval.t &lt;- sapply(fm.gls$tstat, function(x){</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="co">#   2 * pt(abs(x), df = fm.gls$dft, lower.tail = F)</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="co"># })</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a><span class="co"># # feature names</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a><span class="co"># names(fm.gls$pval.t) &lt;- names(fm.gls$betahat) &lt;- gsub(x = colnames(mod.mat),</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a><span class="co">#                                                       pattern = &quot;land&quot;, </span></span>
+<span id="cb12-9"><a href="#cb12-9"></a><span class="co">#                                                       replacement = &quot;&quot;)</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a><span class="co"># </span></span>
+<span id="cb12-11"><a href="#cb12-11"></a><span class="co"># # print p-values</span></span>
+<span id="cb12-12"><a href="#cb12-12"></a><span class="co"># cbind(&quot;pt&quot; = fm.gls$pval.t) # fail to reject H0 for all land classes</span></span>
+<span id="cb12-13"><a href="#cb12-13"></a></span>
+<span id="cb12-14"><a href="#cb12-14"></a></span>
+<span id="cb12-15"><a href="#cb12-15"></a><span class="co">## t-test of ndvi change by land class:</span></span>
+<span id="cb12-16"><a href="#cb12-16"></a>t.table =<span class="st"> </span><span class="kw">cbind</span>(<span class="st">&quot;coef&quot;</span> =<span class="st"> </span>fm.gls<span class="op">$</span>betahat,</span>
+<span id="cb12-17"><a href="#cb12-17"></a>                <span class="st">&quot;SE&quot;</span> =<span class="st"> </span>fm.gls<span class="op">$</span>SE,</span>
+<span id="cb12-18"><a href="#cb12-18"></a>                <span class="st">&quot;t stat&quot;</span> =<span class="st"> </span>fm.gls<span class="op">$</span>tstat,</span>
+<span id="cb12-19"><a href="#cb12-19"></a>                <span class="st">&quot;t pval&quot;</span> =<span class="st"> </span>fm.gls<span class="op">$</span>pval.t)</span>
+<span id="cb12-20"><a href="#cb12-20"></a><span class="kw">rownames</span>(t.table) =<span class="st"> </span><span class="kw">levels</span>(ndvi_AK3000<span class="op">$</span>land)</span>
+<span id="cb12-21"><a href="#cb12-21"></a>t.table</span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="co">#&gt;                 coef      SE   t stat t pval</span></span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="co">#&gt; Shrubland  0.0006584 0.01047  0.06288 0.9499</span></span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="co">#&gt; Savanna   -0.0036208 0.01049 -0.34503 0.7301</span></span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="co">#&gt; Grassland  0.0017393 0.01042  0.16693 0.8674</span></span></code></pre></div>
+<p>We are not able to reject <span class="math inline">\(H_0\)</span> at <span class="math inline">\(\alpha = .05\)</span> for any land class.</p>
+</div>
+<div id="f-test" class="section level4">
+<h4>F-test</h4>
+<p>But, let’s test <span class="math inline">\(H_0:\)</span> “there is no overall effect of land class on NDVI trend”</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">## Already done</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="co">#   # F-test</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="co"># fm.gls$pval.F &lt;- pf(fm.gls$Fstat, df1 = fm.gls$df.F[1], df2 = fm.gls$df.F[2], </span></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="co">#                     lower.tail = FALSE)</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="co"># </span></span>
+<span id="cb13-6"><a href="#cb13-6"></a><span class="co"># # ## print the coefficients</span></span>
+<span id="cb13-7"><a href="#cb13-7"></a><span class="co"># # round(fm.gls$betahat, 4)</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a><span class="co"># </span></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="co"># # F-test ## H0: no change in NDVI over time for all of AK3000</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a><span class="co"># round(cbind(&quot;F&quot; = fm.gls$Fstat, &quot;pval&quot; = fm.gls$pval.F), 4) # reject H0</span></span>
+<span id="cb13-11"><a href="#cb13-11"></a></span>
+<span id="cb13-12"><a href="#cb13-12"></a><span class="co">## F test of our land class model vs a null (intercept only) model</span></span>
+<span id="cb13-13"><a href="#cb13-13"></a>F.table =<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;model&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;full&quot;</span>, <span class="st">&quot;null&quot;</span>),</span>
+<span id="cb13-14"><a href="#cb13-14"></a>                     <span class="st">&quot;df&quot;</span> =<span class="st"> </span>fm.gls<span class="op">$</span>df.F, </span>
+<span id="cb13-15"><a href="#cb13-15"></a>                     <span class="st">&quot;SSE&quot;</span> =<span class="st"> </span><span class="kw">c</span>(fm.gls<span class="op">$</span>SSE, fm.gls<span class="op">$</span>SSE0),</span>
+<span id="cb13-16"><a href="#cb13-16"></a>                     <span class="st">&quot;MSE&quot;</span> =<span class="st"> </span><span class="kw">c</span>(fm.gls<span class="op">$</span>MSE, fm.gls<span class="op">$</span>MSE0),</span>
+<span id="cb13-17"><a href="#cb13-17"></a>                     <span class="st">&quot;loglik&quot;</span> =<span class="st"> </span><span class="kw">c</span>(fm.gls<span class="op">$</span>logLik, fm.gls<span class="op">$</span>logLik0),</span>
+<span id="cb13-18"><a href="#cb13-18"></a>                     <span class="st">&quot;F stat&quot;</span> =<span class="st"> </span><span class="kw">c</span>(fm.gls<span class="op">$</span>Fstat, <span class="ot">NA</span>),</span>
+<span id="cb13-19"><a href="#cb13-19"></a>                     <span class="st">&quot;pval F&quot;</span> =<span class="st"> </span><span class="kw">c</span>(fm.gls<span class="op">$</span>pval.F, <span class="ot">NA</span>)</span>
+<span id="cb13-20"><a href="#cb13-20"></a>                     )</span>
+<span id="cb13-21"><a href="#cb13-21"></a>F.table</span>
+<span id="cb13-22"><a href="#cb13-22"></a><span class="co">#&gt;   model   df   SSE       MSE loglik F.stat   pval.F</span></span>
+<span id="cb13-23"><a href="#cb13-23"></a><span class="co">#&gt; 1  full    2 2.753 0.0009188   7533   5.72 0.003314</span></span>
+<span id="cb13-24"><a href="#cb13-24"></a><span class="co">#&gt; 2  null 2997 2.764 0.0009223   7526     NA       NA</span></span></code></pre></div>
+<p>We are, however, able to reject this <span class="math inline">\(H_0\)</span> that all land classes have the same effect on NDVI trend for this data set at <span class="math inline">\(\alpha = .05\)</span>.</p>
+</div>
+<div id="overall-time-trend-effect" class="section level4">
+<h4>Overall time trend effect</h4>
+<p>Next, we will redo the GLS steps to test the hypothesis <span class="math inline">\(H_0\)</span>: “there is no overall time trend in NDVI for the map”</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="co">## build model matrix</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>form2 =<span class="st"> &quot;rel.est ~ 1&quot;</span> <span class="co"># same as null model</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>mod.mat2 &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(<span class="dt">object =</span> <span class="kw">formula</span>(form2), <span class="dt">data =</span> ndvi_AK3000)</span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="co">#@ null model </span></span>
+<span id="cb14-5"><a href="#cb14-5"></a>form02 =<span class="st"> &quot;rel.est ~ 1&quot;</span> <span class="co">#(intercept only)</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a>X02 &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(<span class="dt">object =</span> <span class="kw">formula</span>(form02), <span class="dt">data =</span> ndvi_AK3000)</span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="co">## ML nugget</span></span>
+<span id="cb14-8"><a href="#cb14-8"></a>nugget.ml2 &lt;-<span class="st"> </span><span class="kw">optimize_nugget</span>(<span class="dt">X =</span> mod.mat2, <span class="dt">V =</span> V, <span class="dt">y =</span> rel.est,</span>
+<span id="cb14-9"><a href="#cb14-9"></a>                                <span class="dt">lower =</span> <span class="dv">0</span>, <span class="dt">upper =</span> <span class="dv">1</span>, <span class="dt">tol =</span> tolr)</span>
+<span id="cb14-10"><a href="#cb14-10"></a><span class="co">## GLS</span></span>
+<span id="cb14-11"><a href="#cb14-11"></a>fm.gls2 &lt;-<span class="st"> </span><span class="kw">fitGLS</span>(<span class="dt">X =</span> mod.mat2, <span class="dt">V =</span> V, <span class="dt">y =</span> rel.est, <span class="dt">X0 =</span> X02,</span>
+<span id="cb14-12"><a href="#cb14-12"></a>                     <span class="dt">nugget =</span> nugget.ml2)</span>
+<span id="cb14-13"><a href="#cb14-13"></a><span class="co">## t-test of ndvi change by land class:</span></span>
+<span id="cb14-14"><a href="#cb14-14"></a>t.table2 =<span class="st"> </span><span class="kw">cbind</span>(<span class="st">&quot;coef&quot;</span> =<span class="st"> </span>fm.gls2<span class="op">$</span>betahat,</span>
+<span id="cb14-15"><a href="#cb14-15"></a>                <span class="st">&quot;SE&quot;</span> =<span class="st"> </span>fm.gls2<span class="op">$</span>SE,</span>
+<span id="cb14-16"><a href="#cb14-16"></a>                <span class="st">&quot;t stat&quot;</span> =<span class="st"> </span>fm.gls2<span class="op">$</span>tstat,</span>
+<span id="cb14-17"><a href="#cb14-17"></a>                <span class="st">&quot;t pval&quot;</span> =<span class="st"> </span>fm.gls2<span class="op">$</span>pval.t)</span>
+<span id="cb14-18"><a href="#cb14-18"></a>t.table2</span>
+<span id="cb14-19"><a href="#cb14-19"></a><span class="co">#&gt;           coef      SE  t stat t pval</span></span>
+<span id="cb14-20"><a href="#cb14-20"></a><span class="co">#&gt; [1,] 0.0006774 0.01063 0.06372 0.9492</span></span></code></pre></div>
+<p>We are unable to reject <span class="math inline">\(H_0\)</span>.</p>
+</div>
+<div id="partitioned-gls" class="section level4">
+<h4>Partitioned GLS</h4>
+<p>For extremely large data sets, computational constraints such as limited memory, make it desirable to use a partitioned version of the GLS analysis. This version of the method splits the data into <code>npart</code> random and non-overlapping sub-sets by site and then calculates cross-partition statistics on <em>nc</em> pairs of partitions (according to <code>mincross</code>) and summarizes the results with a correlated F-test.</p>
+<p>The function that performs this analysis is the wrapper <code>fitGLS.partition</code>. What follows is a short example of how to perform this method with the <code>Alaska3000</code> data set but is not necessarily indicative of how users would want to use it in practice. See “More on the partitioned GLS method” for further clarification.</p>
+<p>Note that, In the below function, a full distance matrix <code>Dist</code> is needed as an input. For larger data sets, it will not be feasible to include the full matrix. The next section addresses this issue.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">## run the parittioned analysis</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>results.cpp &lt;-<span class="st"> </span><span class="kw">fitGLS.partition_rcpp</span>(<span class="dt">X =</span> mod.mat, <span class="dt">y =</span> rel.est, <span class="dt">X0 =</span> X0, <span class="dt">Dist =</span> D,</span>
+<span id="cb15-3"><a href="#cb15-3"></a>                                 <span class="dt">spatcor =</span> r.est<span class="op">$</span>spatialcor, <span class="dt">Vfit.fun =</span> meth,</span>
+<span id="cb15-4"><a href="#cb15-4"></a>                                 <span class="dt">npart =</span> <span class="dv">5</span>, <span class="dt">mincross =</span> <span class="dv">4</span>, <span class="dt">nug.int =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb15-5"><a href="#cb15-5"></a>                                 <span class="dt">nug.tol =</span> tolr, <span class="dt">workerB_cpp =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<p>Here are the F-test results for each partition:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># F tests for each partition</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">t</span>(<span class="kw">sapply</span>(results.cpp<span class="op">$</span>part_results, <span class="cf">function</span>(x){<span class="kw">c</span>(<span class="st">&quot;F&quot;</span> =<span class="st"> </span><span class="kw">round</span>(x<span class="op">$</span>Fstat, <span class="dv">4</span>), </span>
+<span id="cb16-3"><a href="#cb16-3"></a>                                           <span class="st">&quot;pval&quot;</span> =<span class="st"> </span><span class="kw">round</span>(x<span class="op">$</span>pval.F, <span class="dv">4</span>))}))</span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="co">#&gt;            F   pval</span></span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="co">#&gt; [1,]  2.6959 0.0683</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a><span class="co">#&gt; [2,]  1.3966 0.2482</span></span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="co">#&gt; [3,]  0.7854 0.4564</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a><span class="co">#&gt; [4,] 14.6469 0.0000</span></span>
+<span id="cb16-9"><a href="#cb16-9"></a><span class="co">#&gt; [5,]  1.1176 0.3278</span></span></code></pre></div>
+<p>and the summary F-test:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co"># Cross-partition F test</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>pval.Fpart &lt;-<span class="st"> </span><span class="kw">GLS.partition.pvalue</span>(results.cpp, <span class="dt">nboot =</span> <span class="dv">2000</span>)</span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="kw">round</span>(<span class="kw">cbind</span>(<span class="st">&quot;Fmean&quot;</span> =<span class="st"> </span>results.cpp<span class="op">$</span>Fmean, <span class="st">&quot;pval&quot;</span> =<span class="st"> </span>pval.Fpart<span class="op">$</span>pF.boot<span class="op">$</span>pvalue), <span class="dv">4</span>)</span>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="co">#&gt;      Fmean   pval</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a><span class="co">#&gt; [1,] 4.128 0.0005</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="more-on-the-partitioned-gls-method" class="section level2">
+<h2>More on the partitioned GLS method</h2>
+<p>Here, we will provide a description of how to use the individual functions for the partitioned GLS method. Using the following code will allow you to only use the relevant parts of the large matrices (e.g. <code>Dist</code>) at any given time to save memory. It also allows for parallelization possibilities.</p>
+<p>First, we will use <code>sample_partitions()</code> to get a sample of the pixels to use for each subset. The result is a matrix with columns containing pixel IDs. Each column corresponds to a different partition.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># segment dataset into 4 equal-sized partitions:</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>part.mat &lt;-<span class="st"> </span><span class="kw">sample_partitions</span>(<span class="kw">nrow</span>(mod.mat), <span class="dt">npart =</span> <span class="dv">4</span>)</span>
+<span id="cb18-3"><a href="#cb18-3"></a><span class="co">#&gt; [1] &quot;calculating partsize&quot;</span></span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="co"># part.mat &lt;- sample_partitions(nrow(mod.mat), partsize = 1000)</span></span></code></pre></div>
+<p>Then, we will calculate the degrees of freedom with <code>calc_df()</code>, and perform GLS on each partition with <code>GLS_worker()</code>. The main arguments that <code>GLS_worker()</code> needs are similar to those needed by <code>fitGLS()</code>: a response <code>y</code>, a model matrix of predictors <code>X</code>, a null model matrix <code>X0</code> to compare against, and a variance matrix <code>V</code>. Each input is partition-specific.</p>
+<p>The difference between <code>GLS_worker()</code> and <code>fitGLS()</code> is that <code>fitGLS()</code> needs a nugget to be input (defaults to 0) while <code>GLS_worker()</code> finds the maximum likelihood estimator of the nugget internally.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co"># optimize_nugget(mod.mat, V, rel.est)</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="co"># nugget.fit(rel.est ~ 0 + mod.mat, data.frame(rel.est, mod.mat), V)</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a></span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="co"># mod.mat</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a><span class="co"># V</span></span>
+<span id="cb19-6"><a href="#cb19-6"></a><span class="co"># rel.est</span></span>
+<span id="cb19-7"><a href="#cb19-7"></a></span>
+<span id="cb19-8"><a href="#cb19-8"></a>partition =<span class="st"> </span>part.mat[, <span class="dv">1</span>]</span>
+<span id="cb19-9"><a href="#cb19-9"></a></span>
+<span id="cb19-10"><a href="#cb19-10"></a>y.tmp =<span class="st"> </span>rel.est[partition]</span>
+<span id="cb19-11"><a href="#cb19-11"></a>X.tmp =<span class="st"> </span>mod.mat[partition, ]</span>
+<span id="cb19-12"><a href="#cb19-12"></a>D.tmp =<span class="st"> </span>D[partition, partition]</span>
+<span id="cb19-13"><a href="#cb19-13"></a>V.tmp =<span class="st"> </span>V[partition, partition]</span>
+<span id="cb19-14"><a href="#cb19-14"></a></span>
+<span id="cb19-15"><a href="#cb19-15"></a>loc.tmp =<span class="st"> </span>location[partition, ]</span>
+<span id="cb19-16"><a href="#cb19-16"></a></span>
+<span id="cb19-17"><a href="#cb19-17"></a>D.tmp2 =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.tmp)<span class="op">/</span><span class="dv">1000</span></span>
+<span id="cb19-18"><a href="#cb19-18"></a><span class="kw">all.equal</span>(D.tmp, D.tmp2)</span>
+<span id="cb19-19"><a href="#cb19-19"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb19-20"><a href="#cb19-20"></a>V.tmp2 =<span class="st"> </span><span class="kw">fitV</span>(D.tmp2, r.est<span class="op">$</span>spatialcor, <span class="st">&quot;exponential-power&quot;</span>)</span>
+<span id="cb19-21"><a href="#cb19-21"></a><span class="kw">all.equal</span>(V.tmp, V.tmp2)</span>
+<span id="cb19-22"><a href="#cb19-22"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb19-23"><a href="#cb19-23"></a></span>
+<span id="cb19-24"><a href="#cb19-24"></a><span class="kw">optimize_nugget</span>(X.tmp, V.tmp, y.tmp, <span class="dt">debug =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb19-25"><a href="#cb19-25"></a><span class="co">#&gt; [1] 0.2031</span></span>
+<span id="cb19-26"><a href="#cb19-26"></a><span class="co"># fitNugget(X.tmp, V.tmp, y.tmp)</span></span>
+<span id="cb19-27"><a href="#cb19-27"></a><span class="co"># nugget.fit(y.tmp ~ 0 + X.tmp, data = data.frame(y.tmp, X.tmp), V.tmp)</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># calculate degrees of freedom up front</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a>dfs &lt;-<span class="st"> </span><span class="kw">calc_dfpart</span>(<span class="dt">partsize =</span> <span class="kw">nrow</span>(part.mat), </span>
+<span id="cb20-3"><a href="#cb20-3"></a>               <span class="dt">p =</span> <span class="kw">ncol</span>(mod.mat), </span>
+<span id="cb20-4"><a href="#cb20-4"></a>               <span class="dt">p0 =</span> <span class="kw">ncol</span>(X0))</span>
+<span id="cb20-5"><a href="#cb20-5"></a>df1 &lt;-<span class="st"> </span>dfs[<span class="dv">1</span>]</span>
+<span id="cb20-6"><a href="#cb20-6"></a>df2 &lt;-<span class="st"> </span>dfs[<span class="dv">2</span>]</span>
+<span id="cb20-7"><a href="#cb20-7"></a></span>
+<span id="cb20-8"><a href="#cb20-8"></a><span class="co"># make empty list to store the output</span></span>
+<span id="cb20-9"><a href="#cb20-9"></a>part.results &lt;-<span class="st"> </span><span class="kw">list</span>() </span>
+<span id="cb20-10"><a href="#cb20-10"></a></span>
+<span id="cb20-11"><a href="#cb20-11"></a><span class="co"># Use GLS worker function on each partition</span></span>
+<span id="cb20-12"><a href="#cb20-12"></a><span class="cf">for</span>(part <span class="cf">in</span> <span class="kw">seq_len</span>(<span class="kw">ncol</span>(part.mat))){</span>
+<span id="cb20-13"><a href="#cb20-13"></a>  <span class="co">## index setup</span></span>
+<span id="cb20-14"><a href="#cb20-14"></a>  subs =<span class="st"> </span>part.mat[, part] <span class="co"># current subset index</span></span>
+<span id="cb20-15"><a href="#cb20-15"></a>  X.sub =<span class="st"> </span>mod.mat[subs, ] <span class="co"># current subset of model matrix</span></span>
+<span id="cb20-16"><a href="#cb20-16"></a>  y.sub =<span class="st"> </span>rel.est[subs] <span class="co"># current subset of Y</span></span>
+<span id="cb20-17"><a href="#cb20-17"></a>  loc.sub =<span class="st"> </span>location[subs, ] <span class="co"># current coordinates</span></span>
+<span id="cb20-18"><a href="#cb20-18"></a>  X0.sub =<span class="st"> </span>X0[subs, ] <span class="co"># current subset of X0</span></span>
+<span id="cb20-19"><a href="#cb20-19"></a>  <span class="co">## calculate variance matrix</span></span>
+<span id="cb20-20"><a href="#cb20-20"></a>  D.sub =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.sub)<span class="op">/</span><span class="dv">1000</span> <span class="co"># distance between subset points</span></span>
+<span id="cb20-21"><a href="#cb20-21"></a>  V.sub =<span class="st"> </span><span class="kw">fitV</span>(D.sub, <span class="dt">spatialcor =</span> r.est<span class="op">$</span>spatialcor, </span>
+<span id="cb20-22"><a href="#cb20-22"></a>               <span class="dt">method =</span> <span class="st">&quot;exponential-power&quot;</span>) <span class="co"># variance of subset points</span></span>
+<span id="cb20-23"><a href="#cb20-23"></a>  <span class="co">## obtain GLS results</span></span>
+<span id="cb20-24"><a href="#cb20-24"></a>  part.results[[part]] &lt;-<span class="st"> </span><span class="kw">GLS_worker</span>(y.sub, X.sub, V.sub, X0.sub,</span>
+<span id="cb20-25"><a href="#cb20-25"></a>                                     <span class="dt">save_xx =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb20-26"><a href="#cb20-26"></a>}</span></code></pre></div>
+<p>The list <code>part.results</code> now has 4 elements - one for each partition - which are GLS output lists (i.e. results for partition 1 are stored in <code>part.results[[1]]</code>).</p>
+<p>Then, for each pair of GLS partition results, we can get the cross-partition statistics with <code>crosspart_worker()</code>. This function takes as input (1) statistics returned by <code>GLS_worker()</code> (including the nugget estimate), (2) degrees of freedom, and (3) the cross-partition variance matrix <code>V.ij</code> which can be obtained from a matrix of distances between points from subsets <code>i</code> and <code>j</code>:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># make empty list for cross-partition results</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>cross.results =<span class="st"> </span><span class="kw">list</span>()</span>
+<span id="cb21-3"><a href="#cb21-3"></a></span>
+<span id="cb21-4"><a href="#cb21-4"></a><span class="co"># use crosspart_worker() to get cross-partition statistics</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a><span class="cf">for</span>(cross <span class="cf">in</span> <span class="kw">seq_len</span>(<span class="kw">length</span>(part.results) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)){ <span class="co"># each consecutive pair of partitions</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>  <span class="co">## index setup</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>  i =<span class="st"> </span>cross <span class="co"># first partition</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a>  j =<span class="st"> </span>cross <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="co"># second partition</span></span>
+<span id="cb21-9"><a href="#cb21-9"></a>  subs.i =<span class="st"> </span>part.mat[, i] <span class="co"># index for part i</span></span>
+<span id="cb21-10"><a href="#cb21-10"></a>  subs.j =<span class="st"> </span>part.mat[, j] <span class="co"># index for part j</span></span>
+<span id="cb21-11"><a href="#cb21-11"></a>  <span class="co">## GLS_worker() output</span></span>
+<span id="cb21-12"><a href="#cb21-12"></a>  Li =<span class="st"> </span>part.results[[i]] <span class="co"># list containing partition results i</span></span>
+<span id="cb21-13"><a href="#cb21-13"></a>  Lj =<span class="st"> </span>part.results[[j]] <span class="co"># list containing partition results j</span></span>
+<span id="cb21-14"><a href="#cb21-14"></a>  <span class="co">## Obtain V.ij</span></span>
+<span id="cb21-15"><a href="#cb21-15"></a>  loc.i =<span class="st"> </span>location[subs.i, ] <span class="co"># coordinates of i</span></span>
+<span id="cb21-16"><a href="#cb21-16"></a>  loc.j =<span class="st"> </span>location[subs.j, ] <span class="co"># coordinates of j</span></span>
+<span id="cb21-17"><a href="#cb21-17"></a>  D.ij =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.i, loc.j) <span class="co"># distance between i and j</span></span>
+<span id="cb21-18"><a href="#cb21-18"></a>  V.ij =<span class="st"> </span><span class="kw">fitV</span>(D.ij, r.est<span class="op">$</span>spatialcor) <span class="co"># variance matrix ij</span></span>
+<span id="cb21-19"><a href="#cb21-19"></a>  <span class="co">## obtain cross-partition results</span></span>
+<span id="cb21-20"><a href="#cb21-20"></a>  cross.results[[cross]] =<span class="st"> </span><span class="kw">crosspart_worker</span>(<span class="dt">xxi =</span> Li<span class="op">$</span>xx, <span class="dt">xxj =</span> Lj<span class="op">$</span>xx,</span>
+<span id="cb21-21"><a href="#cb21-21"></a>                                            <span class="dt">xxi0 =</span> Li<span class="op">$</span>xx0, <span class="dt">xxj0 =</span> Lj<span class="op">$</span>xx0,</span>
+<span id="cb21-22"><a href="#cb21-22"></a>                                            <span class="dt">invChol_i =</span> Li<span class="op">$</span>invcholV,</span>
+<span id="cb21-23"><a href="#cb21-23"></a>                                            <span class="dt">invChol_j =</span> Lj<span class="op">$</span>invcholV,</span>
+<span id="cb21-24"><a href="#cb21-24"></a>                                            <span class="dt">nug_i =</span> Li<span class="op">$</span>nugget,</span>
+<span id="cb21-25"><a href="#cb21-25"></a>                                            <span class="dt">nug_j =</span> Lj<span class="op">$</span>nugget,</span>
+<span id="cb21-26"><a href="#cb21-26"></a>                                            <span class="dt">Vsub =</span> V.ij,</span>
+<span id="cb21-27"><a href="#cb21-27"></a>                                            <span class="dt">df1 =</span> df1, <span class="dt">df2 =</span> df2)</span>
+<span id="cb21-28"><a href="#cb21-28"></a>}</span></code></pre></div>
+<p><code>crosspart_worker()</code> is usually much faster than <code>GLS_worker()</code>.</p>
+<p>Finally, we can calculate some average statistics for the entire analysis by using <code>sapply()</code> to summarize across lists and then perform our hypothesis test:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="co">## Average partition stats </span></span>
+<span id="cb22-2"><a href="#cb22-2"></a>F.mean =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>Fstat})) <span class="co"># average partition F</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a>coef.means =<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>betahat})) <span class="co"># coef est (land class)</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a>coef0.mean =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>betahat0})) <span class="co"># null coefs</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>part.SEs =<span class="st"> </span><span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>SE}) <span class="co"># partition standard errors</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a></span>
+<span id="cb22-7"><a href="#cb22-7"></a><span class="co">## average cross-partition stats</span></span>
+<span id="cb22-8"><a href="#cb22-8"></a>rcoef.mean =<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rcoef})) <span class="co">#cross-coef for conf ints</span></span>
+<span id="cb22-9"><a href="#cb22-9"></a>rSSR =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rSSRij})) <span class="co"># regression sum of squares</span></span>
+<span id="cb22-10"><a href="#cb22-10"></a>rSSE =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rSSEij})) <span class="co"># residual sum of squares</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a></span>
+<span id="cb22-12"><a href="#cb22-12"></a></span>
+<span id="cb22-13"><a href="#cb22-13"></a><span class="co"># calculate the correlated test statistics</span></span>
+<span id="cb22-14"><a href="#cb22-14"></a><span class="co">## correlated chisquared test: are trends different among land class?</span></span>
+<span id="cb22-15"><a href="#cb22-15"></a>(<span class="dt">p.chisqr =</span> <span class="kw">cor_chisq</span>(F.mean, rSSR, df1, <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat)) )</span>
+<span id="cb22-16"><a href="#cb22-16"></a><span class="co">#&gt; [1] 0.00004985</span></span>
+<span id="cb22-17"><a href="#cb22-17"></a><span class="co"># correlated F test: are trends different among land class?</span></span>
+<span id="cb22-18"><a href="#cb22-18"></a>(<span class="dt">p.corF =</span> <span class="kw">boot_corF</span>(F.mean, rSSR, rSSE, df1, df2, </span>
+<span id="cb22-19"><a href="#cb22-19"></a>                                  <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat), <span class="dt">nboot =</span> <span class="dv">2000</span>) )</span>
+<span id="cb22-20"><a href="#cb22-20"></a><span class="co">#&gt; $pvalue</span></span>
+<span id="cb22-21"><a href="#cb22-21"></a><span class="co">#&gt; [1] 0.0005</span></span>
+<span id="cb22-22"><a href="#cb22-22"></a><span class="co">#&gt; </span></span>
+<span id="cb22-23"><a href="#cb22-23"></a><span class="co">#&gt; $nboot</span></span>
+<span id="cb22-24"><a href="#cb22-24"></a><span class="co">#&gt; [1] 2000</span></span>
+<span id="cb22-25"><a href="#cb22-25"></a><span class="co">#&gt; </span></span>
+<span id="cb22-26"><a href="#cb22-26"></a><span class="co">#&gt; $rank.MSR</span></span>
+<span id="cb22-27"><a href="#cb22-27"></a><span class="co">#&gt; [1] NA</span></span>
+<span id="cb22-28"><a href="#cb22-28"></a><span class="co"># t-test: are trends in land classes different from 0?</span></span>
+<span id="cb22-29"><a href="#cb22-29"></a>(<span class="dt">t.test =</span> <span class="kw">cor_t</span>(<span class="dt">coef =</span> coef.means, <span class="dt">part.SEs =</span> part.SEs, </span>
+<span id="cb22-30"><a href="#cb22-30"></a>                                   <span class="dt">rcoef =</span> rcoef.mean, </span>
+<span id="cb22-31"><a href="#cb22-31"></a>                   <span class="dt">df2 =</span> df2, <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat)))</span>
+<span id="cb22-32"><a href="#cb22-32"></a><span class="co">#&gt;          coefs       se  tscore      P</span></span>
+<span id="cb22-33"><a href="#cb22-33"></a><span class="co">#&gt; [1,]  0.001912 0.004461  0.4287 0.6682</span></span>
+<span id="cb22-34"><a href="#cb22-34"></a><span class="co">#&gt; [2,] -0.005365 0.004499 -1.1924 0.2332</span></span>
+<span id="cb22-35"><a href="#cb22-35"></a><span class="co">#&gt; [3,]  0.001135 0.004405  0.2576 0.7967</span></span></code></pre></div>
+<p><code>fitGLS_partition()</code> <strong>WILL</strong> (eventually) do all of this behind the scenes but it may be important when analyzing extremely large data sets to know how the individual components work together. The above steps could be easily extended for distributed or parallel computing which may be necessary if (A) the entire data set cannot be processed in memory and/or (B) processing time is important and many individual computers or cores are available.</p>
+<p>For example, each subset partition (say, 100K pixels) could be run through <code>GLS_worker()</code> separately, output could be saved to individual files, memory could be cleaned or recycled at each step. Then, you could load the output files, 2 at a time, and run them through <code>crosspart_worker()</code>, saving the cross-partition results to files and cleaning up memory after each pair.</p>
+<p>Average statistics (<code>F.mean</code>, <code>rSSR</code>, etc) could then be calculated by looping through the files and keeping only the relevant statistics in memory (or writing them to separate files).</p>
+<p>We will not discuss this type of parallelization or distributed computing in detail here but simply note that implementing this functionality could be trivially simple. That being said, minimal multi-core functionality is implemented internally through the C++ libraries <code>Eigen</code> and <code>openMP</code> (<strong>NOTE</strong> this is still not reliably present in the package but will be soon).</p>
+<!-- # Debugging remotePARTS fitGLS_parititon functions -->
+<!-- There are some discrepancies between my output and Tony's, so I'm going to try -->
+<!-- to solve the problem.  -->
+<div id="fitgls_partition" class="section level3">
+<h3><code>fitGLS_partition()</code></h3>
+<p><strong>NOTE</strong> This section still needs work</p>
+<p>The previous example of <code>fitGLS_partiton()</code> was performed on the AK3000 dataset which was loaded into memory. As stated earlier, this may not be feasible for large datasets. Luckily, <code>fitGLS_partition()</code> has functionality to address this problem.</p>
+<p>but requires a RasterStack or CSV as input (to prevent loading the entire dataset into memory)</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">## Test of using a function as an argument to a function</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a></span>
+<span id="cb23-3"><a href="#cb23-3"></a>loc =<span class="st"> </span>location[<span class="kw">sample</span>(<span class="dt">x =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(location), <span class="dt">size =</span> <span class="dv">50</span>), ]</span>
+<span id="cb23-4"><a href="#cb23-4"></a>loc2 =<span class="st"> </span>location[<span class="kw">sample</span>(<span class="dt">x =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(location), <span class="dt">size =</span> <span class="dv">50</span>),]</span>
+<span id="cb23-5"><a href="#cb23-5"></a></span>
+<span id="cb23-6"><a href="#cb23-6"></a></span>
+<span id="cb23-7"><a href="#cb23-7"></a>D =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc)</span>
+<span id="cb23-8"><a href="#cb23-8"></a></span>
+<span id="cb23-9"><a href="#cb23-9"></a>test.dist &lt;-<span class="st"> </span><span class="cf">function</span>(location, <span class="dt">fun =</span> <span class="st">&quot;distm&quot;</span>, ...){</span>
+<span id="cb23-10"><a href="#cb23-10"></a>  <span class="cf">if</span>(<span class="kw">is.character</span>(fun) <span class="op">&amp;&amp;</span><span class="st"> </span>fun <span class="op">==</span><span class="st"> &quot;distm&quot;</span>){<span class="kw">requireNamespace</span>(<span class="st">&quot;geosphere&quot;</span>)}</span>
+<span id="cb23-11"><a href="#cb23-11"></a>  fun &lt;-<span class="st"> </span><span class="kw">match.fun</span>(fun)</span>
+<span id="cb23-12"><a href="#cb23-12"></a>  D =<span class="st"> </span><span class="kw">fun</span>(location, ...)</span>
+<span id="cb23-13"><a href="#cb23-13"></a>  <span class="kw">return</span>(D)</span>
+<span id="cb23-14"><a href="#cb23-14"></a>}</span>
+<span id="cb23-15"><a href="#cb23-15"></a></span>
+<span id="cb23-16"><a href="#cb23-16"></a></span>
+<span id="cb23-17"><a href="#cb23-17"></a><span class="kw">all</span>(D <span class="op">==</span><span class="st"> </span><span class="kw">test.dist</span>(loc))</span>
+<span id="cb23-18"><a href="#cb23-18"></a></span>
+<span id="cb23-19"><a href="#cb23-19"></a>D2 &lt;-<span class="st"> </span><span class="kw">distm</span>(loc, loc2)</span>
+<span id="cb23-20"><a href="#cb23-20"></a></span>
+<span id="cb23-21"><a href="#cb23-21"></a>D.test &lt;-<span class="st"> </span><span class="kw">test.dist</span>(loc, <span class="dt">y =</span> loc2, <span class="dt">fun =</span> <span class="cf">function</span>(x, y){</span>
+<span id="cb23-22"><a href="#cb23-22"></a>  <span class="kw">distm</span>(x, y)</span>
+<span id="cb23-23"><a href="#cb23-23"></a>})</span>
+<span id="cb23-24"><a href="#cb23-24"></a></span>
+<span id="cb23-25"><a href="#cb23-25"></a><span class="kw">all</span>(D2 <span class="op">==</span><span class="st"> </span>D.test)</span>
+<span id="cb23-26"><a href="#cb23-26"></a></span>
+<span id="cb23-27"><a href="#cb23-27"></a>D3 &lt;-<span class="st"> </span><span class="kw">dist</span>(loc)</span></code></pre></div>
+<!-- ## Using Rasters -->
+<!-- ```{r, eval = FALSE} -->
+<!-- ## convert data to raster format -->
+<!-- library(raster) -->
+<!-- # make backbone -->
+<!-- rast.backbone <- raster(xmn = min(location$lng), xmx = max(location$lng), -->
+<!--                         ymn = min(location$lat), ymx = max(location$lat), -->
+<!--                         ncol = length(unique(location$lng)), -->
+<!--                         nrow = length(unique(location$lat)), -->
+<!--                         # nrow = 1e4, ncol = 1e4 ## use 1e8 pixels -->
+<!--                         ) -->
+<!-- # initialize RasterStack -->
+<!-- AK.stack <- stack() -->
+<!-- # add layer for each column of X -->
+<!-- for(i in 1:ncol(X)){ -->
+<!--   # create raster from data and raster backbone -->
+<!--   AK.rast <- rasterize(as.matrix(location), rast.backbone, X[,i], fun = mean) -->
+<!--   AK.rast <- trim(AK.rast, internal = TRUE) -->
+<!--   names(AK.rast) <- colnames(X)[i] -->
+<!--   # add raster as layer to the stack -->
+<!--   AK.stack <- addLayer(AK.stack, AK.rast) -->
+<!-- } -->
+<!-- writeRaster(AK.stack, "../data/AK-RasterStack.grd", overwrite = TRUE) -->
+<!-- AK.stack <- brick("../data/AK-RasterStack.grd") -->
+<!-- canProcessInMemory(AK.stack) -->
+<!-- land.class <- factor((mod.mat %*% (1:ncol(mod.mat))) + 1,  -->
+<!--          labels = c(colnames(mod.mat))) -->
+<!-- land.raster <- rasterize(as.matrix(location), rast.backbone, as.numeric(land.class)) -->
+<!-- ``` -->
+<!-- Since our raster files are mostly ocean, the grid is comprised of mostly empty cells: -->
+<!-- ```{r, eval = FALSE} -->
+<!-- summary(AK.stack[[1]]) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- # calculate the CLS coefficient for the raster file -->
+<!-- CLS.rast = calc(AK.stack,  -->
+<!--                 function(x){if(is.na(x[1])){NA -->
+<!--                 }else{ -->
+<!--                   fitCLS(x, t = 1:nlayers(AK.stack))$coef["time", "Estimate"]} -->
+<!--                 }) -->
+<!-- ## First, make a list of the data cells to include -->
+<!-- # I'll simply do this by selecting the cells that are not NA in the first layer -->
+<!-- dat.indx <- which(!is.na(values(AK.stack[[1]]))) -->
+<!-- part.mat <- sample_partitions(pixels = dat.indx, npart = 4) -->
+<!-- # exctract pixels from first partition -->
+<!-- rast.sub <- extract(AK.stack, part.mat[,1]) -->
+<!-- rast.sub[1:5, 1:5] #head(rast.sub) -->
+<!-- y.sub = extract(CLS.rast, part.mat[,1]) -->
+<!-- land  = extract(land.raster, part.mat[, 1]) -->
+<!-- mm = model.matrix(~ 0 + factor(land)) -->
+<!-- colnames(mm) <- levels(land.class) -->
+<!-- loc = xyFromCell(CLS.rast, cell = part.mat[, 1]) -->
+<!-- r.est = fit_spatialcor(X = rast.sub, t = 1:nlayers(AK.stack), location = loc) -->
+<!-- D = geosphere::distm(loc) -->
+<!-- V = fitV(D, spatialcor = r.est$spatialcor) -->
+<!-- dfs <- calc_df(nrow(part.mat), p = ncol(X), p0 = ncol(X0)) -->
+<!-- ## and then the rast.sub can be used just like a matrix in GLS -->
+<!-- X0 = cbind(rep(1, length(y.sub))) -->
+<!-- (out.GLS <- GLS_worker(y = y.sub, X = mm, V = V, X0 = X0)) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- N = 2e8 #200Mill pixels -->
+<!-- rasterfile = "../raster-test.grd" -->
+<!-- tmp <- raster(ncol = sqrt(N), nrow = sqrt(N)) -->
+<!-- writeRaster(x = tmp, filename = rasterfile, overwrite = TRUE) -->
+<!-- tmp <- raster(rasterfile) -->
+<!-- tmp[50] <-  1 -->
+<!-- which(!is.na(values(tmp))) -->
+<!-- extract(tmp, 50) -->
+<!-- ``` -->
+<!-- <!-- ## Old Code / Test Code:  -->
+<p>–&gt;</p>
+<!-- ```{r, echo = FALSE, eval = FALSE} -->
+<!-- ## shows that the correlated chisqr test is randombly distributed about 0 -->
+<!-- ## when it is sufficiently low.  -->
+<!-- F.means = seq(50, .1, length.out = 100) -->
+<!-- p.vals <- sapply(F.means, function(x){ -->
+<!--   correlated.chisq(x, rSSR, df1, ncol(part.mat)) -->
+<!-- }) -->
+<!-- plot(x = F.means[1:95], y = p.vals[1:95]) -->
+<!-- ``` -->
+<!-- <!-- However, this dataset is very small and results can vary: lets look at a few -->
+<p>–&gt; <!-- <!-- different subsets of `ndvi_AK`, each of 3000 sites. --> –&gt;</p>
+<!-- ```{r, eval = FALSE, echo = FALSE} -->
+<!-- data("ndvi_AK") -->
+<!-- ndvi_AK <- ndvi_AK[!ndvi_AK$rare.land, ] -->
+<!-- ndvi_AK$land <- droplevels(ndvi_AK$land) -->
+<!-- ## 4 different subsets -->
+<!-- subs <- matrix(sample.int(n = nrow(ndvi_AK), size = 3000 * 4, replace = FALSE),  -->
+<!--                nrow = 3000) -->
+<!-- ## Apply the test to 4 different subsets of 3000 AK sites -->
+<!-- Ftest_sub <- sapply(1:ncol(subs), function(i){ -->
+<!--   ss = sample.int(n = nrow(ndvi_AK), size = 3000, replace = FALSE) -->
+<!--   AKsub <- ndvi_AK[ss, ] -->
+<!--   loc_i <- AKsub[, c("lng", "lat")] -->
+<!--   Xsub <-  as.matrix(AKsub[, 7:38]) -->
+<!--   sc_i <- fit_spatialcor(X = Xsub, t = time.scaled,  -->
+<!--                          location = loc_i, fun = meth)$spatialcor -->
+<!--   D_i <- geosphere::distm(loc_i)/1000 -->
+<!--   fm.cls_i <- cls_star(Xsub, t = time.scaled) -->
+<!--   y_i <- with(fm.cls_i, Est/mean) -->
+<!--   fm_i <- fitGLS.partition_rcpp(X = Xsub, y = y_i, X0 = X0, Dist = D_i,  -->
+<!--                                 spatcor = sc_i, Vfit.fun = meth, npart = 5,  -->
+<!--                                 mincross = 4, workerB_cpp = TRUE) -->
+<!--   F_i <- fm_i$Fmean -->
+<!--   p_i <- GLS.partition.pvalue(fm_i, nboot = 2000)$pF.boot$pvalue -->
+<!--   return(c("F" = F_i, "pval" = p_i)) -->
+<!-- }) -->
+<!-- print(Ftest_sub) -->
+<!-- rm("ndvi_AK") -->
+<!-- ``` -->
+<!-- <!-- I'm still working on the partitioned version -->
+<p>–&gt;</p>
+<!-- ```{r GLS_partition, eval = FALSE, echo = FALSE} -->
+<!-- n.p = 50; n.part = 3 -->
+<!-- partition <- matrix(sample(1:nrow(ndvi_AK3000), size = n.p * n.part), ncol = n.part) -->
+<!-- x.1 = as.vector(partition[, 1]) -->
+<!-- x.2 = as.vector(partition[, 2]) -->
+<!-- x.12 = c(x.1, x.2) -->
+<!-- ## For now, I'm going to explore the distributed computing option -->
+<!-- ### partition 1 -->
+<!-- y1 <- rnorm(n.p) -->
+<!-- X1 <- as.matrix(ndvi_AK3000[x.1, -c(1:6)]) -->
+<!-- loc1 <- ndvi_AK3000[x.1, c("lat","lng")] -->
+<!-- V1 <- fitV(D[x.1, x.1], -->
+<!--             spatialcor = r.est$spatialcor, fun = "exponential-power") -->
+<!-- ### partition 2 -->
+<!-- y2 <- rnorm(n.p) -->
+<!-- X2 <- as.matrix(ndvi_AK3000[x.2, -c(1:6)]) -->
+<!-- loc2 <- ndvi_AK3000[x.2, c("lat","lng")] -->
+<!-- V2 <- fitV(D[x.2, x.2], -->
+<!--             spatialcor = r.est$spatialcor, fun = "exponential-power") -->
+<!-- ## cross partition -->
+<!-- V12 <- fitV(D[x.12, x.12], -->
+<!--              spatialcor = r.est$spatialcor, fun = "exponential-power") -->
+<!-- Vsub <- V12[1:n.p, (n.p+1):(2*n.p)] -->
+<!-- Xnull <- matrix(1, nrow = nrow(X1)) -->
+<!-- df2 <- n.p - (ncol(X1) - 1) -->
+<!-- df0 <- n.p - (ncol(Xnull) - 1) -->
+<!-- df1 <- df0 - df2 -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE, echo = FALSE} -->
+<!-- ## results -->
+<!-- out1 <- GLS_worker_cpp(y1, X1, V1, Xnull, save_xx = TRUE) -->
+<!-- out2 <- GLS_worker_cpp(y2, X2, V2, Xnull, save_xx = TRUE) -->
+<!-- ## The cross-partition step is where it breaks down -->
+<!-- ## last worked when n.p was 400 but no larger -->
+<!-- out.cross.cpp <- crosspart_worker_cpp(xxi = out1$xx, xxj = out2$xx, -->
+<!--                                   xxi0 = out1$xx0, xxj0 = out2$xx0, -->
+<!--                                   tUinv_i = out1$tInvCholV,  -->
+<!--                                   tUinv_j = out2$tInvCholV,  -->
+<!--                                   Vsub = Vsub,  -->
+<!--                                   df1 = df1, df2 = df2) # not working yet -->
+<!-- out.cross <- crosspart_worker(xxi = out1$xx, xxj = out2$xx, -->
+<!--                                   xxi0 = out1$xx0, xxj0 = out2$xx0, -->
+<!--                                   tUinv_i = out1$tInvCholV,  -->
+<!--                                   tUinv_j = out2$tInvCholV,  -->
+<!--                                   Vsub = Vsub,  -->
+<!--                                   df1 = df1, df2 = df2) # not working yet -->
+<!-- ## test that the 2 versions give the same output -->
+<!-- for(i in 1:length(out.cross)){ -->
+<!--   print(names(out.cross)[i]) -->
+<!--   print(all.equal(out.cross[[i]], out.cross.cpp[[i]])) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE, echo = FALSE} -->
+<!-- size.Mb <- function(x){format(object.size(x), units = "Kb")} -->
+<!-- sizes <- data.frame(obj = c("out1", "out2", "outcross"),  -->
+<!--                     MB = c(size.Mb(out1), size.Mb(out2), size.Mb(out.cross)) -->
+<!--                     ) -->
+<!-- sizes -->
+<!-- ## could it be a memory issue? MB is the size of out.cross with different n.p values -->
+<!-- curve = data.frame(n.p = c(100, 80, 60), MB = c(3.5, 2.2, 1.2)) -->
+<!-- fm <- lm(curve$MB ~ curve$n.p) -->
+<!-- plot(curve$MB ~ curve$n.p); abline(fm) -->
+<!-- pred <- function(np){(np * coef(fm)[2]) + coef(fm)[1]} -->
+<!-- pred(c(150, 300, 600)) -->
+<!-- ``` -->
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
