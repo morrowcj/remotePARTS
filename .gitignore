@@ -19,7 +19,5 @@ old-code/data-backup/
 *.html
 
 # specific files
-!vignettes/Alaska.html
-!docs/*.html
 doc
 Meta
