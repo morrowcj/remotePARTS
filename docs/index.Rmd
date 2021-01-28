@@ -1,0 +1,9 @@
+---
+title: "remotePARTS pages"
+output: 
+  html_document
+---
+
+# Vignettes
+
+Here is a web copy of the [Alaska vignette](Alaska.html).
