@@ -24,7 +24,7 @@ To install the package and it’s dependencies, use the following R code:
 
 ``` r
 install.packages("remotes") # or install.packages("devtools")
-remotes::install_github("morrowcj/remotePARTS", dependencies = "Depends")
+remotes::install_github("morrowcj/remotePARTS", dependencies = "Depends", build_vignettes = TRUE)
 ```
 
 Then, upon successful installation, load the package with

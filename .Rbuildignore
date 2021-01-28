@@ -5,6 +5,7 @@
 .Rprofile
 
 # folders
+Meta
 old-code/
 data-raw/
 src_old
