@@ -1,6 +1,6 @@
 
 #' fit GLS model by partitioning remote sensing data via Rcpp
-#' @rdname fitGLS_partition
+#' @rdname fitGLS.partition_rcpp
 #'
 #' @param X n x p numeric design matrix of predictor variables
 #' @param y length n numeric response vector
@@ -132,6 +132,272 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
               "coef0" = coef0, "npart" = npart,
               "np" = n.p, "df1" = df1, "df2" = df2))
 }
+
+
+
+#' @title Extract a partition from a csv file
+#'
+#' @param part.i which partition to extract (integer)
+#' @param csv.path path to csv file containing data
+#' @param part.mat a matrix whose columns contain indices for a partition.
+#'
+#' @return
+#' a list with the following elements:
+#'
+#' \describe{
+#'     \item{\code{$y}}{the response vector of length \code{partsize}
+#'     corresponding to parition i}
+#'     \item{\code{$X}}{a model matrix for parition i}
+#'     \item{\code{$coords}}{a matrix or data frame of spatial coordinates for
+#'     partition i. The first column are x coordinates and the second are y
+#'     coordinates}
+#' }
+#'
+#' @details \code{part_csv()} is meant to be used with \code{fitGLS.partition()}
+#' @seealso [fitGLS.partition()]
+#'
+#' @export
+#' @examples
+#' n.pix = 30865 # pixels in AK_ndvi_common-land.csv
+#' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 1000)
+#'
+#' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
+#'                         package = "remotePARTS")
+#'
+#' A.out = part_csv(part.i = 1, csv.path = data.file, part.mat = parts)
+#'
+#' # dimensions of A.out elements:
+#' dim(A.out$V)
+#' dim(A.out$X)
+#' dim(A.out$X0)
+#' length(A.out$y)
+#' @examples
+part_csv <- function(part.i, csv.path, part.mat){
+  partDF = data.frame(part = part.mat[, part.i]) #df with 1 column: current partition
+
+  # use SQL syntax with read.csv.sql to only read specific rows (very fast)
+  data = sqldf::read.csv.sql(file = csv.path,
+                             sql = "select file.* from file join partDF on file.rowid = partDF.part",
+                             dbname = tempfile(),
+                             header = TRUE)
+
+    return(list(y = data$cls.coef,
+                X = model.matrix(cls.coef ~ 0 + land, data = data),
+                coords = data[, c("lng", "lat")]))
+}
+
+#' @title Compute distance matrix in kilometers
+#'
+#' @param coords coordinate matrix
+#' @param coords2 optional coordinate matrix
+#'
+#' @return distance matrix
+#'
+#' @details this function is simply a wrapper for \code{geosphere::distm()}
+#' @seealso [geosphere::distm()]
+#'
+#' @export
+dist_km <- function(coords, coords2 = NULL){
+  if(is.null(coords2)){
+    return(geosphere::distm(coords)/1000)
+  } else {
+    return(geosphere::distm(coords, coords2)/1000)
+  }
+}
+
+#' @title Partitioned GLS
+#' @description Fit a partitioned GLS using the PARTS and calculate
+#' cross-partition statitics.
+#' @rdname fitGLS.partition
+#'
+#'
+#' @param part_f function to partition data. See details for more info
+#' @param dist_f function to calculate distance. See details for more info
+#' @param V.meth method passed to \code{fitV()}
+#' @param spatcor spatial correlation used by \code{fitV()}
+#' @param partsize number of pixels in each partition
+#' @param npart number of partitions
+#' @param mincross number of partition pairs to calculate cross-partition
+#' statistics from.
+#' @param X0 null model matrix with \code{partsize} rows
+#' @param ... additional arguments passed to \code{part_f}
+#'
+#' @details
+#'
+#' \code{fitGLS.partition()} calls the function specified by \code{part_f} to
+#' get the partitions. \code{part_f} is called \code{npart} times and uses an
+#' iterator as the first argument (i.e. \code{part_f(1)},
+#' \code{part_f(2)}, ... \code{part_f(npart)}). A GLS is fit to each partition
+#' and cross-partition statistics are calculated for each pair of partitions up
+#' to the smaller of \code{mincross} and \eqn{\code{npart} - 1}.
+#'
+#' \code{part_f} can be any function that takes an integer i (from 1 to
+#' \code{npart}) as its first argument and whose output is a list with at
+#' least the following elements:
+#'
+#' \describe{
+#'     \item{\code{$y}}{the response vector of length \code{partsize}
+#'     corresponding to parition i}
+#'     \item{\code{$X}}{a model matrix for parition i}
+#'     \item{\code{$coords}}{a matrix or data frame of spatial coordinates for
+#'     partition i. The first column are x coordinates and the second are y
+#'     coordinates}
+#' }
+#'
+#' \code{dist_f} can be any function that returns a distance matrix. This
+#' function should be able to calculate pairwise distances from a single
+#' coordinate matrix and should also be able to calculate distances from
+#' a pair of coordinate matrices (as in \code{distgeo::distm()}).
+#' \code{dist_km()} is an example of an appropriate distance function and
+#' is the default for \code{GLS.partition}.
+#'
+#' @seealso [fitGLS()], [sample_partition()], [calc_df()], [dist_km()],
+#' [part_csv()], [geosphere::distgeo()],
+#'
+#' @export
+#'
+#' @examples
+#' n.pix = 30865 # pixels in AK_ndvi_common-land.csv
+#' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 1000)
+#' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
+#'                         package = "remotePARTS")
+#'
+#' GLS.part = fitGLS.partition(part_f = "part_csv", dist_f = "dist_km",
+#'                          partsize = nrow(parts), npart = ncol(parts),
+#'                          V.meth = "exponential", spatcor = .5,
+#'                          # additional arguments passed to part_csv():
+#'                          csv.path = data.file, part.mat = parts)
+fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
+                          V.meth = "exponential", spatcor,
+                          partsize, npart, mincross = 6, X0, ...){
+  # Setup ----
+  ## match the input functions
+  func <- match.fun(part_f)
+  D_func <- match.fun(dist_f)
+
+  ## Default X0
+  if (missing(X0)) {
+    X0 = model.matrix(rep(0, partsize) ~ 1)
+  }
+
+  ## adjust mincross
+  if (mincross > (npart - 1)){
+    mincross <- npart - 1
+  }
+
+  ## Main Loop
+  for (i in 1:(npart - 1)) {
+    j = i + 1
+    if(i <= mincross){xx.print = TRUE}
+
+    # partition i ----
+    if (i == 1) {
+      ## function output
+      out.i <- func(i, ...) # out.i <- func(i, data.file, parts)
+      out.j = NULL
+      ## calculate df
+      dfs <- calc_dfpart(partsize, p = ncol(out.i$X), p0 = ncol(X0))
+      ## setup output
+      betas = matrix(NA, ncol = ncol(out.i$X), nrow = npart,
+                     dimnames = list(NULL, colnames(out.i$X)))
+      SEs = betas
+      t.stats = betas
+      pvals.t = betas
+      mod.stats = matrix(NA, nrow = npart, ncol = 7,
+                         dimnames = list(NULL, c("nugget","logLik", "SSE", "MSE",
+                                                 "MSR", "F.stat", "pval.F")))
+      cross.SS = matrix(NA, nrow = mincross, ncol = 2,
+                           dimnames = list(NULL, c("rSSR", "rSSE")))
+      rcoefs = matrix(NA, nrow = mincross, ncol = ncol(out.i$X),
+                      dimnames = list(NULL, colnames(out.i$X)))
+      ## calculate V
+      D.i <- D_func(out.i$coords)
+      V.i <- fitV(D.i, spatcor, V.meth)
+      ## fit GLS
+      gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = X0, save_xx = xx.print)
+    } else {
+      ## copy out, V, and gls from previous j
+      out.i <-  out.j
+      V.i <- V.j
+      gls.i <- gls.j
+    }
+    ## fill in the output
+    betas[i, ] <- gls.i$betahat
+    SEs[i, ] <- gls.i$SE
+    t.stats[i, ] <- gls.i$tstat
+    pvals.t[i, ] <- gls.i$pval.t
+    mod.stats[i, ] <- c(gls.i$nugget, gls.i$logLik, gls.i$SSE, gls.i$MSE, gls.i$MSR,
+                        gls.i$Fstat, gls.i$pval.F)
+
+    # partition j ----
+    ## function output
+    out.j <- func(j, ...) # out.j <- func(j, data.file, parts)
+    ## check i and j are comparable
+    stopifnot("part_f(i) and part_f(j) must have equal dimensions" = {
+      all.equal(dim(out.i$X), dim(out.j$X))
+      all.equal(length(out.i$y), length(out.j$y))
+    })
+    ## Calculate V
+    D.j <- D_func(out.j$coords)
+    V.j <- fitV(D.j, spatcor, V.meth)
+    ## fit GLS
+    gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = X0, save_xx = xx.print)
+    ## fill in data for the last partition
+    if(j == npart){
+      betas[j, ] <- gls.j$betahat
+      SEs[j, ] <- gls.j$SE
+      t.stats[j, ] <- gls.j$tstat
+      pvals.t[j, ] <- gls.j$pval.t
+      mod.stats[j, ] <- c(gls.j$nugget, gls.j$logLik, gls.j$SSE, gls.j$MSE, gls.j$MSR,
+                          gls.j$Fstat, gls.j$pval.F)
+    }
+
+
+    # cross-partition ----
+    ## cross-partition varcovar matrix
+    D.ij <- D_func(out.i$coords, out.j$coords)
+    V.ij <- fitV(D.ij, spatcor, V.meth)
+
+    ## cross-partition statistics
+    if(i <= mincross){
+      cross.ij = crosspart_worker(xxi = gls.i$xx, xxj = gls.j$xx,
+                                  xxi0 = gls.i$xx0, xxj0 = gls.j$xx0,
+                                  invChol_i = gls.i$invcholV,
+                                  invChol_j = gls.j$invcholV,
+                                  Vsub = V.ij,
+                                  nug_i = gls.i$nugget, nug_j = gls.j$nugget,
+                                  df1 = dfs[1], df2 = dfs[2])
+      cross.SS[i, ] = c(cross.ij$rSSRij, cross.ij$rSSEij)
+      rcoefs[i, ] = as.vector(cross.ij$rcoefij)
+    }
+
+  }
+    # Overall Statistics ----
+    fmean = mean(mod.stats[, "F.stat"])
+    rSSRmean = mean(cross.SS[, "rSSR"])
+    rSSEmean = mean(cross.SS[, "rSSE"])
+    rcoefmean = colMeans(rcoefs)
+    coefmean = colMeans(betas)
+
+    # Output ----
+    out.list <- list(call = match.call(),
+                     part.stats = list("coefficients" = betas,
+                                       "SEs" = SEs,
+                                       "t.stats" = t.stats,
+                                       "pvals.t" = pvals.t,
+                                       "mod.stats" = mod.stats),
+                     cross.stats = list(cross.SS = cross.SS, rcoefs = rcoefs),
+                     overall.stats = list("dfs" = dfs,
+                                          "coefmean" = coefmean,
+                                          "rcoefmean" = rcoefmean,
+                                          "meanstats" = c("fmean" = fmean,
+                                                          "rSSRmean" = rSSRmean,
+                                                          "rSSEmean" = rSSEmean))
+    )
+    class(out.list) <- "remoteGLS.parts"
+    return(out.list)
+}
+
 
 # # # Test how to call a function, passed as an argument: ----
 # # The best way I can think of to make a versatile and memory-limited

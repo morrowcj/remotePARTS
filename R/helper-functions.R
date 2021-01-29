@@ -179,7 +179,7 @@ cor_chisq <- function(Fmean, rSSR, df1, npart){
   lambda <- eigen(V.MSR)$values
   pvalue <- suppressWarnings(CompQuadForm::imhof(q = npart * df1 * Fmean, lambda = lambda)$Qq)
   pvalue = ifelse(pvalue <= 1e-06, 1e-06, pvalue) # prevent from being negative/too low
-  return(pvalue)
+  return(c("pval.chisqr" = pvalue))
 }
 
 #' analytical t-test for partitioned GLS
@@ -195,15 +195,15 @@ cor_t <- function(coefs, part.SEs, rcoef, df2, npart){
 
   secoef <- matrix(NA, length(coefs), 1)
   for(i in seq_len(length(coefs))){
-    R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1,npart,npart)
-    secoef[i,] <- (part.SEs[i,] %*% R %*% part.SEs[i,])^.5/npart
+    R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1, npart, npart)
+    secoef[i, ] <- (part.SEs[,i] %*% R %*% part.SEs[, i])^.5/npart
   }
 
   tscore <- coefs/secoef
   pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = FALSE)
 
   ttest <- cbind(coefs, secoef, tscore, pvalue)
-  colnames(ttest) <- c("coefs", "se", "tscore", "P")
+  colnames(ttest) <- c("Est", "SE", "t.stat", "pval.t")
 
   return(p.t = ttest)
 }
