@@ -85,6 +85,11 @@ conducted in limited environments.
 Test Environments:
 
 1. Windows 10.0.19041 x64
+
+2. Linux:
+LSB Version:	core-11.1.0ubuntu2-noarch:security-11.1.0ubuntu2-noarch
+Description:	Ubuntu 20.04.1 LTS
+Release:	20.04
 ```
 
 Please report any bugs or suggested features as git issues.
