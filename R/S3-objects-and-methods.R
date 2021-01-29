@@ -337,6 +337,61 @@ print.remoteGLS <- function(obj, print.call = TRUE){
 # summary.remoteGLS <- function(obj){
 
 
+
+## GLS.partition
+
+#' T test of partitioned GLS
+#'
+#' @param obj remoteGLS.parts object
+#'
+#' @return t-table
+#' @export
+cor_t.test <- function(obj){
+  stopifnot(class(obj) == "remoteGLS.parts")
+
+  ## Correlated t-test
+  return(cor_t(coefs = obj$overall.stats$coefmean,
+               part.SEs = obj$part.stats$SEs,
+               rcoef = obj$overall.stats$rcoefmean,
+               df2 = obj$overall.stats$dfs[2],
+               npart = nrow(obj$part.stats$coefficients)
+               ))
+}
+
+#' correlated chi-squared test of partitioned GLS
+#'
+#' @param obj remoteGLS.parts object
+#'
+#' @return p value
+#' @export
+cor_chisq.test <- function(obj){
+  stopifnot(class(obj) == "remoteGLS.parts")
+  return(cor_chisq(Fmean = obj$overall.stats$meanstats["fmean"],
+                   rSSR = obj$overall.stats$meanstats["rSSRmean"],
+                   df1 = obj$overall.stats$dfs[1],
+                   npart = nrow(obj$part.stats$coefficients))
+  )
+}
+
+#' correlated F test of partitioned GLS
+#'
+#' @param obj remoteGLS.parts object
+#' @param nboot number of bootstrap iterations
+#'
+#' @return P value
+#' @export
+cor_F.test <- function(obj, nboot = 1000){
+  stopifnot(class(obj) == "remoteGLS.parts")
+  test = boot_corF(Fmean.obs = obj$overall.stats$meanstats["fmean"],
+            rSSR = obj$overall.stats$meanstats["rSSRmean"],
+            rSSE = obj$overall.stats$meanstats["rSSEmean"],
+            df1 = obj$overall.stats$dfs[1],
+            df2 = obj$overall.stats$dfs[2],
+            npart = nrow(obj$part.stats$coefficients),
+            nboot = nboot)
+  return(c("pval.F" = test$pvalue))
+}
+
 # Other ----
 
 ## Test a small C++ function to alter list elements ----

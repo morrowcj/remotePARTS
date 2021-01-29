@@ -151,7 +151,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
               f_min = x;
             if (ax + tol >= f_min){
               if (fx <= -LogLikGLS_cpp(f_min, X, V, y)){
-                cout << "returning starting value instead of f_min" << endl;
+                // cout << "returning starting value instead of f_min" << endl;
                 return ax;
               }
             }

@@ -5,11 +5,17 @@
 .Rprofile
 
 # folders
-Meta
+Meta/
+doc/
+docs/
 old-code/
 data-raw/
-src_old
-vignettes_backup
+src_old/
+vignettes_backup/
 
 # specific files
 ^README\.Rmd$
+^.*\.Rproj$
+build.r
+^doc$
+^Meta$

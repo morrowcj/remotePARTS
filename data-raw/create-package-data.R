@@ -55,8 +55,15 @@ if(!file.exists("data/ndvi_AK3000.rda")){
 ## Save ndvi_AK as .csv file
 ## added 27-Jan-2021
 if (!file.exists("data-raw/AK_ndvi_common-land.csv")) {
+  library(remotePARTS)
   load("data/ndvi_AK.rda")
   AK = ndvi_AK[!ndvi_AK$rare.land, ] # remove rare land classes
   AK$land = droplevels(AK$land) # drop unused land classes
-  write.csv(AK, "data-raw/AK_ndvi_common-land.csv", row.names = FALSE)
+  X = AK[, -c(1:6)]
+  cls = fitCLS.map(X = X, t = 1:ncol(X))
+  AK = cbind(cls.coef = cls$time.coef[,"Est"], AK)
+  write.csv(AK, "data-raw/AK_ndvi_common-land.csv", row.names = FALSE, quote = FALSE)
+  file.copy(from = "data-raw/AK_ndvi_common-land.csv",
+            to = "inst/extdata/AK_ndvi_common-land.csv",
+            overwrite = TRUE)
 }

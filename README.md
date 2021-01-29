@@ -11,7 +11,7 @@ maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www
 
 `remotePARTS` is an `R` package that contains tools for running
 spatio-temporal auto regression analyses on large remotely-sensed data
-sets by partitioning data into managable chunks.
+sets by partitioning data into manageable chunks.
 
 ## Description
 
@@ -33,6 +33,18 @@ Then, upon successful installation, load the package with
 The latest version of
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) is required for
 Windows and C++11 is required for other systems.
+
+Note that the above installation code worked on my Windows (10.0.19041
+x86) machine but, on my linux machine (Ubuntu 20.04), The package would
+only install successfully if `build_vignettes = FALSE`. Trying to build
+the vignettes during the installation process made the package unusable
+(corrupt .rda files). If you can’t get the vignette to build, you can
+access it online here:
+<https://morrowcj.github.io/remotePARTS/Alaska.html>.
+
+To read documentation for any function use the `?` operator in front of
+the function in the R console. For example, to learn more about
+`fitGLS()` type `?fitGLS()` and hit enter.
 
 ### Windows installation notes/troubleshooting:
 
@@ -93,16 +105,21 @@ are currently unimplemented. This section will keep track of the
 features and design implementations that I plan to include or change in
 the next version as well.
 
+  - [ ] Allow GLS functions to bypass the model-comparison step
+    (i.e. t-test only) for possible performance gains when F-like tests
+    are not necessary.
+
   - [ ] allow users to, optionally, input parameters (e.g. `r` and `a`
     in the exponential-power function) instead of fitting ML parameters.
 
-  - [ ] add example for testing “is there an overall time trend” to the
-    vignette
+  - [x] add example for testing “is there an overall time trend” to the
+    vignette - this can be done with a t-test for the intercept-only
+    model. I’ve added an example in the “Alaska” vignette.
 
-  - [ ] make providing distance matrix **optional** instead of required
+  - [x] make providing distance matrix **optional** instead of required
     for `fitGLS.partition_rcpp()` and the partitioned method as a whole.
-    (**note** this has been demonstrated in the vignette but has not yet
-    been turned into a function)
+    - now `fitGLS.partition()` does this and the process is displayed in
+    the Alaska vignette. `fitGLS.partition_rcpp()` is deprecated.
 
   - [ ] include parallelization and distributed comptuting options. If
     these are not natively implemented (i.e. using openMP in C++), then
@@ -113,9 +130,11 @@ the next version as well.
     time series be treated?”; “What happends if there is a missing data
     point within a single time series?”
 
-  - [ ] possibly change the CLS function so that it reads 1 line of data
+  - [x] possibly change the CLS function so that it reads 1 line of data
     at a time to save memory. Also, using `RcppEigen::fastLM()` may be
-    better than `lm()` in terms of speed.
+    better than `lm()` in terms of speed. - Testing showed that
+    `fastLM()` was actuallyl slower than `lm()` for all the problems I
+    tested.
 
   - [x] **Break up C++ functions into more than 1 file**
 
@@ -152,18 +171,27 @@ If there are any additional features that you would like to see
 implemented, or bugs/issues that you ran into, please submit an issue on
 github.
 
-## Installation (OLD)
+<!-- ## Installation (OLD) -->
 
-Currently to install this package, the best way is to install with the
-`remotePARTS_[version].tar.gz` file created with `R CMD check`.
+<!-- Currently to install this package, the best way is to install with the  -->
 
-Once a user has the tar.gz file they can install it with
+<!-- `remotePARTS_[version].tar.gz` file created with `R CMD check`.  -->
 
-    install.packages("remotePARTS_[version].tar.gz", repos = NULL, type = "source")
+<!-- Once a user has the tar.gz file they can install it with -->
 
-and then from the R console with load it with
+<!-- ``` -->
 
-    library(remotePARTS)
+<!-- install.packages("remotePARTS_[version].tar.gz", repos = NULL, type = "source") -->
+
+<!-- ``` -->
+
+<!-- and then from the R console with load it with -->
+
+<!-- ``` -->
+
+<!-- library(remotePARTS) -->
+
+<!-- ``` -->
 
 <!-- Eventually, the following lines should replace the above installation info: -->
 

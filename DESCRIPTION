@@ -1,12 +1,12 @@
 Package: remotePARTS
 Title: Spatio-temporal Auto-regression for Remote Sensing Data
-Version: 0.1.0.9000
+Version: 0.1.1.9000
 Authors@R: 
     c(person(given = "Clay",
            family = "Morrow",
            role = c("aut", "cre"),
            email = "morrow5@wisc.edu",
-           comment = c(ORCID = "YOUR-ORCID-ID")),
+           comment = c(ORCID = "https://orcid.org/0000-0002-3069-3296")),
       person(given = "Anthony",
            family = "Ives",
            role = c("aut"),
