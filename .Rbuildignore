@@ -17,3 +17,5 @@ vignettes_backup/
 ^README\.Rmd$
 ^.*\.Rproj$
 build.r
+^doc$
+^Meta$
