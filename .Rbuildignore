@@ -19,3 +19,5 @@ vignettes_backup/
 build.r
 ^doc$
 ^Meta$
+^\.travis\.yml$
+^\.github$
