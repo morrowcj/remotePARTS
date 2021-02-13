@@ -6,7 +6,7 @@ Authors@R:
            family = "Morrow",
            role = c("aut", "cre"),
            email = "morrow5@wisc.edu",
-           comment = c(ORCID = "https://orcid.org/0000-0002-3069-3296")),
+           comment = c(ORCID = "0000-0002-3069-3296")),
       person(given = "Anthony",
            family = "Ives",
            role = c("aut"),
@@ -33,6 +33,7 @@ Suggests:
     raster,
     knitr,
     rmarkdown,
-    microbenchmark
+    microbenchmark,
+    sqldf
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
