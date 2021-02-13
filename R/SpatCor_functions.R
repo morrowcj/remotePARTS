@@ -68,7 +68,7 @@ scale_dist <- function(location, scl = 1000){
 
 # fit_spatialcor() ----
 
-#' Title
+#' fit a spatial correlation matrix
 #'
 #' @param X n x p numeric matrix (usually of of remote sensing observations)
 #'  taken from n sites (rows) and p time points (columns).
@@ -78,7 +78,7 @@ scale_dist <- function(location, scl = 1000){
 #' @param a.start numeric starting point for a parameter
 #' @param fit.n integer signifying the size of the random subset of X rows to be
 #' used in the estimation.
-#' @param fun character string indicating which function to use. Currently the available options are
+#' @param method character string indicating which function to use. Currently the available options are
 #' "exponential", "exponential-power", and "taper-spherical".
 #'
 #' Note: Currently, only "exponential-power" is working properly. I'm not sure why. - morrowcj
@@ -103,12 +103,14 @@ scale_dist <- function(location, scl = 1000){
 #' logLik: the log-likelihood of the fit
 #' @export
 #'
-#' @examples #TBA
+#' @examples
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
                            fit.n = 1000, method = "exp",
                            dist, location,
                            scale.dist = TRUE, dist.scl = 1000, U = NULL,
-                           covars = NULL, plot.fig = FALSE, cols.plot = NULL,
+                           covars = NULL,
+                           plot.fig = FALSE,
+                           cols.plot = NULL,
                            ... ## additional arguments to pass to nls()
                            ){
 
@@ -169,11 +171,11 @@ fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
     if (is.null(cols.plot) | missing(cols.plot)) {
       cols.plot <- "black"
     } else {
-      cols.plot <- cosl.plot[sub.inx]
+      cols.plot <- cols.plot[sub.inx]
     }
 
     plot(dist * max.d, cor.resids, pch = 20, cex = 0.5, col = cols.plot)
-    lines(x.dist, y, col = "red", lty = 1, lwd = 2)
+    graphics::lines(x.dist, y, col = "red", lty = 1, lwd = 2)
   }
 
   return(list(mod = fit, spatialcor = spatialcor, logLik = logLik(fit)))

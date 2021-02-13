@@ -32,9 +32,9 @@
 optimize_nugget <- function(X, V, y, lower = 0, upper = 1, tol = 1e-5,
                             debug = FALSE){
   # coerce input to matrices
-  X = as(X, "matrix")
-  V = as(V, "matrix")
-  y = as(y, "matrix")
+  X = as.matrix(X)
+  V = as.matrix(V)
+  y = as.matrix(y)
 
   ## error handling
   stopifnot(all(is.double(X), is.double(V), is.double(y)))
@@ -50,13 +50,13 @@ optimize_nugget <- function(X, V, y, lower = 0, upper = 1, tol = 1e-5,
 
 #' fitNugget - R version
 #' @rdname optimize_nugget
-#'
 #' @details \code{fitNugget} is the R-only version of \code{optimize_nugget()}.
 #' It uses \code{fitGLS_R()} and \code{stats::optimize()} to obtain the ML
 #' nugget.
 #'
 #' @export
-fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
+fitNugget <-  function(X, V, y, lower = 0, upper = 1, tol = .00001){
+  int = c(lower, upper)
   N.opt <- optimize(f = function(nug){return(fitGLS_R(X, V, y, nugget = nug)$logLik)},
                     interval = int, tol = tol, maximum = TRUE)
   if(N.opt$maximum < tol){
@@ -75,11 +75,12 @@ fitNugget <-  function(X, V, y, int = c(0,1), tol = .00001){
 #' and \code{fitNugget()}. It optimizes the C++ function \code{LogLikGLS()} with
 #' the R function \code{stats::optimize()}.
 #'
-#' After futher testing, only the most efficeint of the 3 nugget optimizers will
+#' After further testing, only the most efficeint of the 3 nugget optimizers will
 #' remain in the package.
 #'
 #' @export
-fitNugget_Rcpp <-  function(X, V, y, int = c(0,1), tol = .00001){
+fitNugget_Rcpp <-  function(X, V, y, lower = 0, upper = 1, tol = .00001){
+  int = c(0,1)
   N.opt <- optimize(f = function(nug){return(LogLikGLS(nugget = nug, X, V, y))},
                     interval = int, tol = tol, maximum = TRUE)
   if(N.opt$maximum < tol){

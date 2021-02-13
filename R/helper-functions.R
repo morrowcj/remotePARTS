@@ -42,7 +42,10 @@ check_posdef <- function(M){
 #' function to calculate partition size or number of partitions
 #'
 #' @param npix number of pixels in full dataset
+#' @param npart number of partitions to create
+#' @param partsize size of each partition
 #' @param pixels vector of pixel indexes to sample from
+#' @param verbose logical: TRUE prints additional info
 #' @export
 #'
 #' @examples
@@ -100,14 +103,14 @@ sample_partitions <- function(npix, npart = 10, partsize = NA,
 
 #' calculate degrees of freedom for partitioned GLS
 #'
-#' @param part.size number of pixels in each partition
+#' @param partsize number of pixels in each partition
 #' @param p number of predictors in alternate model
 #' @param p0 number of parameters in null model
 #'
 #' @export
 #'
 #' @examples
-#' calc_df(partsize = 2000, p = 4, p0 = 1)
+#' calc_dfpart(partsize = 2000, p = 4, p0 = 1)
 calc_dfpart <- function(partsize, p, p0){
   stopifnot(length(partsize) == 1)
   df2 = partsize - (p - 1)

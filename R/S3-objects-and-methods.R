@@ -60,15 +60,16 @@ AR_df <- function(x, t, Z = NULL){
 
 #' get linear model object from remote CLS
 #'
-#' @param obj remoteCLS object
+#' @param object remoteCLS object
+#' @param ... additional arguments
 #'
 #' @return lm class object from stats::lm
 #' @export
-get_fm.remoteCLS <- function(obj){
-  stopifnot("remoteCLS" %in% class(obj))
-  if ("pixel" %in% class(obj)) {
-    return(obj$fm)
-  } else if ("map" %in% class(obj)) {
+get_fm.remoteCLS <- function(object, ...){
+  stopifnot("remoteCLS" %in% class(object))
+  if ("pixel" %in% class(object)) {
+    return(object$fm)
+  } else if ("map" %in% class(object)) {
     stop("no applicable method for remoteCLS.map")
   } else
     NULL
@@ -76,64 +77,67 @@ get_fm.remoteCLS <- function(obj){
 
 #' printmethod for remoteCLS object
 #'
-#' @param obj remoteCLS object
+#' @param x remoteCLS object
+#' @param ... additional arguments
 #' @export
-print.remoteCLS <- function(obj){
-  stopifnot("remoteCLS" %in% class(obj))
+print.remoteCLS <- function(x, ...){
+  stopifnot("remoteCLS" %in% class(x))
 
   ## Pixel version
-  if ("pixel" %in% class(obj)) {
+  if ("pixel" %in% class(x)) {
     # call
-    cat("Call: ",deparse(obj$call), "\n",
-        "CLS model: ", deparse(obj$fm$call$formula), "\n\n",
+    cat("Call: ",deparse(x$call), "\n",
+        "CLS model: ", deparse(x$fm$call$formula), "\n\n",
         "Coefficeints:", "\n", sep = "")
     # then lm
-    print(obj$fm$coefficients)
+    print(x$fm$coefficients)
 
-  } else if ("map" %in% class(obj)) {
+  } else if ("map" %in% class(x)) {
     ## Map version
-    cat("Call:",deparse(obj$call), "\n")
+    cat("Call:",deparse(x$call), "\n")
     cat("\n","Time Coefficients:","\n", sep = "")
-    print(format(as.data.frame(obj$time.coef)), digits = 3, nsmall = 2, scientific = 1)
+    print(format(as.data.frame(x$time.coef)), digits = 3, nsmall = 2, scientific = 1)
   }
 }
 
 
 #' Extract coefficeints from remoteCLS object
 #'
-#' @param obj remoteCLS object
+#' @param object remoteCLS object
 #' @param var desired coefficients from remoteCLS.map object. One of "time"
 #' (default), "xi", or "intercept".
+#' @param ... additional arguments
 #'
 #' @return coefficient data frame
 #' @export
-coef.remoteCLS <- function(obj, map.var){
-  stopifnot("remoteCLS" %in% class(obj))
+coef.remoteCLS <- function(object, var, ...){
+  stopifnot("remoteCLS" %in% class(object))
 
-  if ("pixel" %in% class(obj)) {
-   return(as.data.frame(obj$fm$coefficeints))
-  } else if ("map" %in% class(obj)) {
-    if(missing(map.var) || map.var == "time"){
-      return(as.data.frame(obj$time.coef))
-    } else if (map.var == "xi") {
-      return(as.data.frame(obj$xi.coef))
-    } else if (map.var == "intercept") {
-      return(as.data.frame(obj$int.coef))
+  if ("pixel" %in% class(object)) {
+   return(as.data.frame(object$fm$coefficeints))
+  } else if ("map" %in% class(object)) {
+    if(missing(var) || var == "time"){
+      return(as.data.frame(object$time.coef))
+    } else if (var == "xi") {
+      return(as.data.frame(object$xi.coef))
+    } else if (var == "intercept") {
+      return(as.data.frame(object$int.coef))
     }
   }
 }
 
 #' summary of remoteCLS object
 #'
-#' @param obj remoteCLS object
+#' @param object remoteCLS object
+#' @param ... additional arguments
 #'
 #' @export
-summary.remoteCLS <- function(obj){
-  stopifnot("remoteCLS" %in% class(obj))
+summary.remoteCLS <- function(object, ...){
+  stopifnot("remoteCLS" %in% class(object))
 
   ## Pixel version
-  if ("pixel" %in% class(obj)) {
-    fm <- get_fm(obj)
+  if ("pixel" %in% class(object)) {
+    fm <- get_fm(object)
     smry <- summary(fm)
     MSE = sigma(fm)^2
 
@@ -145,40 +149,41 @@ summary.remoteCLS <- function(obj){
     cat("\nMSE =", format(MSE, digits = 3))
 
 
-  } else if ("map" %in% class(obj)) {
+  } else if ("map" %in% class(object)) {
     ## Map version
     cat("Summary\n")
     cat("\neffect of time:\n")
-    print(summary(as.data.frame(obj$time.coef)))
-    if(!is.null(obj$xi.coef)){
+    print(summary(as.data.frame(object$time.coef)))
+    if(!is.null(object$xi.coef)){
       cat("\neffect of previous x:\n")
-      print(summary(as.data.frame(obj$xi.coef)))
+      print(summary(as.data.frame(object$xi.coef)))
     }
-    if(!is.null(obj$int.coef)){
+    if(!is.null(object$int.coef)){
       cat("\nintercept:\n")
-      print(summary(as.data.frame(obj$int.coef)))
+      print(summary(as.data.frame(object$int.coef)))
     }
-    if(!is.null(obj$MSE)){
+    if(!is.null(object$MSE)){
       cat("\nMSE:\n")
-      print(summary(as.data.frame(obj$MSE)))
+      print(summary(as.data.frame(object$MSE)))
     }
   }
 }
 
 #' resisduals of remoteCLS object
 #'
-#' @param obj remoteCLS object
+#' @param object remoteCLS object
+#' @param ... additional arguments
 #'
 #' @return model residuals
 #' @export
-residuals.remoteCLS <- function(obj){
-  stopifnot("remoteCLS" %in% class(obj))
+residuals.remoteCLS <- function(object, ...){
+  stopifnot("remoteCLS" %in% class(object))
   ## Pixel version
-  if ("pixel" %in% class(obj)) {
-    fm = get_fm(obj)
+  if ("pixel" %in% class(object)) {
+    fm = get_fm(object)
     return(fm$residuals)
-  } else if ("map" %in% class(obj)) {
-    obj$residuals
+  } else if ("map" %in% class(object)) {
+    object$residuals
   }
 }
 
@@ -186,67 +191,70 @@ residuals.remoteCLS <- function(obj){
 # AR ----
 #' print method for remoteAR object
 #'
-#' @param obj remoteAR object
+#' @param x remoteAR object
+#' @param ... additional arguments
 #'
 #' @return
 #' @export
-print.remoteAR <- function(obj){
-  stopifnot("remoteAR" %in% class(obj))
+print.remoteAR <- function(x, ...){
+  stopifnot("remoteAR" %in% class(x))
 
   ## Pixel version
-  if ("pixel" %in% class(obj)) {
+  if ("pixel" %in% class(x)) {
     # call
-    cat("Call:",deparse(obj$call), "\n")
+    cat("Call:",deparse(x$call), "\n")
     # then lm
     cat("\n","Coefficients:","\n", sep = "")
-    print(format(obj$coef, nsmall = 2, digits = 3, scientific = 1))
+    print(format(x$coef, nsmall = 2, digits = 3, scientific = 1))
     cat("\n",
         "AR parameter estimate: ",
-        format(obj$b, digits = 3, nsmall = 2, scientific = 1),
+        format(x$b, digits = 3, nsmall = 2, scientific = 1),
         "\n",
-        "MSE: ", obj$MSE, "\n",
-        "log-likelihood: ", obj$logLik, sep = "")
+        "MSE: ", x$MSE, "\n",
+        "log-likelihood: ", x$logLik, sep = "")
 
 
-  } else if ("map" %in% class(obj)) {
+  } else if ("map" %in% class(x)) {
     ## Map version
-    cat("Call: ", deparse(obj$call), "\n\n",
+    cat("Call: ", deparse(x$call), "\n\n",
         "Time Coefficeints: ", "\n", sep = "")
-    print(format(as.data.frame(obj$time.coef)), digits = 3, nsmall = 2, scientific = 1)
+    print(format(as.data.frame(x$time.coef)), digits = 3, nsmall = 2, scientific = 1)
   }
 }
 
 #' Extract coefficients from remoteAR object
 #'
-#' @param obj remoteAR object
+#' @param object remoteAR object
+#' @param ... additional arguments
 #'
 #' @return coefficeint data frame
 #' @export
-coef.remoteAR <- function(obj){
-  stopifnot("remoteAR" %in% class(obj))
+coef.remoteAR <- function(object, ...){
+  stopifnot("remoteAR" %in% class(object))
 
   ## Pixel version
-  if ("pixel" %in% class(obj)) {
-    return(obj$coef)
-  } else if ("map" %in% class(obj)) {
-    return(as.data.frame(obj$time.coef))
+  if ("pixel" %in% class(object)) {
+    return(object$coef)
+  } else if ("map" %in% class(object)) {
+    return(as.data.frame(object$time.coef))
   }
 }
 
 #' Extract residuals from remoteAR object
 #'
-#' @param obj remoteAR object
+#' @param object remoteAR object
+#' @param ... additional arguments
 #'
 #' @return residuals
 #' @export
-residuals.remoteAR <- function(obj){
-  stopifnot("remoteAR" %in% class(obj))
+residuals.remoteAR <- function(object, ...){
+  stopifnot("remoteAR" %in% class(object))
 
   ## Pixel version
-  if ("pixel" %in% class(obj)) {
-    return(obj$resids)
-  } else if ("map" %in% class(obj)) {
-    return(obj$resids)
+  if ("pixel" %in% class(object)) {
+    return(object$resids)
+  } else if ("map" %in% class(object)) {
+    return(object$resids)
   }
 }
 
@@ -254,6 +262,7 @@ residuals.remoteAR <- function(obj){
 
 #' remoteGLS constructor (S3)
 #'
+#' @param form optional argument specifying the GLS formula
 #' @return an empty S3 object of class "remoteGLS"
 #' @export
 #'
@@ -294,37 +303,38 @@ remoteGLS <- function(form){
 
 #' print method for remoteGLS
 #'
-#' @param obj remoteGLS object
+#' @param x remoteGLS object
+#' @param ret_call should the function call be returned?
+#' @param ... additional arguments
 #'
 #' @return formatted output for remoteGLS object
 #' @export
-print.remoteGLS <- function(obj, print.call = TRUE){
-  stopifnot("remoteGLS" %in% class(obj))
-# print.remoteGLS <- function(obj){
-  if(is.null(unlist(obj[-1]))){
+print.remoteGLS <- function(x, ret_call = TRUE, ...){
+  stopifnot("remoteGLS" %in% class(x))
+  if(is.null(unlist(x[-1]))){
     cat("empty remoteGLS object\ncall: ")
-    if(!is.null(unlist(obj[1]))){
-      print(obj$model.info)
-    } else {print(obj$model.info$call)}
+    if(!is.null(unlist(x[1]))){
+      print(x$model.info)
+    } else {print(x$model.info$call)}
   } else {
 
     ## Coefficient table
-    coefs = data.frame("Est" = obj$betahat, "t stat" = obj$tstat, "pval t" = obj$pval.t)
+    coefs = data.frame("Est" = x$betahat, "t stat" = x$tstat, "pval t" = x$pval.t)
 
     ## Model stats
-    mod.stats = data.frame("df" = obj$df.F,
-                           "SSE" = c(obj$SSE, obj$SSE0),
-                           "MSE" = c(obj$MSE, obj$MSE0),
-                           "logLik" = c(obj$logLik, obj$logLik0),
-                           "F stat" = c(obj$Fstat, NA),
-                           "pval F" = c(obj$pval.F, NA))
+    mod.stats = data.frame("df" = x$df.F,
+                           "SSE" = c(x$SSE, x$SSE0),
+                           "MSE" = c(x$MSE, x$MSE0),
+                           "logLik" = c(x$logLik, x$logLik0),
+                           "F stat" = c(x$Fstat, NA),
+                           "pval F" = c(x$pval.F, NA))
     rownames(mod.stats) = c("mod_A", "mod_0")
 
     ## return (needs cleaning)
-    if (print.call){
-      cat("call: ");print(obj$model.info$call)
+    if (ret_call){
+      cat("call: ");print(x$model.info$call)
     }
-    cat("response:", obj$model.info$response,"\n\n")
+    cat("response:", x$model.info$response,"\n\n")
     cat("t tests:\n")
     print(format(coefs, digits = 2, nsmall = 2))
     cat("\nF test:\n")
@@ -334,7 +344,7 @@ print.remoteGLS <- function(obj, print.call = TRUE){
 }
 
 ## summary function
-# summary.remoteGLS <- function(obj){
+# summary.remoteGLS <- function(object){
 
 
 
@@ -342,52 +352,52 @@ print.remoteGLS <- function(obj, print.call = TRUE){
 
 #' T test of partitioned GLS
 #'
-#' @param obj remoteGLS.parts object
+#' @param object remoteGLS.parts object
 #'
 #' @return t-table
 #' @export
-cor_t.test <- function(obj){
-  stopifnot(class(obj) == "remoteGLS.parts")
+cor_t.test <- function(object){
+  stopifnot(class(object) == "remoteGLS.parts")
 
   ## Correlated t-test
-  return(cor_t(coefs = obj$overall.stats$coefmean,
-               part.SEs = obj$part.stats$SEs,
-               rcoef = obj$overall.stats$rcoefmean,
-               df2 = obj$overall.stats$dfs[2],
-               npart = nrow(obj$part.stats$coefficients)
+  return(cor_t(coefs = object$overall.stats$coefmean,
+               part.SEs = object$part.stats$SEs,
+               rcoef = object$overall.stats$rcoefmean,
+               df2 = object$overall.stats$dfs[2],
+               npart = nrow(object$part.stats$coefficients)
                ))
 }
 
 #' correlated chi-squared test of partitioned GLS
 #'
-#' @param obj remoteGLS.parts object
+#' @param object remoteGLS.parts object
 #'
 #' @return p value
 #' @export
-cor_chisq.test <- function(obj){
-  stopifnot(class(obj) == "remoteGLS.parts")
-  return(cor_chisq(Fmean = obj$overall.stats$meanstats["fmean"],
-                   rSSR = obj$overall.stats$meanstats["rSSRmean"],
-                   df1 = obj$overall.stats$dfs[1],
-                   npart = nrow(obj$part.stats$coefficients))
+cor_chisq.test <- function(object){
+  stopifnot(class(object) == "remoteGLS.parts")
+  return(cor_chisq(Fmean = object$overall.stats$meanstats["fmean"],
+                   rSSR = object$overall.stats$meanstats["rSSRmean"],
+                   df1 = object$overall.stats$dfs[1],
+                   npart = nrow(object$part.stats$coefficients))
   )
 }
 
 #' correlated F test of partitioned GLS
 #'
-#' @param obj remoteGLS.parts object
+#' @param object remoteGLS.parts object
 #' @param nboot number of bootstrap iterations
 #'
 #' @return P value
 #' @export
-cor_F.test <- function(obj, nboot = 1000){
-  stopifnot(class(obj) == "remoteGLS.parts")
-  test = boot_corF(Fmean.obs = obj$overall.stats$meanstats["fmean"],
-            rSSR = obj$overall.stats$meanstats["rSSRmean"],
-            rSSE = obj$overall.stats$meanstats["rSSEmean"],
-            df1 = obj$overall.stats$dfs[1],
-            df2 = obj$overall.stats$dfs[2],
-            npart = nrow(obj$part.stats$coefficients),
+cor_F.test <- function(object, nboot = 1000){
+  stopifnot(class(object) == "remoteGLS.parts")
+  test = boot_corF(Fmean.obs = object$overall.stats$meanstats["fmean"],
+            rSSR = object$overall.stats$meanstats["rSSRmean"],
+            rSSE = object$overall.stats$meanstats["rSSEmean"],
+            df1 = object$overall.stats$dfs[1],
+            df2 = object$overall.stats$dfs[2],
+            npart = nrow(object$part.stats$coefficients),
             nboot = nboot)
   return(c("pval.F" = test$pvalue))
 }

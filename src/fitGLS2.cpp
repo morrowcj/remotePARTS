@@ -4,6 +4,7 @@
 //'
 //' @details see `fitGLS()`
 //'
+//' @param L empty remoteGLS list to be filled
 //' @param X numeric matrix
 //' @param V numeric matrix
 //' @param y numeric vector

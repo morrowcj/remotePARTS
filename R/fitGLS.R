@@ -25,10 +25,10 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 
 
   ## coerce to matrices
-  X = as(X, "matrix")
-  V = as(V, "matrix")
-  y = as(y, "matrix")
-  X0 = as(X0, "matrix")
+  X = as.matrix(X)
+  V = as.matrix(V)
+  y = as.matrix(y)
+  X0 = as.matrix(X0)
 
   ## error handling
   stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
@@ -114,10 +114,10 @@ fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
     model.matrix(form.0, data)
 
   ## coerce to matrices ----
-  # X = as(X, "matrix")
-  # V = as(V, "matrix")
-  # # y = as(y, "matrix")
-  # X0 = as(X0, "matrix")
+  # X = as.matrix(X)
+  # V = as.matrix(V)
+  # # y = as.matrix(y)
+  # X0 = as.matrix(X0)
 
   ## error handling ----
   stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
@@ -156,9 +156,9 @@ fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
 #' @examples #TBA
 LogLikGLS <- function(nugget, X, V, y){
   ## coerce to matrices
-  X = as(X, "matrix")
-  V = as(V, "matrix")
-  y = as(y, "matrix")
+  X = as.matrix(X)
+  V = as.matrix(V)
+  y = as.matrix(y)
 
   ## error handling
   stopifnot(all(is.double(X), is.double(V), is.double(y)))
