@@ -4,7 +4,7 @@
 \alias{GLS_worker}
 \title{Worker function 1 for paritioned GLS}
 \usage{
-GLS_worker(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-05, save_xx = FALSE)
+GLS_worker(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-05, save_xx = FALSE)
 }
 \arguments{
 \item{y}{numeric vector}
@@ -15,13 +15,13 @@ GLS_worker(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-05, save_xx = FALSE)
 
 \item{X0}{numeric matrix}
 
-\item{save_xx}{logical: should xx, xx0, and invcholV be returned?}
-
 \item{nug_l}{lower boundary for nugget optimization}
 
 \item{nug_u}{upper boundary for nugget optimization}
 
 \item{nug_tol}{tolerance of nugget optimization}
+
+\item{save_xx}{logical: should xx, xx0, and invcholV be returned?}
 }
 \value{
 a list of remoteGLS output

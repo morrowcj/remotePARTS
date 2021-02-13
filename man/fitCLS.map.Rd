@@ -57,7 +57,7 @@ access elements by name or use one of the extractor functions
 \examples{
 data(ndvi_AK3000)
 X = (ndvi_AK3000[, -c(1:6)])
-t = 1:length(x) # time points
+t = 1:ncol(X) # time points
 
 # fit CLS (only save time coefficient)
 CLS <- fitCLS.map(X, t)

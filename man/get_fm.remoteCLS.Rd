@@ -4,10 +4,12 @@
 \alias{get_fm.remoteCLS}
 \title{get linear model object from remote CLS}
 \usage{
-\method{get_fm}{remoteCLS}(obj)
+\method{get_fm}{remoteCLS}(object, ...)
 }
 \arguments{
-\item{obj}{remoteCLS object}
+\item{object}{remoteCLS object}
+
+\item{...}{additional arguments}
 }
 \value{
 lm class object from stats::lm

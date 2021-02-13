@@ -4,10 +4,10 @@
 \alias{cor_chisq.test}
 \title{correlated chi-squared test of partitioned GLS}
 \usage{
-cor_chisq.test(obj)
+cor_chisq.test(object)
 }
 \arguments{
-\item{obj}{remoteGLS.parts object}
+\item{object}{remoteGLS.parts object}
 }
 \value{
 p value

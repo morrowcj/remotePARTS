@@ -4,10 +4,14 @@
 \alias{print.remoteGLS}
 \title{print method for remoteGLS}
 \usage{
-\method{print}{remoteGLS}(obj, print.call = TRUE)
+\method{print}{remoteGLS}(x, ret_call = TRUE, ...)
 }
 \arguments{
-\item{obj}{remoteGLS object}
+\item{x}{remoteGLS object}
+
+\item{ret_call}{should the function call be returned?}
+
+\item{...}{additional arguments}
 }
 \value{
 formatted output for remoteGLS object

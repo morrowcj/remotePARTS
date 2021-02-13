@@ -6,6 +6,9 @@
 \usage{
 remoteGLS(form)
 }
+\arguments{
+\item{form}{optional argument specifying the GLS formula}
+}
 \value{
 an empty S3 object of class "remoteGLS"
 }

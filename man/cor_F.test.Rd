@@ -4,10 +4,10 @@
 \alias{cor_F.test}
 \title{correlated F test of partitioned GLS}
 \usage{
-cor_F.test(obj, nboot = 1000)
+cor_F.test(object, nboot = 1000)
 }
 \arguments{
-\item{obj}{remoteGLS.parts object}
+\item{object}{remoteGLS.parts object}
 
 \item{nboot}{number of bootstrap iterations}
 }

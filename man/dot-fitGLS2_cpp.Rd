@@ -7,6 +7,8 @@
 .fitGLS2_cpp(L, X, V, y, X0, nugget, save_xx, threads)
 }
 \arguments{
+\item{L}{empty remoteGLS list to be filled}
+
 \item{X}{numeric matrix}
 
 \item{V}{numeric matrix}

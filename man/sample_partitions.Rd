@@ -9,7 +9,13 @@ sample_partitions(npix, npart = 10, partsize = NA, pixels = NA, verbose = TRUE)
 \arguments{
 \item{npix}{number of pixels in full dataset}
 
+\item{npart}{number of partitions to create}
+
+\item{partsize}{size of each partition}
+
 \item{pixels}{vector of pixel indexes to sample from}
+
+\item{verbose}{logical: TRUE prints additional info}
 }
 \description{
 function to calculate partition size or number of partitions

@@ -4,10 +4,12 @@
 \alias{coef.remoteAR}
 \title{Extract coefficients from remoteAR object}
 \usage{
-\method{coef}{remoteAR}(obj)
+\method{coef}{remoteAR}(object, ...)
 }
 \arguments{
-\item{obj}{remoteAR object}
+\item{object}{remoteAR object}
+
+\item{...}{additional arguments}
 }
 \value{
 coefficeint data frame

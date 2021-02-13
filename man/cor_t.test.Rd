@@ -4,10 +4,10 @@
 \alias{cor_t.test}
 \title{T test of partitioned GLS}
 \usage{
-cor_t.test(obj)
+cor_t.test(object)
 }
 \arguments{
-\item{obj}{remoteGLS.parts object}
+\item{object}{remoteGLS.parts object}
 }
 \value{
 t-table

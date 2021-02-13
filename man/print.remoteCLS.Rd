@@ -4,10 +4,12 @@
 \alias{print.remoteCLS}
 \title{printmethod for remoteCLS object}
 \usage{
-\method{print}{remoteCLS}(obj)
+\method{print}{remoteCLS}(x, ...)
 }
 \arguments{
-\item{obj}{remoteCLS object}
+\item{x}{remoteCLS object}
+
+\item{...}{additional arguments}
 }
 \description{
 printmethod for remoteCLS object

@@ -4,10 +4,12 @@
 \alias{print.remoteAR}
 \title{print method for remoteAR object}
 \usage{
-\method{print}{remoteAR}(obj)
+\method{print}{remoteAR}(x, ...)
 }
 \arguments{
-\item{obj}{remoteAR object}
+\item{x}{remoteAR object}
+
+\item{...}{additional arguments}
 }
 \value{
 
