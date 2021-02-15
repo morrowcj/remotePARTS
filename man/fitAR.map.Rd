@@ -21,6 +21,8 @@ points and n columns corresponding to the number of pixels}
 
 \item{t}{p length temporal response vector}
 
+\item{Z}{(currently not in use) - Z will be used to add covariates to the model.}
+
 \item{ret_int.coef}{should the intercept coeffients be returned? logical}
 
 \item{ret_AR.par}{should the AR parameter estimates be returned? logical}

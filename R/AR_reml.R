@@ -173,7 +173,7 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
 #' @param X nxp time series response matrix with p columns corresponding to time
 #'  points and n columns corresponding to the number of pixels
 #' @param t p length temporal response vector
-#' @param Z
+#' @param Z (currently not in use) - Z will be used to add covariates to the model.
 #' @param ret_int.coef should the intercept coeffients be returned? logical
 #' @param ret_AR.par should the AR parameter estimates be returned? logical
 #' @param ret_MSE should the model MSEs be returned? logical
@@ -200,7 +200,6 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
 #' t = 1:30; n.pix = 10
 #' X = matrix(rnorm(length(t)*n.pix), ncol = length(t))
 #' fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
-#' summary(fitAR.map(X, t))
 #'
 #' coef(fitAR.map(X, t)) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
 #' fitAR.map(X, t)$AR.par # AR parameters
