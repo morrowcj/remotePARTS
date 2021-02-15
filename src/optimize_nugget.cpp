@@ -63,10 +63,10 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y,
   lab1:
     // cout << "Loop Start (lab1): iteration " <<i<<endl;
     if (debug) {
-      cout << "x = " << x << " fx = " << fx << endl;
+      // cout << "x = " << x << " fx = " << fx << endl;
       i += 1;
       if (i >= 100) {
-        cout << "breaking loop, too many iterations"<<endl;
+      // cout << "breaking loop, too many iterations"<<endl;
         goto lab8;
       }
     }
