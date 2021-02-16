@@ -199,13 +199,15 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
 #' @examples
 #' t = 1:30; n.pix = 10
 #' X = matrix(rnorm(length(t)*n.pix), ncol = length(t))
-#' fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
+#' ARfit = fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
+#' ARfit # print
 #'
-#' coef(fitAR.map(X, t)) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
-#' fitAR.map(X, t)$AR.par # AR parameters
-#' fitAR.map(X, t)$MSE # model MSEs
-#' fitAR.map(X, t)$logLik # model log-likelihoods
-#' resid(fitAR.map(X, t)) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
+#' # Extract specific output:
+#' coef(ARfit) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
+#' ARfit$AR.par # AR parameters
+#' ARfit$MSE # model MSEs
+#' ARfit$logLik # model log-likelihoods
+#' resid(ARfit) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
 fitAR.map <- function(X, t, Z = NULL,
                       ret_int.coef = FALSE, ret_AR.par = TRUE,
                       ret_MSE = TRUE, ret_resid = TRUE, ret_logLik = TRUE){
@@ -227,10 +229,10 @@ fitAR.map <- function(X, t, Z = NULL,
 
   ## Initialize output
   out.list <- list(call = match.call(),
-                   time.coef = matrix(NA, ncol = 4, nrow = n.pixels))
+                   time.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels)))
   colnames(out.list$time.coef) <- c("Est", "SE", "t.stat", "p.val")
   if (ret_int.coef) {
-    out.list$int.coef = matrix(NA, ncol = 4, nrow = n.pixels)
+    out.list$int.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
     colnames(out.list$int.coef) <- c("Est", "SE", "t.stat", "p.val")
   }
   if (ret_AR.par) {out.list$AR.par = numeric(n.pixels)}

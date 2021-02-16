@@ -122,7 +122,7 @@ fitCLS <- function(x, t, Z = NULL, save_AR.df = FALSE) {
 #'
 #' @examples
 #' data(ndvi_AK3000)
-#' X = (ndvi_AK3000[, -c(1:6)])
+#' X = (ndvi_AK3000[1:20, -c(1:6)]) # first 20 pixels of NDVI data
 #' t = 1:ncol(X) # time points
 #'
 #' # fit CLS (only save time coefficient)
@@ -133,14 +133,20 @@ fitCLS <- function(x, t, Z = NULL, save_AR.df = FALSE) {
 #' # fit again, but save all possible output
 #' CLS.full <- fitCLS.map(X, t, ret_xi.coef = TRUE, ret_int.coef = TRUE,
 #'                        ret_MSE = TRUE, ret_resid = TRUE)
-#' CLS.full # still only prints model info and time coefficients by default
-#' summary(CLS.full) # summary tables
-#' ## access other elements
+#'
+#' # printing CLS.full still only prints model info and time coefficients by default:
+#' CLS.full
+#'
+#' # But all coefficeints are still contained in the output and can be accessed:
 #' coef(CLS.full) # time coefficient table; also coef(CLS.full, "time") or CLS.full$time.coef
 #' coef(CLS.full, "xi") # extract coefficient table for xi; also CLS.full$xi.coef
 #' coef(CLS.full, "intercept") # extract the coefficient table for intercept; also CLS.full$int.coef
+#'
 #' resid(CLS.full) # residual matrix; also CLS.full$residuals
+#'
 #' CLS.full$MSE # vector of MSEs
+#'
+#' summary(CLS.full) # summaries
 fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
                        ret_MSE = TRUE, ret_resid = TRUE){
   stopifnot(ncol(X) == length(t))
@@ -159,11 +165,11 @@ fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
 
   ## setup coefficient tables
   out.list <- list(call = match.call(),
-                   time.coef = matrix(NA, ncol = 4, nrow = n.pixels))
+                   time.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels)))
   colnames(out.list$time.coef) <- c("Est", "SE", "t","p.t")
   out.list$mean = rowMeans(X)
   if (ret_xi.coef){
-    out.list$xi.coef <- matrix(NA, ncol = 4, nrow = n.pixels)
+    out.list$xi.coef <- as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
     colnames(out.list$xi.coef) <- c("Est", "SE", "t","p.t")
   }
   if (ret_int.coef){

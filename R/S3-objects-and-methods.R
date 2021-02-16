@@ -151,20 +151,19 @@ summary.remoteCLS <- function(object, ...){
 
   } else if ("map" %in% class(object)) {
     ## Map version
-    cat("Summary\n")
-    cat("\neffect of time:\n")
+    cat("Effect of time (time.coef):\n")
     print(summary(as.data.frame(object$time.coef)))
     if(!is.null(object$xi.coef)){
-      cat("\neffect of previous x:\n")
+      cat("\nEffect of previous x (xi.coef):\n")
       print(summary(as.data.frame(object$xi.coef)))
     }
     if(!is.null(object$int.coef)){
-      cat("\nintercept:\n")
+      cat("\nIntercept (int.coef):\n")
       print(summary(as.data.frame(object$int.coef)))
     }
     if(!is.null(object$MSE)){
-      cat("\nMSE:\n")
-      print(summary(as.data.frame(object$MSE)))
+      cat("\nModel MSE:\n")
+      print(summary(object$MSE))
     }
   }
 }
