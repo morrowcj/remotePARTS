@@ -34,7 +34,3 @@ expect_error(invert_chol(matrix(1:9, 3),
 expect_error(invert_chol(crossprod(matrix(1:9, ncol = 3))),
              "M is not positive definite",
              info = "non positive definite input")
-
-
-## invert_cholR
-expect_true(FALSE, info = "need to depricate invert_cholR()")
