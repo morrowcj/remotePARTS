@@ -57,6 +57,8 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #' @param data object containing the data
 #' @param form.0 null model formula (default: "y ~ 1")
 #' @param contrasts optional linear contrasts to use
+#' @param LL_only logical: should only the log-liklihood be computed?
+#' @param no_F logical: should calculations needed for F tests be skipped?
 #' @param ... additional arguments passed to \code{\link{optimize_nugget}}
 #'
 #' @details \code{fitGLS2()} first creates an empty remoteGLS object
@@ -75,7 +77,8 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #'
 #' @examples
 fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
-                    threads = 1, contrasts = NULL, ...){
+                    threads = 1, contrasts = NULL, LL_only = FALSE,
+                    no_F = FALSE,...){
 
   ## Parse formula arguments to make model matrix ----
   call <- match.call() # function call
@@ -126,22 +129,30 @@ fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
 
   GLS <- remoteGLS(form = formula)
   GLS$model.info$call <- call
+  GLS$model.info$predictors = colnames(X)
   GLS$nugget = nugget
 
+
   ## Run GLS ----
-  .Call(`_remotePARTS_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, threads)
+  .Call(`_remotePARTS_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, LL_only,
+        no_F, threads)
+
+  if(LL_only){
+    return(unlist(GLS$logLik))
+  }
 
   # add in p values
   GLS$pval.t <- 2 * pt(abs(GLS$tstat), df = GLS$dft, lower.tail = F)
-  GLS$pval.F <- pf(GLS$Fstat, df1 = GLS$df.F[1], df2 = GLS$df.F[2], lower.tail = F)
+
+  names(GLS$betahat) = names(GLS$SE) = names(GLS$tstat) = names(GLS$pval.t) = colnames(X)
+
+  if(!no_F){
+    GLS$pval.F <- pf(GLS$Fstat, df1 = GLS$df.F[1], df2 = GLS$df.F[2], lower.tail = F)
+
+  } else {attr(GLS, "no_F") = TRUE}
 
   ## Return ----
   return(GLS)
-
-
-  # return(list(test.out = list(X = X, y = y, X0 = X0),
-  #             out = out))
-
 }
 
 

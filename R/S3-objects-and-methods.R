@@ -296,6 +296,7 @@ remoteGLS <- function(form){
   # print(match.call(expand.dots = FALSE))
 
   class(GLS.obj) <- c("remoteGLS")
+  attr(GLS.obj, "no_F") = FALSE
 
   return(GLS.obj) # return the empty list
 }
@@ -321,14 +322,19 @@ print.remoteGLS <- function(x, ret_call = TRUE, ...){
     coefs = data.frame("Est" = x$betahat, "t stat" = x$tstat, "pval t" = x$pval.t)
 
     ## Model stats
-    mod.stats = data.frame("df" = x$df.F,
-                           "SSE" = c(x$SSE, x$SSE0),
-                           "MSE" = c(x$MSE, x$MSE0),
-                           "logLik" = c(x$logLik, x$logLik0),
-                           "F stat" = c(x$Fstat, NA),
-                           "pval F" = c(x$pval.F, NA))
-    rownames(mod.stats) = c("mod_A", "mod_0")
-
+    if(!attr(x, "no_F")){
+      mod.stats = data.frame("df.F" = x$df.F,
+                             "SSE" = c(x$SSE, x$SSE0),
+                             "MSE" = c(x$MSE, x$MSE0),
+                             "logLik" = c(x$logLik, x$logLik0),
+                             "F stat" = c(x$Fstat, NA),
+                             "pval F" = c(x$pval.F, NA))
+      rownames(mod.stats) = c("mod_A", "mod_0")
+    } else {
+      mod.stats = data.frame("SSE" = x$SSE,
+                             "MSE" = x$MSE,
+                             "logLik" = x$logLik)
+    }
     ## return (needs cleaning)
     if (ret_call){
       cat("call: ");print(x$model.info$call)
@@ -336,9 +342,13 @@ print.remoteGLS <- function(x, ret_call = TRUE, ...){
     cat("response:", x$model.info$response,"\n\n")
     cat("t tests:\n")
     print(format(coefs, digits = 2, nsmall = 2))
-    cat("\nF test:\n")
-    print(format(mod.stats, digits = 2, nsmall = 2, scientific = -2))
 
+    if(!attr(x, "no_F")){
+      cat("\nF test:\n")
+    } else {
+      cat("\nmodel stats:\n")
+    }
+    print(format(mod.stats, digits = 2, nsmall = 2, scientific = -2))
   }
 }
 

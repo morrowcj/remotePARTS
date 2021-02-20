@@ -34,6 +34,7 @@ Suggests:
     knitr,
     rmarkdown,
     microbenchmark,
-    sqldf
+    sqldf,
+    devtools
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr

@@ -68,6 +68,7 @@ GLS.R <- fitGLS_R(X = modmat, V = V, y = y, X0 = null.modmat, nugget = new.nug_C
 new.GLS <- fitGLS(X = modmat, y = y,V = V, new.nug_C, X0 = null.modmat,
                   save_xx = TRUE, threads = 1)
 GLS.wrk = GLS_worker(y, modmat, V, null.modmat)
+
 ## compare output
 expect_equivalent(old.GLS$coef, new.GLS$betahat, GLS.wrk$betahat)
 expect_equivalent(old.GLS$t, new.GLS$tstat, GLS.wrk$tstat)
@@ -85,5 +86,10 @@ expect_equivalent(GLS.R$SSE0, new.GLS$SSE0)
 expect_equivalent(GLS.R$Fstat, new.GLS$Fstat)
 }
 
+# Other functionality (GLS2)
+## don't calculate F test statistics
+GLS2 = fitGLS2(formula = y ~ 0 + land, V = V, nugget = 0, no_F = TRUE)
+## only caculate log-liklihood
+GLS2.LL = fitGLS2(formula = y ~ 0 + land, V = V, nugget = 0, LL_only = TRUE)
 # Partitioned GLS ----
 # TBA

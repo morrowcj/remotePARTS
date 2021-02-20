@@ -110,13 +110,15 @@
 #' @param save_xx logical: should xx, xx0, and invcholV be returned? This
 #' functionality is meant for use with the partitioned GLS whereby these
 #' values are used to calculate cross-partition statistics.
+#' @param LL_only logical: should only the log-liklihood be computed?
+#' @param no_F logical: should calculations needed for F tests be skipped?
 #' @param threads integer indicating the number of threads to use. This current
 #' version does not have multi-thread functionality so this argument does
 #' nothing yet.
 #'
 #' @examples #TBA
-.fitGLS2_cpp <- function(L, X, V, y, X0, nugget, save_xx, threads) {
-    invisible(.Call(`_remotePARTS_fitGLS2_cpp`, L, X, V, y, X0, nugget, save_xx, threads))
+.fitGLS2_cpp <- function(L, X, V, y, X0, nugget, save_xx, LL_only, no_F, threads) {
+    invisible(.Call(`_remotePARTS_fitGLS2_cpp`, L, X, V, y, X0, nugget, save_xx, LL_only, no_F, threads))
 }
 
 #' caculate t(A) \%*\% A

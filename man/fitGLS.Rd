@@ -18,6 +18,8 @@ fitGLS2(
   save_xx = FALSE,
   threads = 1,
   contrasts = NULL,
+  LL_only = FALSE,
+  no_F = FALSE,
   ...
 )
 
@@ -50,6 +52,10 @@ this parameter does nothin but multi-core functionality will be added soon.}
 \item{form.0}{null model formula (default: "y ~ 1")}
 
 \item{contrasts}{optional linear contrasts to use}
+
+\item{LL_only}{logical: should only the log-liklihood be computed?}
+
+\item{no_F}{logical: should calculations needed for F tests be skipped?}
 
 \item{...}{additional arguments passed to \code{\link{optimize_nugget}}}
 }
