@@ -1,6 +1,6 @@
 Package: remotePARTS
 Title: Spatio-temporal Auto-regression for Remote Sensing Data
-Version: 0.1.1.9001
+Version: 0.1.1.9002
 Authors@R: 
     c(person(given = "Clay",
            family = "Morrow",
