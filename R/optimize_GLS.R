@@ -2,6 +2,9 @@
 
 ## GLS function to optimize
 #' function to optimize GLS parameters r, a, and nugget
+#' @param par parameters to optimize
+#' @param y response vector
+#' @param modmat predictor model matrix
 #' @rdname optimize_GLS
 optim_GLS_func <- function(par, y, modmat, D, verbose = FALSE,
                            V.meth = "exponential-power"){
@@ -44,6 +47,7 @@ optim_GLS_func <- function(par, y, modmat, D, verbose = FALSE,
 #' @param spcor NA: find maximum liklihood spatial correlation
 #' @param verbose should the optimizer steps be printed to the console?
 #' @param data optional data to search for objects in formula
+#' @param contrasts possible contrasts object
 #' @param ... additional arguments passed to \code{fitGLS2()}
 #'
 #' @seealso [fitGLS2()]

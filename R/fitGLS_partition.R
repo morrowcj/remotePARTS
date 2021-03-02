@@ -26,7 +26,7 @@
 #' matrix \code{Dist}. \code{fitGLS.partition()} is in development and will
 #' not require the full matrix be loaded into memory.
 #'
-#' @examples
+#' @examples #TBA
 #'
 #' @export
 fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
@@ -171,7 +171,6 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #' dim(A.out$X)
 #' dim(A.out$X0)
 #' length(A.out$y)
-#' @examples
 part_csv <- function(part.i, csv.path, part.mat){
   partDF = data.frame(part = part.mat[, part.i]) #df with 1 column: current partition
 

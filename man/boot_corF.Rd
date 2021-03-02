@@ -22,7 +22,7 @@ boot_corF(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot = 2000)
 \item{nboot}{bootstraps}
 }
 \value{
-
+list of pvalues, number of bootstrap iterations, and MSR rank
 }
 \description{
 bootsrap test

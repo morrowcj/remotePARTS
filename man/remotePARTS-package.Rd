@@ -4,7 +4,7 @@
 \name{remotePARTS-package}
 \alias{remotePARTS}
 \alias{remotePARTS-package}
-\title{remotePARTS: Spatio-temporal Auto-regression for Remote Sensing Data}
+\title{remotePARTS: Spatio-Temporal Auto-Regression for Remote Sensing Data}
 \description{
 "remoteSTAR is a set of tools for analyzing sets of spatially 
   correlated time series data, collected via remote sensing methods."
@@ -19,7 +19,7 @@
 
 Authors:
 \itemize{
-  \item Anthony Ives \email{arives@wisc.edu} (\href{https://orcid.org/...}{ORCID})
+  \item Anthony Ives \email{arives@wisc.edu} (\href{https://orcid.org/0000-0001-9375-9523}{ORCID})
 }
 
 }

@@ -193,7 +193,7 @@ residuals.remoteCLS <- function(object, ...){
 #' @param x remoteAR object
 #' @param ... additional arguments
 #'
-#' @return
+#' @return print formatted remoteAR
 #' @export
 print.remoteAR <- function(x, ...){
   stopifnot("remoteAR" %in% class(x))

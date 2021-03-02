@@ -24,7 +24,7 @@
 #'
 #' @seealso [fitGLS()] and [fitGLS.parition_rcpp()]
 #'
-#' @examples
+#' @examples #TBA
 #'
 #' @export
 GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
@@ -77,7 +77,7 @@ GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
 #' @details Cross-partition statistics are calculated for a pair of partitions
 #' i and j.
 #'
-#' @examples
+#' @examples #TBA
 #'
 #' @export
 crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
