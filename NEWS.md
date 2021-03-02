@@ -7,3 +7,5 @@
 * Fixed some build bugs (Travis CI)
 
 * added `optimize_GLS()` to optimize the GLS over `r`, `a,` and `nugget`
+
+# remotePARTS 0.1.1.9003
