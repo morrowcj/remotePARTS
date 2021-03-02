@@ -27,19 +27,19 @@ optimize_GLS(
 )
 }
 \arguments{
-\item{y}{response variable}
-
-\item{modmat}{model matrix of predictors}
-
 \item{D}{Distance matrix}
 
 \item{verbose}{should the optimizer steps be printed to the console?}
 
 \item{V.meth}{method passed to \code{fitV()} default: "exponential-power"}
 
+\item{formula}{model formula}
+
 \item{nugget}{NA: find maximum liklihood nugget}
 
 \item{spcor}{NA: find maximum liklihood spatial correlation}
+
+\item{data}{optional data to search for objects in formula}
 
 \item{...}{additional arguments passed to \code{fitGLS2()}}
 }
