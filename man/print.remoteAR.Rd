@@ -12,7 +12,7 @@
 \item{...}{additional arguments}
 }
 \value{
-
+print formatted remoteAR
 }
 \description{
 print method for remoteAR object

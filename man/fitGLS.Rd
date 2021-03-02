@@ -92,6 +92,8 @@ implementations.
 \code{fitGLS()} is a C++ implementation of \code{fitGLS_R()}.
 }
 \examples{
+#TBA
 
+#TBA
 #TBA
 }

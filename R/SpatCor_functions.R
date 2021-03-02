@@ -103,7 +103,7 @@ scale_dist <- function(location, scl = 1000){
 #' logLik: the log-likelihood of the fit
 #' @export
 #'
-#' @examples
+#' @examples #TBA
 fit_spatialcor <- function(X, t, r.start = 0.1, a.start = 1,
                            fit.n = 1000, method = "exp",
                            dist, location,

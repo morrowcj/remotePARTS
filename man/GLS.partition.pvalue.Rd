@@ -12,7 +12,7 @@ GLS.partition.pvalue(part.out, nboot = 2000)
 \item{nboot}{number of bootstraps to run for F-test (NA skips bootstrap)}
 }
 \value{
-
+list of p values calculated with different methods
 }
 \description{
 Wrapper for bootsrap test

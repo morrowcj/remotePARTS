@@ -44,13 +44,14 @@ jobs:
           while read -r cmd
           do
             eval sudo $cmd
-          done < <(Rscript -e 'cat(remotes::system_requirements("ubuntu", "20.04"), sep = "\n")')
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
 
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
+
 
       - name: Session info
         run: |
@@ -64,3 +65,10 @@ jobs:
           options(crayon.enabled = TRUE)
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
+
+      - name: Upload check results
+          if: failure()
+          uses: actions/upload-artifact@main
+          with:
+            name: ${{ runner.os }}-r${{ matrix.config.r }}-results
+            path: check

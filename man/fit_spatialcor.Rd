@@ -71,3 +71,6 @@ logLik: the log-likelihood of the fit
 \description{
 fit a spatial correlation matrix
 }
+\examples{
+#TBA
+}

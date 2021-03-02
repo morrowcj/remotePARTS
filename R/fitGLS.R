@@ -18,7 +18,7 @@
 #'
 #' @details
 #'
-#' @examples
+#' @examples #TBA
 #'
 #' @export
 fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
@@ -75,7 +75,7 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #'
 #' @export
 #'
-#' @examples
+#' @examples #TBA
 fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
                     threads = 1, contrasts = NULL, LL_only = FALSE,
                     no_F = FALSE,...){

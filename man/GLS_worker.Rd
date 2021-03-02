@@ -39,6 +39,7 @@ At present, \code{GLS_worker()} is only single-core natively but will have
 multi-core functionality eventually.
 }
 \examples{
+#TBA
 
 }
 \seealso{

@@ -7,6 +7,7 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats aggregate coef cor formula lm logLik model.matrix
 #' model.response nls nls.control optimize p.adjust pf pt residuals rnorm sigma
+#' optim
 #' @docType package
 ## usethis namespace: start
 #' @useDynLib remotePARTS, .registration = TRUE

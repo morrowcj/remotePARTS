@@ -129,7 +129,7 @@ calc_dfpart <- function(partsize, p, p0){
 #' @param npart partitions
 #' @param nboot bootstraps
 #'
-#' @return
+#' @return list of pvalues, number of bootstrap iterations, and MSR rank
 #' @export
 #'
 #' @examples #TBA
@@ -217,7 +217,7 @@ cor_t <- function(coefs, part.SEs, rcoef, df2, npart){
 #' @param part.out output of partitioned GLS model...
 #' @param nboot number of bootstraps to run for F-test (NA skips bootstrap)
 #'
-#' @return
+#' @return list of p values calculated with different methods
 #' @export
 #'
 #' @examples #TBA

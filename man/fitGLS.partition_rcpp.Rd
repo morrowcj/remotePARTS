@@ -59,5 +59,6 @@ matrix \code{Dist}. \code{fitGLS.partition()} is in development and will
 not require the full matrix be loaded into memory.
 }
 \examples{
+#TBA
 
 }
