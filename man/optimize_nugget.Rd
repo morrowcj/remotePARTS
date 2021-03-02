@@ -8,9 +8,9 @@
 \usage{
 optimize_nugget(X, V, y, lower = 0, upper = 1, tol = 1e-05, debug = FALSE)
 
-fitNugget(X, V, y, int = c(0, 1), tol = 1e-05)
+fitNugget(X, V, y, lower = 0, upper = 1, tol = 1e-05)
 
-fitNugget_Rcpp(X, V, y, int = c(0, 1), tol = 1e-05)
+fitNugget_Rcpp(X, V, y, lower = 0, upper = 1, tol = 1e-05)
 }
 \arguments{
 \item{X}{numeric (double) nxp matrix}
@@ -57,7 +57,7 @@ nugget.
 and \code{fitNugget()}. It optimizes the C++ function \code{LogLikGLS()} with
 the R function \code{stats::optimize()}.
 
-After futher testing, only the most efficeint of the 3 nugget optimizers will
+After further testing, only the most efficeint of the 3 nugget optimizers will
 remain in the package.
 }
 \examples{

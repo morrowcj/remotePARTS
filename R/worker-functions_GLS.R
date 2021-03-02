@@ -27,30 +27,30 @@
 #' @examples
 #'
 #' @export
-GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
+GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
                        save_xx = FALSE){
   ## coerce to matrices
-  X = as(X, "matrix")
-  V = as(V, "matrix")
-  y = as(y, "matrix")
-  X0 = as(X0, "matrix")
+  X = as.matrix(X)
+  V = as.matrix(V)
+  y = as.matrix(y)
+  X0 = as.matrix(X0)
 
   ## error handling
   stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
   stopifnot(all.equal(nrow(X), nrow(V), nrow(X0), nrow(y)))
   stopifnot(all(check_posdef(V)))
-  stopifnot(nug.l >= 0)
-  stopifnot(nug.u <= 1)
+  stopifnot(nug_l >= 0)
+  stopifnot(nug_u <= 1)
 
   ## Execute C++ GLS worker function
-  out <- .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug.l, nug.u, nug.tol,
+  out <- .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug_l, nug_u, nug_tol,
                save_xx)
 
   ## calculate p values outside of C++
   out$pval.t <- sapply(out$tstat, function(tval){ #t test
     2*pt(abs(tval), df = out$dft, lower.tail = FALSE)
   })
-  out$pval.F <- pf(out$Fstat, out$df.F[1], out$df.F[2], lower.tail = FALSE) #F test
+  out$pval.F <- stats::pf(out$Fstat, out$df.F[1], out$df.F[2], lower.tail = FALSE) #F test
 
   return(out)
 }
@@ -83,13 +83,13 @@ GLS_worker <- function(y, X, V, X0, nug.l = 0, nug.u = 1, nug.tol = 1e-5,
 crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
                              nug_i, nug_j, df1, df2){
   # coerce input to matrices
-  xxi = as(xxi, "matrix")
-  xxj = as(xxj, "matrix")
-  xxi0 = as(xxi0, "matrix")
-  xxj0 = as(xxj0, "matrix")
-  invChol_i = as(invChol_i, "matrix")
-  invChol_j = as(invChol_j, "matrix")
-  Vsub = as(Vsub, "matrix")
+  xxi = as.matrix(xxi)
+  xxj = as.matrix(xxj)
+  xxi0 = as.matrix(xxi0)
+  xxj0 = as.matrix(xxj0)
+  invChol_i = as.matrix(invChol_i)
+  invChol_j = as.matrix(invChol_j)
+  Vsub = as.matrix(Vsub)
 
   ## error handling
   stopifnot(all(is.double(xxi), is.double(xxj),
@@ -112,7 +112,7 @@ crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
 #' @details \code{crosspart_worker_R} is not exported by default and is just
 #' a reference function. is a purely R version and will be removed in future
 #' implementations.
-crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
+crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j,
                                Vsub, df1, df2){
   np = nrow(xxi)
   # rescale nuggets
@@ -124,7 +124,7 @@ crosspart_worker_R <- function(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j,
   # Vn <- Vn[1:np, (np+1):(2*np)] # upper right block
 
   # calculate stats
-  Rij <- crossprod(t(tUinv_i), tcrossprod(Vsub, tUinv_j))
+  Rij <- crossprod(t(invChol_i), tcrossprod(Vsub, invChol_j))
 
   Hi <- xxi %*% solve(crossprod(xxi)) %*% t(xxi)
   Hj <- xxj %*% solve(crossprod(xxj)) %*% t(xxj)

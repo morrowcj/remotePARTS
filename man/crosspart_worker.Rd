@@ -19,7 +19,7 @@ crosspart_worker(
   df2
 )
 
-crosspart_worker_R(xxi, xxj, xxi0, xxj0, tUinv_i, tUinv_j, Vsub, df1, df2)
+crosspart_worker_R(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub, df1, df2)
 }
 \arguments{
 \item{xxi}{numeric matrix xx from  partition i}

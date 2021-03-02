@@ -9,23 +9,29 @@ sample_partitions(npix, npart = 10, partsize = NA, pixels = NA, verbose = TRUE)
 \arguments{
 \item{npix}{number of pixels in full dataset}
 
+\item{npart}{number of partitions to create}
+
+\item{partsize}{size of each partition}
+
 \item{pixels}{vector of pixel indexes to sample from}
+
+\item{verbose}{logical: TRUE prints additional info}
 }
 \description{
 function to calculate partition size or number of partitions
 }
 \examples{
-# setup data
-dat.M <- matrix(rnorm(3000*20), ncol = 20)
+# simulate data with 100 pixels and 20 time points
+dat.M <- matrix(rnorm(100*20), ncol = 20)
 # 4 partitions (exhaustive)
 sample_partitions(npix = nrow(dat.M), npart = 4)
-# partitions with 500 pixels each (exhaustive)
-sample_partitions(npix = nrow(dat.M), partsize = 500)
-# 4 partitions each with 500 pixels (non-exhaustive)
-sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 500)
+# partitions with 10 pixels each (exhaustive)
+sample_partitions(npix = nrow(dat.M), partsize = 10)
+# 4 partitions each with 10 pixels (non-exhaustive)
+sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
 
-# index of pixels to subset
-sub.indx <- 1:1000
-# 4 partitions (exhaustive) using only the specified pixels
-sample_partitions(npix = nrow(dat.M), npart = 4, pixels = sub.indx)
+# index of 50 pixels to subset
+sub.indx <- c(1:10, 21:25, 30:62, 70:71)
+# 5 partitions (exhaustive) using only the specified pixels
+sample_partitions(npix = nrow(dat.M), npart = 5, pixels = sub.indx)
 }

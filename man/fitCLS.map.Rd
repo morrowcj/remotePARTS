@@ -56,8 +56,8 @@ access elements by name or use one of the extractor functions
 }
 \examples{
 data(ndvi_AK3000)
-X = (ndvi_AK3000[, -c(1:6)])
-t = 1:length(x) # time points
+X = (ndvi_AK3000[1:20, -c(1:6)]) # first 20 pixels of NDVI data
+t = 1:ncol(X) # time points
 
 # fit CLS (only save time coefficient)
 CLS <- fitCLS.map(X, t)
@@ -67,14 +67,20 @@ coef(CLS) # coefficient table as data frame
 # fit again, but save all possible output
 CLS.full <- fitCLS.map(X, t, ret_xi.coef = TRUE, ret_int.coef = TRUE,
                        ret_MSE = TRUE, ret_resid = TRUE)
-CLS.full # still only prints model info and time coefficients by default
-summary(CLS.full) # summary tables
-## access other elements
+
+# printing CLS.full still only prints model info and time coefficients by default:
+CLS.full
+
+# But all coefficeints are still contained in the output and can be accessed:
 coef(CLS.full) # time coefficient table; also coef(CLS.full, "time") or CLS.full$time.coef
 coef(CLS.full, "xi") # extract coefficient table for xi; also CLS.full$xi.coef
 coef(CLS.full, "intercept") # extract the coefficient table for intercept; also CLS.full$int.coef
+
 resid(CLS.full) # residual matrix; also CLS.full$residuals
+
 CLS.full$MSE # vector of MSEs
+
+summary(CLS.full) # summaries
 }
 \seealso{
 [fitCLS()] for fitting CLS on individual time series and [fitAR()]

@@ -4,10 +4,12 @@
 \alias{residuals.remoteCLS}
 \title{resisduals of remoteCLS object}
 \usage{
-\method{residuals}{remoteCLS}(obj)
+\method{residuals}{remoteCLS}(object, ...)
 }
 \arguments{
-\item{obj}{remoteCLS object}
+\item{object}{remoteCLS object}
+
+\item{...}{additional arguments}
 }
 \value{
 model residuals

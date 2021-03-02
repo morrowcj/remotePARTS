@@ -4,8 +4,9 @@
 #' @keywords internal
 "_PACKAGE"
 
-#' @import Rcpp
 #' @importFrom Rcpp evalCpp
+#' @importFrom stats aggregate coef cor formula lm logLik model.matrix
+#' model.response nls nls.control optimize p.adjust pf pt residuals rnorm sigma
 #' @docType package
 ## usethis namespace: start
 #' @useDynLib remotePARTS, .registration = TRUE

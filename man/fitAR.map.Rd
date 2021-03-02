@@ -21,6 +21,8 @@ points and n columns corresponding to the number of pixels}
 
 \item{t}{p length temporal response vector}
 
+\item{Z}{(currently not in use) - Z will be used to add covariates to the model.}
+
 \item{ret_int.coef}{should the intercept coeffients be returned? logical}
 
 \item{ret_AR.par}{should the AR parameter estimates be returned? logical}
@@ -53,12 +55,13 @@ and the S3 \code{$} operator to access them.
 \examples{
 t = 1:30; n.pix = 10
 X = matrix(rnorm(length(t)*n.pix), ncol = length(t))
-fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
-summary(fitAR.map(X, t))
+ARfit = fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
+ARfit # print
 
-coef(fitAR.map(X, t)) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
-fitAR.map(X, t)$AR.par # AR parameters
-fitAR.map(X, t)$MSE # model MSEs
-fitAR.map(X, t)$logLik # model log-likelihoods
-resid(fitAR.map(X, t)) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
+# Extract specific output:
+coef(ARfit) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
+ARfit$AR.par # AR parameters
+ARfit$MSE # model MSEs
+ARfit$logLik # model log-likelihoods
+resid(ARfit) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
 }

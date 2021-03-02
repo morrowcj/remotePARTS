@@ -42,27 +42,30 @@ check_posdef <- function(M){
 #' function to calculate partition size or number of partitions
 #'
 #' @param npix number of pixels in full dataset
+#' @param npart number of partitions to create
+#' @param partsize size of each partition
 #' @param pixels vector of pixel indexes to sample from
+#' @param verbose logical: TRUE prints additional info
 #' @export
 #'
 #' @examples
-#' # setup data
-#' dat.M <- matrix(rnorm(3000*20), ncol = 20)
+#' # simulate data with 100 pixels and 20 time points
+#' dat.M <- matrix(rnorm(100*20), ncol = 20)
 #' # 4 partitions (exhaustive)
 #' sample_partitions(npix = nrow(dat.M), npart = 4)
-#' # partitions with 500 pixels each (exhaustive)
-#' sample_partitions(npix = nrow(dat.M), partsize = 500)
-#' # 4 partitions each with 500 pixels (non-exhaustive)
-#' sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 500)
+#' # partitions with 10 pixels each (exhaustive)
+#' sample_partitions(npix = nrow(dat.M), partsize = 10)
+#' # 4 partitions each with 10 pixels (non-exhaustive)
+#' sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
 #'
-#' # index of pixels to subset
-#' sub.indx <- 1:1000
-#' # 4 partitions (exhaustive) using only the specified pixels
-#' sample_partitions(npix = nrow(dat.M), npart = 4, pixels = sub.indx)
+#' # index of 50 pixels to subset
+#' sub.indx <- c(1:10, 21:25, 30:62, 70:71)
+#' # 5 partitions (exhaustive) using only the specified pixels
+#' sample_partitions(npix = nrow(dat.M), npart = 5, pixels = sub.indx)
 sample_partitions <- function(npix, npart = 10, partsize = NA,
                               pixels = NA, verbose = TRUE){
 
-  if(!is.na(pixels) && length(pixels) > 1){
+  if(all(!is.na(pixels)) & (length(pixels) > 1)){
     npix = length(pixels)
     from = pixels
   } else {
@@ -100,14 +103,14 @@ sample_partitions <- function(npix, npart = 10, partsize = NA,
 
 #' calculate degrees of freedom for partitioned GLS
 #'
-#' @param part.size number of pixels in each partition
+#' @param partsize number of pixels in each partition
 #' @param p number of predictors in alternate model
 #' @param p0 number of parameters in null model
 #'
 #' @export
 #'
 #' @examples
-#' calc_df(partsize = 2000, p = 4, p0 = 1)
+#' calc_dfpart(partsize = 2000, p = 4, p0 = 1)
 calc_dfpart <- function(partsize, p, p0){
   stopifnot(length(partsize) == 1)
   df2 = partsize - (p - 1)

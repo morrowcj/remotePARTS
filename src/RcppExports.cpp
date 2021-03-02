@@ -78,8 +78,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // fitGLS2_cpp
-void fitGLS2_cpp(List L, const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, const int threads);
-RcppExport SEXP _remotePARTS_fitGLS2_cpp(SEXP LSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
+void fitGLS2_cpp(List L, const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, bool LL_only, bool no_F, const int threads);
+RcppExport SEXP _remotePARTS_fitGLS2_cpp(SEXP LSEXP, SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP LL_onlySEXP, SEXP no_FSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type L(LSEXP);
@@ -89,8 +89,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const MapMatd& >::type X0(X0SEXP);
     Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
     Rcpp::traits::input_parameter< bool >::type save_xx(save_xxSEXP);
+    Rcpp::traits::input_parameter< bool >::type LL_only(LL_onlySEXP);
+    Rcpp::traits::input_parameter< bool >::type no_F(no_FSEXP);
     Rcpp::traits::input_parameter< const int >::type threads(threadsSEXP);
-    fitGLS2_cpp(L, X, V, y, X0, nugget, save_xx, threads);
+    fitGLS2_cpp(L, X, V, y, X0, nugget, save_xx, LL_only, no_F, threads);
     return R_NilValue;
 END_RCPP
 }
@@ -163,7 +165,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remotePARTS_LogLikGLS_cpp", (DL_FUNC) &_remotePARTS_LogLikGLS_cpp, 4},
     {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 11},
     {"_remotePARTS_fitGLS_cpp", (DL_FUNC) &_remotePARTS_fitGLS_cpp, 7},
-    {"_remotePARTS_fitGLS2_cpp", (DL_FUNC) &_remotePARTS_fitGLS2_cpp, 8},
+    {"_remotePARTS_fitGLS2_cpp", (DL_FUNC) &_remotePARTS_fitGLS2_cpp, 10},
     {"_remotePARTS_AtA", (DL_FUNC) &_remotePARTS_AtA, 1},
     {"_remotePARTS_solve_cpp", (DL_FUNC) &_remotePARTS_solve_cpp, 2},
     {"_remotePARTS_solve_ident_cpp", (DL_FUNC) &_remotePARTS_solve_ident_cpp, 1},

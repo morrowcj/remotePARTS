@@ -20,7 +20,7 @@ fitV <- function(Dist, spatialcor, method = "exponential") {
   } else if (method == "exponential-power") {
     return(exp(-(Dist/spatialcor[1])^spatialcor[2]))
   } else if (method == "taper-spherical") {
-    return(taper.spherical(Dist, spatialcor))
+    return(taper_sphere(Dist, spatialcor))
   } else {
     stop(paste0("method '", method, "' not recognized."))
   }

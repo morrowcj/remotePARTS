@@ -1,5 +1,5 @@
 # run tiny tests
 
 if ( requireNamespace("tinytest", quietly=TRUE) ){
-  tinytest::test_package("remoteSTAR")
+  tinytest::test_package("remotePARTS")
 }

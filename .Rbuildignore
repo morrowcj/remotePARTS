@@ -3,19 +3,26 @@
 ^\.Rproj\.user$
 .*.tar.gz
 .Rprofile
+..Rcheck
 
 # folders
-Meta/
-doc/
-docs/
-old-code/
-data-raw/
-src_old/
-vignettes_backup/
+^docs$
+^old-code$
+^data-raw$
+^src_old$
+^vignettes_backup$
+^doc$
+^Meta$
 
 # specific files
 ^README\.Rmd$
 ^.*\.Rproj$
-build.r
-^doc$
-^Meta$
+^build.r$
+^\.travis\.yml$
+^\.github$
+
+# other files
+.*\.txt
+
+# temporarily stop tests
+tinytest_backup

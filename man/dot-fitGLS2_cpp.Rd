@@ -4,9 +4,11 @@
 \alias{.fitGLS2_cpp}
 \title{Fit GLS to remote sensing data}
 \usage{
-.fitGLS2_cpp(L, X, V, y, X0, nugget, save_xx, threads)
+.fitGLS2_cpp(L, X, V, y, X0, nugget, save_xx, LL_only, no_F, threads)
 }
 \arguments{
+\item{L}{empty remoteGLS list to be filled}
+
 \item{X}{numeric matrix}
 
 \item{V}{numeric matrix}
@@ -20,6 +22,10 @@
 \item{save_xx}{logical: should xx, xx0, and invcholV be returned? This
 functionality is meant for use with the partitioned GLS whereby these
 values are used to calculate cross-partition statistics.}
+
+\item{LL_only}{logical: should only the log-liklihood be computed?}
+
+\item{no_F}{logical: should calculations needed for F tests be skipped?}
 
 \item{threads}{integer indicating the number of threads to use. This current
 version does not have multi-thread functionality so this argument does

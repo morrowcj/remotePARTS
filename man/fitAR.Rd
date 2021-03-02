@@ -19,6 +19,8 @@ AR_funct(par, x, U, LL.only = TRUE)
 \item{x}{vector of time series (response)}
 
 \item{U}{model matrix (predictors)}
+
+\item{LL.only}{logical: should only the log-liklihood be computed}
 }
 \value{
 \code{AR_funct()} will return only the log-likelihood
@@ -55,7 +57,7 @@ and the S3 \code{$} operator to access them.
 time = 1:30
 x = rnorm(31)
 x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-U = model.matrix(formula(x ~ time))
+U = stats::model.matrix(formula(x ~ time))
 
 # using the AR function with a given paramter
 AR_funct(par = .2, x, U, LL.only = TRUE)

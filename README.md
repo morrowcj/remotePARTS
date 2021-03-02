@@ -7,6 +7,11 @@
 
 [![Lifecycle:
 maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+
+[![Travis build
+status](https://travis-ci.com/morrowcj/remotePARTS.svg?branch=master)](https://travis-ci.com/morrowcj/remotePARTS)
+
+[![R-CMD-check](https://github.com/morrowcj/remotePARTS/workflows/R-CMD-check/badge.svg)](https://github.com/morrowcj/remotePARTS/actions)
 <!-- badges: end -->
 
 `remotePARTS` is an `R` package that contains tools for running
@@ -23,8 +28,8 @@ autocorrelated time series (Ives et al., in prep).
 To install the package and it’s dependencies, use the following R code:
 
 ``` r
-install.packages("remotes") # or install.packages("devtools")
-remotes::install_github("morrowcj/remotePARTS", dependencies = "Depends", build_vignettes = TRUE)
+install.packages("devtools") # ensure you have the latest devtools
+devtools::install_github("morrowcj/remotePARTS", build_vignettes = TRUE)
 ```
 
 Then, upon successful installation, load the package with
@@ -34,22 +39,34 @@ The latest version of
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) is required for
 Windows and C++11 is required for other systems.
 
-Note that the above installation code worked on my Windows (10.0.19041
-x86) machine but, on my linux machine (Ubuntu 20.04), The package would
-only install successfully if `build_vignettes = FALSE`. Trying to build
-the vignettes during the installation process made the package unusable
-(corrupt .rda files). If you can’t get the vignette to build, you can
-access it online here:
-<https://morrowcj.github.io/remotePARTS/Alaska.html>.
-
 To read documentation for any function use the `?` operator in front of
 the function in the R console. For example, to learn more about
 `fitGLS()` type `?fitGLS()` and hit enter.
 
-### Windows installation notes/troubleshooting:
+### installation notes/troubleshooting:
 
-On my Windows 10 PC, I had to change the permission settings for R in
-order for `install_github()` to work:
+If vignettes won’t build, try installing without them and accessing the
+vignette online, for now:
+
+``` r
+devtools::install_github("morrowcj/remotePARTS", build_vignettes = FALSE)
+```
+
+Also, you may need to ensure that build tools are properly installed on
+your machine: [official Rstudio development
+prerequisites](https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites)
+
+use `pkgbuild::has_build_tools(debug = TRUE)` and
+`pkgbuild::check_build_tools(debug = TRUE)` to unsure that your build
+tools are up to date.
+
+#### Windows
+
+The above installation code worked on my Windows (10.0.19041 x86)
+machine but:
+
+On Windows 10 PC, you may need to change the permission settings for R
+in order for `install_github()` to work:
 
 1)  right click on “C:\\Program Files\\R\\R-4.0.2\\library\\base”
 
@@ -62,6 +79,19 @@ order for `install_github()` to work:
 
 5)  tick “Full control”
 
+#### Linux
+
+On my linux machine (Ubuntu 20.04), The package would only install
+successfully if `build_vignettes = FALSE`. Trying to build the vignettes
+during the installation process made the package unusable (corrupt .rda
+files). If you can’t get the vignette to build, try installing without
+vignettes using the above instructions.
+
+#### OS X
+
+I was able to install on my partner’s macbook air after installing
+xcode.
+
 ## Example usage
 
 For examples on how to use `remotePARTS` in it’s current state, see the
@@ -70,6 +100,9 @@ For examples on how to use `remotePARTS` in it’s current state, see the
 ``` r
 vignette("Alaska")
 ```
+
+The vignette is also available online:
+<https://morrowcj.github.io/remotePARTS/Alaska.html>.
 
 ## Testing
 
@@ -81,6 +114,11 @@ at present, tests have only been conducted in limited environments.
     Test Environments:
     
     1. Windows 10.0.19041 x64
+    
+    2. Linux:
+    LSB Version:    core-11.1.0ubuntu2-noarch:security-11.1.0ubuntu2-noarch
+    Description:    Ubuntu 20.04.1 LTS
+    Release:    20.04
 
 Please report any bugs or suggested features as git issues.
 
@@ -105,12 +143,29 @@ are currently unimplemented. This section will keep track of the
 features and design implementations that I plan to include or change in
 the next version as well.
 
+  - [ ] fix links in the @seealso documentation sections. The proper
+    format is `\code{\link{functioname}}` for internal functions,
+    `\code{\link[packagename]{functioname}}` for external functions, and
+    `\url{https://www.r-project.org}` for web pages.
+
+  - [ ] add all remaining functions to the remotePARTS-package.R file
+    (only `fitGLS`) is currently listed. Also, update ORCID information
+    for authors.
+
   - [ ] Allow GLS functions to bypass the model-comparison step
     (i.e. t-test only) for possible performance gains when F-like tests
     are not necessary.
 
   - [ ] allow users to, optionally, input parameters (e.g. `r` and `a`
     in the exponential-power function) instead of fitting ML parameters.
+    This should also provide an option to fit a spatial matrix by
+    estimating all of `nugget`, `r`, and (optionally) `a`. Use `optim()`
+    to do so. In the partitioned version, option to estimate for some
+    (but maybe not all) partitions.
+
+  - [ ] add an option to `fitGLS.partition()` to break before
+    calculating any of the cross partition stats (this is broken down in
+    the vignette).
 
   - [x] add example for testing “is there an overall time trend” to the
     vignette - this can be done with a t-test for the intercept-only

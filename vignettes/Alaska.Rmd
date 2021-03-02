@@ -7,7 +7,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Alaska}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r, include = FALSE}
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo = FALSE}
-options(digits = 4, scipen = 1)
+# options(digits = 4, scipen = 1)
 library(remotePARTS) # load the package
 ```
 

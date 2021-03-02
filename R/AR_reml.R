@@ -42,7 +42,7 @@
 #' time = 1:30
 #' x = rnorm(31)
 #' x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-#' U = model.matrix(formula(x ~ time))
+#' U = stats::model.matrix(formula(x ~ time))
 #'
 #' # using the AR function with a given paramter
 #' AR_funct(par = .2, x, U, LL.only = TRUE)
@@ -69,15 +69,15 @@ fitAR <- function(formula, data){
   mf[[1L]] <- quote(stats::model.frame) # rename the function call
   mf <- eval(mf, parent.frame()) # evaluate the model frame with the data
   mt <- attr(mf, "terms") # model terms
-  y <- model.response(mf, "numeric") # response (vector)
+  y <- stats::model.response(mf, "numeric") # response (vector)
   # w <- as.vector(model.weights(mf)) # model.weights
   # offset <- model.offset(mf) # model offset
   if (is.matrix(y)){stop("response is a matrix: must be a vector")}
   ny <- length(y)
-  U <- model.matrix(mt, mf, contrasts = NULL) # create model matrix
+  U <- stats::model.matrix(mt, mf, contrasts = NULL) # create model matrix
 
   ## Optimize AR_funct() for par ----
-  opt <- optim(fn = AR_funct, par = 0.2, x = y, U = U, LL.only = TRUE,
+  opt <- stats::optim(fn = AR_funct, par = 0.2, x = y, U = U, LL.only = TRUE,
                method = "Brent", upper = 1, lower = -1,
                control = list(maxit = 10^4))
 
@@ -97,6 +97,7 @@ fitAR <- function(formula, data){
 #' @param par AR parameter value
 #' @param x vector of time series (response)
 #' @param U model matrix (predictors)
+#' @param LL.only logical: should only the log-liklihood be computed
 #'
 #' @export
 AR_funct <- function(par, x, U, LL.only = TRUE) {
@@ -139,7 +140,7 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
     MSE <- as.numeric(s2) #MSE
     s2beta <- MSE * solve(t(U) %*% iV %*% U) #SE
     t.stat = (abs(beta) / diag(s2beta)^0.5)
-    pval = 2 * pt(q = t.stat, df = n.obs - q,
+    pval = 2 * stats::pt(q = t.stat, df = n.obs - q,
                   lower.tail = FALSE )
 
     ## log likelihood without constants (i.e. s2) - no parameter dependancy
@@ -172,7 +173,7 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
 #' @param X nxp time series response matrix with p columns corresponding to time
 #'  points and n columns corresponding to the number of pixels
 #' @param t p length temporal response vector
-#' @param Z
+#' @param Z (currently not in use) - Z will be used to add covariates to the model.
 #' @param ret_int.coef should the intercept coeffients be returned? logical
 #' @param ret_AR.par should the AR parameter estimates be returned? logical
 #' @param ret_MSE should the model MSEs be returned? logical
@@ -198,14 +199,15 @@ AR_funct <- function(par, x, U, LL.only = TRUE) {
 #' @examples
 #' t = 1:30; n.pix = 10
 #' X = matrix(rnorm(length(t)*n.pix), ncol = length(t))
-#' fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
-#' summary(fitAR.map(X, t))
+#' ARfit = fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
+#' ARfit # print
 #'
-#' coef(fitAR.map(X, t)) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
-#' fitAR.map(X, t)$AR.par # AR parameters
-#' fitAR.map(X, t)$MSE # model MSEs
-#' fitAR.map(X, t)$logLik # model log-likelihoods
-#' resid(fitAR.map(X, t)) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
+#' # Extract specific output:
+#' coef(ARfit) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
+#' ARfit$AR.par # AR parameters
+#' ARfit$MSE # model MSEs
+#' ARfit$logLik # model log-likelihoods
+#' resid(ARfit) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
 fitAR.map <- function(X, t, Z = NULL,
                       ret_int.coef = FALSE, ret_AR.par = TRUE,
                       ret_MSE = TRUE, ret_resid = TRUE, ret_logLik = TRUE){
@@ -227,10 +229,10 @@ fitAR.map <- function(X, t, Z = NULL,
 
   ## Initialize output
   out.list <- list(call = match.call(),
-                   time.coef = matrix(NA, ncol = 4, nrow = n.pixels))
+                   time.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels)))
   colnames(out.list$time.coef) <- c("Est", "SE", "t.stat", "p.val")
   if (ret_int.coef) {
-    out.list$int.coef = matrix(NA, ncol = 4, nrow = n.pixels)
+    out.list$int.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
     colnames(out.list$int.coef) <- c("Est", "SE", "t.stat", "p.val")
   }
   if (ret_AR.par) {out.list$AR.par = numeric(n.pixels)}

@@ -4,10 +4,12 @@
 \alias{summary.remoteCLS}
 \title{summary of remoteCLS object}
 \usage{
-\method{summary}{remoteCLS}(obj)
+\method{summary}{remoteCLS}(object, ...)
 }
 \arguments{
-\item{obj}{remoteCLS object}
+\item{object}{remoteCLS object}
+
+\item{...}{additional arguments}
 }
 \description{
 summary of remoteCLS object

@@ -7,15 +7,15 @@
 calc_dfpart(partsize, p, p0)
 }
 \arguments{
+\item{partsize}{number of pixels in each partition}
+
 \item{p}{number of predictors in alternate model}
 
 \item{p0}{number of parameters in null model}
-
-\item{part.size}{number of pixels in each partition}
 }
 \description{
 calculate degrees of freedom for partitioned GLS
 }
 \examples{
-calc_df(partsize = 2000, p = 4, p0 = 1)
+calc_dfpart(partsize = 2000, p = 4, p0 = 1)
 }

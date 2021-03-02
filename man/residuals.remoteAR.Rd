@@ -4,10 +4,12 @@
 \alias{residuals.remoteAR}
 \title{Extract residuals from remoteAR object}
 \usage{
-\method{residuals}{remoteAR}(obj)
+\method{residuals}{remoteAR}(object, ...)
 }
 \arguments{
-\item{obj}{remoteAR object}
+\item{object}{remoteAR object}
+
+\item{...}{additional arguments}
 }
 \value{
 residuals
