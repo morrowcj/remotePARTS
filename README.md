@@ -10,8 +10,7 @@ maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www
 
 <!-- [![Travis build status](https://travis-ci.com/morrowcj/remotePARTS.svg?branch=master)](https://travis-ci.com/morrowcj/remotePARTS) -->
 
-[![Travis build
-status](https://travis-ci.com/morrowcj/remotePARTS.svg?branch=master)](https://travis-ci.org/github/morrowcj/remotePARTS)
+<!-- [![Travis build status](https://travis-ci.com/morrowcj/remotePARTS.svg?branch=master)](https://travis-ci.org/github/morrowcj/remotePARTS) -->
 
 [![R-CMD-check](https://github.com/morrowcj/remotePARTS/workflows/R-CMD-check/badge.svg)](https://github.com/morrowcj/remotePARTS/actions)
 <!-- badges: end -->
