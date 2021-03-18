@@ -365,7 +365,7 @@ partition matrix to subset the data at meets the above requirements.
 part_func <- function(part.i, part_mat = part.mat, X.full = mod.mat,
                       y.full = rel.est, location.full = location){
   part = part.mat[, part.i]
-  return(list(X = X.full[part, ], y = y.full[part], coords = location[part, ]))
+  return(list(X = as.matrix(X.full[part, ]), y = y.full[part], coords = location[part, ]))
 }
 ```
 

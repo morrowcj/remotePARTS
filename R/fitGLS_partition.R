@@ -294,6 +294,10 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
       ## function output
       out.i <- func(i, ...) # out.i <- func(i, data.file, parts)
       out.j = NULL
+
+      stopifnot("part_f(i)$X must be a matrix" = is.matrix(out.i$X))
+      stopifnot("part_f(i)$coords must be a matrix" = is.matrix(out.i$coords))
+
       ## calculate df
       dfs <- calc_dfpart(partsize, p = ncol(out.i$X), p0 = ncol(X0))
       ## setup output
