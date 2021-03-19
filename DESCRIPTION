@@ -24,7 +24,8 @@ Imports:
   graphics,
   geosphere (>= 1.5.10), 
   Rcpp (>= 1.0.5), 
-  CompQuadForm
+  CompQuadForm,
+  foreach,
 Suggests: 
     dplyr (>= 1.0.0),
     data.table,
@@ -34,6 +35,9 @@ Suggests:
     rmarkdown,
     microbenchmark,
     sqldf,
-    devtools
+    devtools,
+    parallel,
+    iterators, 
+    doParallel
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
