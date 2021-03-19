@@ -349,7 +349,7 @@ part.mat <- sample_partitions(npix = nrow(mod.mat), npart = 4)
 indices for 1000 random pixels corresponding to a partition. 
 
 `fitGLS.partition()` takes a generic function `part_f` as its first argument. 
-This function will be called 4 times (`npart`) and needs accesses a different 
+This function will be called 4 times (`npart`) and needs to return a different 
 data partition each time it is called. The function needs to return at least 
 three things `$X`: the model matrix for a specific partition, `$y`: the response
 vector for a specific partition, and `$coords` the spatial coordinates for a 
@@ -357,33 +357,57 @@ partitions pixels. The first argument to `part_f` will always be a number
 corresponding to a partition: `part_f(1)` should return info for partition 1, 
 `part_(2)` should return info for partition 2, etc.
 
-Below is a simple user-defined function called `part_func()` that uses our 
-partition matrix to subset the data at meets the above requirements.
+There are two functions that fit this requirement in `remotePARTS`: `part_csv()`
+for reading in data from a csv file, without loading the entire data set into
+memory, and `part_data()` for using a dataframe that is already in memory. 
+Any user-defined function should work (see `?part_data()` for details), 
+but for this vignette, we'll use `part_data()`. In order to do so, we first 
+need to gather our key variables into a data frame:
 
 ```{r part function}
-## Function to get data partitions (will be passed to GLS_partition)
-part_func <- function(part.i, part_mat = part.mat, X.full = mod.mat,
-                      y.full = rel.est, location.full = location){
-  part = part.mat[, part.i]
-  return(list(X = as.matrix(X.full[part, ]), y = y.full[part], coords = location[part, ]))
-}
+## combine y, land class, and location into one data frame
+part_input_df = as.data.frame(cbind(rel.est = rel.est, ndvi_AK3000[, c("land", "lng", "lat")]))
 ```
 
-Then, we'll run `fitGLS.partition()`, making sure to use our user-defined
-"part_func" function. Note that `part_f` can be any function and should be 
-adapted to the specific data input. For example the `remotePARTs` function 
-`part_csv()` is an alternative to `part_func()` and loads partitions of data
-into memory one at a time from a .csv file. Similar functions could be created
-for any input type or situation.
+Then, we'll run `fitGLS.partition.mc()`, making sure to supply any arguments needed 
+by `part_data()` to `fitGLS.partition.mc()`, by name.
 
-```{r fitGLS_partition}
+`fitGLS.partition.mc()`is a multi-core version of `fitGLS.partition()`.
+The syntax is the same for the single-core version but 
+has a few extra arguments. Check the documentation with `?fitGLS.partition()` 
+for more details and examples.
+
+```{r fitGLS_partition, include = FALSE, eval = FALSE}
 ## Partitioned Analysis 
-GLS.part = fitGLS.partition(part_f = "part_func", 
+GLS.part = fitGLS.partition(part_f = "part_data", 
                             partsize = nrow(part.mat), 
                             npart = ncol(part.mat), 
                             V.meth = meth,
-                            spatcor = r.est$spatialcor, mincross = 4)
+                            spatcor = r.est$spatialcor, mincross = 4,
+                            ## arguments for part_data()
+                            part_form = "rel.est ~ 0 + land",
+                            part_mat = part.mat,
+                            part_df = part_input_df,
+                            part_locvars = c("lng", "lat"))
 ```
+
+```{r fitGLS_partition_mc}
+GLS.part <- fitGLS.partition.mc(part_f = "part_data",
+                                   partsize = nrow(part.mat),
+                                   npart = ncol(part.mat),
+                                   V.meth = meth,
+                                   spatcor = r.est$spatialcor,
+                                   mincross = 4,
+                                   ## multicore arguments:
+                                   ncores = 2, debug = FALSE,
+                                   ## arguments of part_data():
+                                   part_form = "rel.est ~ 0 + land",
+                                   part_mat = part.mat,
+                                   part_df = part_input_df,
+                                   part_locvars = c("lng", "lat")
+                                   )
+```
+
 
 The results are grouped into 3 categories. (1) statistics for each partition:
 

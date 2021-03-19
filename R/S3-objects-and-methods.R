@@ -366,7 +366,7 @@ print.remoteGLS <- function(x, ret_call = TRUE, ...){
 #' @return t-table
 #' @export
 cor_t.test <- function(object){
-  stopifnot(class(object) == "remoteGLS.parts")
+  stopifnot("remoteGLS.parts" %in% class(object))
 
   ## Correlated t-test
   return(cor_t(coefs = object$overall.stats$coefmean,
@@ -384,7 +384,7 @@ cor_t.test <- function(object){
 #' @return p value
 #' @export
 cor_chisq.test <- function(object){
-  stopifnot(class(object) == "remoteGLS.parts")
+  stopifnot("remoteGLS.parts" %in% class(object))
   return(cor_chisq(Fmean = object$overall.stats$meanstats["fmean"],
                    rSSR = object$overall.stats$meanstats["rSSRmean"],
                    df1 = object$overall.stats$dfs[1],
@@ -400,7 +400,7 @@ cor_chisq.test <- function(object){
 #' @return P value
 #' @export
 cor_F.test <- function(object, nboot = 1000){
-  stopifnot(class(object) == "remoteGLS.parts")
+  stopifnot("remoteGLS.parts" %in% class(object))
   test = boot_corF(Fmean.obs = object$overall.stats$meanstats["fmean"],
             rSSR = object$overall.stats$meanstats["rSSRmean"],
             rSSE = object$overall.stats$meanstats["rSSEmean"],
