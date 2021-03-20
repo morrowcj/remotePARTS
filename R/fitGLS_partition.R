@@ -186,9 +186,9 @@ part_csv <- function(part_i, part_csv_path, part_mat, part_form, part_locvars = 
                              dbname = tempfile(),
                              header = TRUE)
 
-  mf = model.frame(formula(part_form), data = df_prt)
+  mf = stats::model.frame(formula(part_form), data = df_prt)
   resp = model.response(mf)
-  X = model.matrix(formula(part_form), data = df_prt)
+  X = stats::model.matrix(formula(part_form), data = df_prt)
 
   return(list(y = resp,
               X = X,
@@ -216,10 +216,10 @@ part_data <- function(part_i, part_form, part_df, part_mat, part_locvars = c("ln
   prt = part_mat[, part_i]
   df = as.data.frame(part_df)
   df_prt = df[prt, ]
-  mf = model.frame(formula(part_form), data = df_prt)
+  mf = stats::model.frame(formula(part_form), data = df_prt)
   resp = model.response(mf)
 
-  X = model.matrix(formula(part_form), data = df_prt)
+  X = stats::model.matrix(formula(part_form), data = df_prt)
 
   return(list(X = as.matrix(X),
               y = as.vector(resp),
@@ -318,7 +318,7 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
 
   ## Default X0
   if (missing(X0)) {
-    X0 = model.matrix(rep(0, partsize) ~ 1)
+    X0 = stats::model.matrix(rep(0, partsize) ~ 1)
   }
 
   ## adjust mincross
@@ -484,12 +484,12 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
 
   ## Default X0
   if (missing(X0)) {
-    X0 = model.matrix(rep(0, partsize) ~ 1)
+    X0 = stats::model.matrix(rep(0, partsize) ~ 1)
   }
 
   ## GLS for each partition ----
   if(debug){print("2. part GLS")}
-  part_out = foreach::foreach(i = 1:npart) %dopar% {
+  part_out = foreach::foreach(i = 1:npart, .packages = "remotePARTS") %dopar% {
     out.i = func(i, ...) # get partition data
     if(i == 1){
       # checks
@@ -530,6 +530,7 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
 
   ## Cross-partition GLS ----
   if(debug){print("3. cross-partition GLS")}
+  cross = NULL
   cross_out = foreach::foreach(cross = iterators::iter(used.combs, by = "row"),
                                .packages = "remotePARTS") %dopar% {
                                  i = cross[1]; j = cross[2]

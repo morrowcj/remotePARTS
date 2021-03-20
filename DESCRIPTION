@@ -26,6 +26,9 @@ Imports:
   Rcpp (>= 1.0.5), 
   CompQuadForm,
   foreach,
+  parallel,
+  iterators, 
+  doParallel
 Suggests: 
     dplyr (>= 1.0.0),
     data.table,
@@ -35,9 +38,6 @@ Suggests:
     rmarkdown,
     microbenchmark,
     sqldf,
-    devtools,
-    parallel,
-    iterators, 
-    doParallel
+    devtools
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
