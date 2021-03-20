@@ -377,7 +377,7 @@ The syntax is the same for the single-core version but
 has a few extra arguments. Check the documentation with `?fitGLS.partition()` 
 for more details and examples.
 
-```{r fitGLS_partition, include = FALSE, eval = FALSE}
+```{r fitGLS_partition, include = TRUE, eval = TRUE}
 ## Partitioned Analysis 
 GLS.part = fitGLS.partition(part_f = "part_data", 
                             partsize = nrow(part.mat), 
@@ -391,7 +391,7 @@ GLS.part = fitGLS.partition(part_f = "part_data",
                             part_locvars = c("lng", "lat"))
 ```
 
-```{r fitGLS_partition_mc}
+```{r fitGLS_partition_mc, include = FALSE, eval = FALSE}
 GLS.part <- fitGLS.partition.mc(part_f = "part_data",
                                    partsize = nrow(part.mat),
                                    npart = ncol(part.mat),
