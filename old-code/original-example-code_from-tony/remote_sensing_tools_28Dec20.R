@@ -16,9 +16,9 @@
 	obj.dim[vec, 1] <- napply(names, length)[vec]
 	out <- data.frame(obj.type, obj.size, obj.prettysize, obj.dim)
 	names(out) <- c("Type", "Size", "PrettySize", "Length/Rows", "Columns")
-	if (!missing(order.by)) 
+	if (!missing(order.by))
 		out <- out[order(out[[order.by]], decreasing = decreasing), ]
-	if (head) 
+	if (head)
 		out <- head(out, n)
 	out
 }
@@ -35,7 +35,7 @@ simX <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = NULL, t
 	set.seed(seed = seed)
 	mf <- model.frame(formula = formula, data = data)
 	u <- model.matrix(attr(mf, "terms"), data = mf)
-	if (!is.matrix(coef)) 
+	if (!is.matrix(coef))
 		coef <- matrix(coef, ncol = 1)
 
 	if (nrow(coef) != ncol(u)) {
@@ -58,7 +58,7 @@ simX <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = NULL, t
 			d <- b * d + e
 			x <- t.scale[t - n.burn] * as.numeric(u %*% coef) + d
 		}
-		if (t > n.burn) 
+		if (t > n.burn)
 			XX[, t - n.burn] <- as.matrix(x)
 	}
 	XX <- XX - rowMeans(XX)
@@ -70,7 +70,7 @@ simX_shock <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = N
 	set.seed(seed = seed)
 	mf <- model.frame(formula = formula, data = data)
 	u <- model.matrix(attr(mf, "terms"), data = mf)
-	if (!is.matrix(coef)) 
+	if (!is.matrix(coef))
 		coef <- matrix(coef, ncol = 1)
 
 	if (nrow(coef) != ncol(u)) {
@@ -97,7 +97,7 @@ simX_shock <- function(formula, data = data.frame(rep(1, n)), coef, b, s, Dr = N
 			}
 			x <- t.scale[t - n.burn] * as.numeric(u %*% coef) + d
 		}
-		if (t > n.burn) 
+		if (t > n.burn)
 			XX[, t - n.burn] <- as.matrix(x)
 	}
 	return(XX)
@@ -201,7 +201,7 @@ FV_fit <- function(X, t.scale, alpha=0.05) {
 		t.crit <- 1.720
 	}
 
-	
+
 	if(!is.null(dim(X))){
 		n <- dim(X)[1]
 		n.obs <- dim(X)[2]
@@ -209,10 +209,10 @@ FV_fit <- function(X, t.scale, alpha=0.05) {
 		n <- 1
 		n.obs <- length(X)
 	}
-		
+
 	t.int <- 1:n.obs
 	t21.int <- (t.int^2+t.int)/2
-	
+
 	t.int2 <- t.int^2
 	t.int3 <- t.int^3
 	t.int4 <- t.int^4
@@ -230,17 +230,17 @@ FV_fit <- function(X, t.scale, alpha=0.05) {
 		}else{
 			x <- X
 		}
-		
+
 		sumx <- x[1]
 		for(tt in 2:length(x)) sumx <- c(sumx , sumx[length(sumx)] + x[tt])
-		
+
 		z.FV <- lm(sumx ~ 0 + t.int + t21.int)
-		
+
 		t.z <- summary(z.FV)$coef[2,3]
 		RSS.y <- var(lm(x ~ t.int)$resid)
 		RSS.J <- var(lm(x ~ t.int + t.int2 + t.int3 + t.int4 + t.int5 + t.int6 + t.int7 + t.int8 + t.int9 + t.int10)$resid)
 		J.t <- (RSS.y - RSS.J)/RSS.J
-		
+
 		d$a[i] <- z.FV$coef[1]
 		d$c[i] <- n.obs * z.FV$coef[2]/max(t.scale)
 		d$t[i] <- n.obs^-.5 * t.z * exp(-b * J.t)
@@ -406,11 +406,11 @@ spatialcor.fit <- function(X, t.scale, Dist, r.start = 0.1, fit.n.sample, FUN = 
 	if (plot.fig) {
 		plot(dist * max(Dist), cor.resid, pch = 20, cex = 0.5, col = col.plot)
 		x.dist <- (1:fit.n.sample)/fit.n.sample * max(Dist)
-		if (FUN == "exponential") 
+		if (FUN == "exponential")
 			lines(x.dist, exp(-x.dist/spatialcor), col = "red", lty = 1, lwd = 2)
-		if (FUN == "exponential-power") 
+		if (FUN == "exponential-power")
 			lines(x.dist, exp(-(x.dist/spatialcor[1])^spatialcor[2]), col = "red", lty = 1, lwd = 2)
-		if (FUN == "taper-spherical") 
+		if (FUN == "taper-spherical")
 			lines(x.dist, taper.spherical(d = x.dist, beta = spatialcor), col = "red", lty = 1, lwd = 2)
 	}
 	return(list(spatialcor = spatialcor, spatialcor.sigma = summary(fit)$sigma))
@@ -467,9 +467,9 @@ spatialcor.fit.U <- function(X, U = NULL, Dist, r.start = 0.1, fit.n.sample, FUN
 	if (plot.fig) {
 		plot(dist * max(Dist), cor.resid, pch = 20, cex = 0.5, col = col.plot)
 		x.dist <- (1:fit.n.sample)/fit.n.sample * max(Dist)
-		if (FUN == "exponential") 
+		if (FUN == "exponential")
 			lines(x.dist, exp(-x.dist/spatialcor), col = "red", lty = 2)
-		if (FUN == "taper-spherical") 
+		if (FUN == "taper-spherical")
 			lines(x.dist, taper.spherical(d = x.dist, beta = spatialcor), col = "red", lty = 2)
 	}
 	return(list(spatialcor = spatialcor, spatialcor.sigma = summary(fit)$sigma))
@@ -541,11 +541,11 @@ spatialcor.fit.data <- function(X, t.scale, data, r.start = 0.1, a.start = 1, fi
 	if (plot.fig) {
 		plot(dist * max(Dist), cor.resid, pch = 20, cex = 0.5, col = col.plot)
 		x.dist <- (1:fit.n.sample)/fit.n.sample * max(Dist)
-		if (FUN == "exponential") 
+		if (FUN == "exponential")
 			lines(x.dist, exp(-x.dist/spatialcor), col = "red", lty = 1, lwd = 2)
-		if (FUN == "exponential-power") 
+		if (FUN == "exponential-power")
 			lines(x.dist, exp(-(x.dist/spatialcor[1])^spatialcor[2]), col = "red", lty = 1, lwd = 2)
-		if (FUN == "taper-spherical") 
+		if (FUN == "taper-spherical")
 			lines(x.dist, taper.spherical(d = x.dist, beta = spatialcor), col = "red", lty = 1, lwd = 2)
 	}
 	return(list(spatialcor = spatialcor, spatialcor.sigma = summary(fit)$sigma, logLik = logLik(fit)))
@@ -555,13 +555,13 @@ spatialcor.fit.data <- function(X, t.scale, data, r.start = 0.1, a.start = 1, fi
 #################################################
 V.fit <- function(Dist, spatialcor, FUN = "exponential") {
 
-	if (FUN == "exponential") 
+	if (FUN == "exponential")
 		return(exp(-Dist/spatialcor))
 
-	if (FUN == "exponential-power") 
+	if (FUN == "exponential-power")
 		return(exp(-(Dist/spatialcor[1])^spatialcor[2]))
 
-	if (FUN == "taper-spherical") 
+	if (FUN == "taper-spherical")
 		return(taper.spherical(Dist, spatialcor))
 
 }
@@ -571,7 +571,7 @@ nugget.fit.funct <- function(nugget, formula, data, V, verbose = FALSE) {
 	n <- ncol(V)
 	invcholV <- t(backsolve(chol((1 - nugget) * V + nugget * diag(n)), diag(n)))
 	z <- GLS.fit(formula, data = data, invcholV = invcholV)
-	if (verbose == TRUE) 
+	if (verbose == TRUE)
 		show(c(z$logLik, nugget))
 	return(z$logLik)
 }
@@ -583,7 +583,7 @@ nugget.fit <- function(formula, data, V, nugget.tol = 1e-05, interval = c(0, 1),
 	# check at the zero boundary
 	if (opt.nugget$maximum < nugget.tol) {
 		nugget0.fit <- nugget.fit.funct(0, formula, data, V)
-		if (nugget0.fit > opt.nugget$objective) 
+		if (nugget0.fit > opt.nugget$objective)
 			opt.nugget$maximum <- 0
 	}
 	return(opt.nugget$maximum)
@@ -594,14 +594,14 @@ space.fit.funct <- function(par, formula, data, V, Dist, verbose = FALSE, fittin
 	nugget <- par[1]
 	vc <- par[2]
 	q <- par[-(1:2)]
-	
+
  	Vc <- V.fit(Dist = Dist, spatialcor = max(Dist) * q, FUN = "exponential")
-	
+
 	n <- ncol(V)
 	VV <- nugget * diag(n) + (1 - nugget) * ((1-vc) * V + vc * Vc)
 	invcholV <- t(backsolve(chol(VV), diag(n)))
 	z <- GLS.fit(formula, data = data, invcholV = invcholV)
-	if (verbose == TRUE) 
+	if (verbose == TRUE)
 		show(c(z$logLik, par))
 	if(fitting) {
 		return(-z$logLik)
@@ -612,9 +612,9 @@ space.fit.funct <- function(par, formula, data, V, Dist, verbose = FALSE, fittin
 
 
 space.fit <- function(par, formula, data, V, Dist, lower = rep(10^-5, length(par)), upper = rep(1-10^-5, length(par)), verbose = FALSE, FUN = "exponential", fitting = T) {
-	
+
 	opt <- optim(par = par, fn = space.fit.funct, formula = formula, data = data, V = V, Dist = Dist, method = "L-BFGS-B", lower = lower, upper = upper, verbose = verbose, fitting = T)
-	
+
 	if(fitting){
 		return(opt$par)
 	}else{
@@ -705,10 +705,10 @@ GLS.fit <- function(formula, formula0 = NULL, data, V = NULL, invcholV = NULL, s
 		df.F <- c(df1.F, df2.F)
 	}
 
-	if (!save.invcholV) 
+	if (!save.invcholV)
 		invcholV <- NULL
 
-	return(list(coef = coef, se = se, t = t, df.t = df.t, p.t = p.t, F = FF, df1.F = df1.F, df2.F = df2.F, p.F = p.F, logLik = logLik, logLik0 = logLik0, MSE = MSE, MSE0 = MSE0, MSR = MSR, 
+	return(list(coef = coef, se = se, t = t, df.t = df.t, p.t = p.t, F = FF, df1.F = df1.F, df2.F = df2.F, p.F = p.F, logLik = logLik, logLik0 = logLik0, MSE = MSE, MSE0 = MSE0, MSR = MSR,
 		SSE = SSE, SSE0 = SSE0, SSR = SSE0 - SSE, coef0 = coef0, se0 = se0, varX = varX, varcov = varcov, varcov0 = varcov0, invcholV = invcholV, xx = xx, xx0 = xx0, yy = yy))
 }
 
@@ -729,7 +729,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 		n.p <- rep(n.p, npart)
 	}
 
-	if (min.num.cross.part > npart) 
+	if (min.num.cross.part > npart)
 		min.num.cross.part <- npart
 
 	SSR.part <- NULL
@@ -802,7 +802,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 		}
 	}
 
-# added 25Nov20	
+# added 25Nov20
 	df2 <- n.p - nrow(coef.part)
 	df1 <- nrow(coef.part) - nrow(coef0.part)
 	if(is.na(coef0.part[1])) df1 <- nrow(coef.part)
@@ -810,7 +810,7 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 	#	if(!is.na(min.num.cross.part)){  # NEED TO REMOVE
 	rSSE.part <- matrix(NA, nrow = npart, ncol = npart)
 	rSSR.part <- matrix(NA, nrow = npart, ncol = npart)
-	rcoef.part <- matrix(NA, nrow = min.num.cross.part * (min.num.cross.part - 1)/2, ncol = nrow(coef.part)) 
+	rcoef.part <- matrix(NA, nrow = min.num.cross.part * (min.num.cross.part - 1)/2, ncol = nrow(coef.part))
 	counter <- 0
 	for (i in 1:(min.num.cross.part - 1)) for (j in (i + 1):min.num.cross.part) {
 		counter <- counter + 1
@@ -863,17 +863,17 @@ GLS.partition.data <- function(formula, formula0 = NULL, data, spatial.autocor.F
 	coef <- rowMeans(coef.part)
 	coef0 <- rowMeans(coef0.part)
 
-	return(list(coef = coef, Fmean = Fmean, df1 = df1, df2 = df2, SSR.part = SSR.part, SSE.part = SSE.part, SSE0.part = SSE0.part, logLik.part = logLik.part, logLik0.part = logLik0.part, 
-		nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part, p.F.part = p.F.part, coef.part = coef.part, se.part = se.part, coef0.part = coef0.part, se0.part = se0.part, 
-		rSSR = rSSR, rSSE = rSSE, rcoef = rcoef, rSSR.part = rSSR.part, rSSE.part = rSSE.part, rcoef.part = rcoef.part, npart = npart, partition = pick, spatial.autocor.FUN = "exponential-power", 
-		spatialcor = spatialcor)) 
+	return(list(coef = coef, Fmean = Fmean, df1 = df1, df2 = df2, SSR.part = SSR.part, SSE.part = SSE.part, SSE0.part = SSE0.part, logLik.part = logLik.part, logLik0.part = logLik0.part,
+		nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part, p.F.part = p.F.part, coef.part = coef.part, se.part = se.part, coef0.part = coef0.part, se0.part = se0.part,
+		rSSR = rSSR, rSSE = rSSE, rcoef = rcoef, rSSR.part = rSSR.part, rSSE.part = rSSE.part, rcoef.part = rcoef.part, npart = npart, partition = pick, spatial.autocor.FUN = "exponential-power",
+		spatialcor = spatialcor))
 	}
 
 
 
 #################################################
 # If the nugget is the same for multiple formulae, then they can all be computed quickly
-GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor, est.nugget = T, npart = 10, partition = NULL, 
+GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spatial.autocor.FUN = "exponential-power", spatialcor = spatialcor, est.nugget = T, npart = 10, partition = NULL,
 	nugget.interval = c(0, 1), fixed.nugget = NULL, nugget.tol = 1e-04, min.num.cross.part = 5, verbose = F, rm.spatial.autocorrelation = F) {
 
 	n.formula <- length(formula)
@@ -894,7 +894,7 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 	df1 <- list(numeric())
 	df2 <- list(numeric())
 
-	if (min.num.cross.part > npart) 
+	if (min.num.cross.part > npart)
 		min.num.cross.part <- npart
 
 	dummy.part <- as.list(rep(NA, n.formula))
@@ -1059,9 +1059,9 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 	return.list <- list()
 	for (i.formula in 1:n.formula) {
 
-		return.list[[i.formula]] <- list(coef = coef[[i.formula]], Fmean = Fmean[[i.formula]], df1 = df1[[i.formula]], df2 = df2[[i.formula]], SSR.part = SSR.part[[i.formula]], SSE.part = SSE.part[[i.formula]], 
-			SSE0.part = SSE0.part[[i.formula]], logLik.part = logLik.part[[i.formula]], logLik0.part = logLik0.part[[i.formula]], nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part[[i.formula]], 
-			p.F.part = p.F.part[[i.formula]], coef.part = coef.part[[i.formula]], se.part = se.part[[i.formula]], coef0.part = coef0.part[[i.formula]], se0.part = se0.part[[i.formula]], rSSR = rSSR[[i.formula]], 
+		return.list[[i.formula]] <- list(coef = coef[[i.formula]], Fmean = Fmean[[i.formula]], df1 = df1[[i.formula]], df2 = df2[[i.formula]], SSR.part = SSR.part[[i.formula]], SSE.part = SSE.part[[i.formula]],
+			SSE0.part = SSE0.part[[i.formula]], logLik.part = logLik.part[[i.formula]], logLik0.part = logLik0.part[[i.formula]], nugget = mean(nugget.part), nugget.part = nugget.part, F.part = F.part[[i.formula]],
+			p.F.part = p.F.part[[i.formula]], coef.part = coef.part[[i.formula]], se.part = se.part[[i.formula]], coef0.part = coef0.part[[i.formula]], se0.part = se0.part[[i.formula]], rSSR = rSSR[[i.formula]],
 			rSSE = rSSE[[i.formula]], rSSR.part = rSSR.part[[i.formula]], rSSE.part = rSSE.part[[i.formula]], npart = npart, partition = pick, spatial.autocor.FUN = spatial.autocor.FUN, spatialcor = spatialcor)
 
 	}
@@ -1069,7 +1069,7 @@ GLS.partition.data.multiformula <- function(formula, formula0 = NULL, data, spat
 }
 
 #################################################
-# bootstrap F-test 
+# bootstrap F-test
 correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot = 2000) {
 	part <- rep(1:npart, each = df1)
 
@@ -1094,14 +1094,14 @@ correlated.F.bootstrap <- function(Fmean.obs, rSSR, rSSE, df1, df2, npart, nboot
 		Z1 <- D.MSR %*% rnorm(npart * df1)
 		MSR.boot <- aggregate(Z1^2, by = list(part), FUN = sum)[, 2]/df1
 		MSE.boot <- 1 + D.MSE %*% rnorm(npart, mean = 0, sd = (2 * df2)^0.5/df2)
-		if (Fmean.obs < mean(MSR.boot/MSE.boot)) 
+		if (Fmean.obs < mean(MSR.boot/MSE.boot))
 			count <- count + 1
 	}
 	return(list(pvalue = count/nboot, nboot = nboot, rank.deficient.MSR = rank.deficient.MSR))
 }
 
 #################################################
-# analytical chisq-test 
+# analytical chisq-test
 correlated.chisq <- function(Fmean.obs, rSSR, df1, npart) {
 
 	require(CompQuadForm)
@@ -1123,10 +1123,10 @@ correlated.chisq <- function(Fmean.obs, rSSR, df1, npart) {
 	return(list(pvalue=pvalue,  rank.deficient.MSR = rank.deficient.MSR))
 }
 
-########## start NEED TO ADD IN remoteSTAR ########## 
+########## start NEED TO ADD IN remoteSTAR ##########
 
 #################################################
-# analytical t-test 
+# analytical t-test
 correlated.t <- function(coef, se.part, rcoef, df2, npart) {
 
 	secoef <- matrix(NA, length(coef), 1)
@@ -1146,7 +1146,7 @@ correlated.t <- function(coef, se.part, rcoef, df2, npart) {
 }
 
 #################################################
-# wrapper for bootstrap test 
+# wrapper for bootstrap test
 GLS.partition.pvalue <- function(z, doFtest = F, nboot = 1e+05) {
 	if (doFtest) {
 		if (is.finite(z$rSSR)) {
@@ -1168,4 +1168,4 @@ GLS.partition.pvalue <- function(z, doFtest = F, nboot = 1e+05) {
 
 	return(list(p.Fmean = p.Fmean, p.chisq = p.chisq$pvalue, rank.deficient.MSR = p.chisq$rank.deficient.MSR, p.Fhochberg = p.Fhochberg, p.Fhommel = p.Fhommel, p.Ffdr = p.Ffdr, p.t = p.t))
 }
-########## end NEED TO ADD IN remoteSTAR ########## 
+########## end NEED TO ADD IN remoteSTAR ##########

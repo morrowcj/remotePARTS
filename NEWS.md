@@ -7,3 +7,8 @@
 * Fixed some build bugs (Travis CI)
 
 * added `optimize_GLS()` to optimize the GLS over `r`, `a,` and `nugget`
+
+# remotePARTS 0.1.1.9003
+
+* added multicore function with `fitGLS.partition.mc()`, which uses 
+functionality from the `foreach` and `doParallel` packages.

@@ -1,6 +1,6 @@
 Package: remotePARTS
 Title: Spatio-Temporal Auto-Regression for Remote Sensing Data
-Version: 0.1.1.9002
+Version: 0.1.1.9003
 Authors@R: 
     c(person(given = "Clay",
            family = "Morrow",
@@ -14,7 +14,7 @@ Authors@R:
            comment = c(ORCID = "0000-0001-9375-9523")))
 Description: "remoteSTAR is a set of tools for analyzing sets of spatially 
   correlated time series data, collected via remote sensing methods."
-License: GPL-3
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: TRUE
 RoxygenNote: 7.1.1
@@ -24,7 +24,11 @@ Imports:
   graphics,
   geosphere (>= 1.5.10), 
   Rcpp (>= 1.0.5), 
-  CompQuadForm
+  CompQuadForm,
+  foreach,
+  parallel,
+  iterators, 
+  doParallel
 Suggests: 
     dplyr (>= 1.0.0),
     data.table,

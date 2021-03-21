@@ -2,6 +2,7 @@
 % Please edit documentation in R/fitGLS_partition.R
 \name{fitGLS.partition}
 \alias{fitGLS.partition}
+\alias{fitGLS.partition.mc}
 \title{Partitioned GLS}
 \usage{
 fitGLS.partition(
@@ -13,6 +14,21 @@ fitGLS.partition(
   npart,
   mincross = 6,
   X0,
+  ...
+)
+
+fitGLS.partition.mc(
+  part_f = "part_csv",
+  dist_f = "dist_km",
+  V.meth = "exponential",
+  spatcor,
+  partsize,
+  npart,
+  mincross = 6,
+  X0,
+  ncores = parallel::detectCores() - 1,
+  export = NA,
+  debug = TRUE,
   ...
 )
 }
@@ -35,6 +51,13 @@ statistics from.}
 \item{X0}{null model matrix with \code{partsize} rows}
 
 \item{...}{additional arguments passed to \code{part_f}}
+
+\item{ncores}{number of cores for parallel processing. Default is total cores - 1}
+
+\item{export}{an optional character vector of names for any additional objects
+needed for \code{part_f()}.}
+
+\item{debug}{logical debug flag. If TRUE, prints the name of the step that is running}
 }
 \description{
 Fit a partitioned GLS using the PARTS and calculate
@@ -70,15 +93,27 @@ is the default for \code{GLS.partition}.
 }
 \examples{
 n.pix = 30865 # pixels in AK_ndvi_common-land.csv
-parts = sample_partitions(npix = n.pix, npart = 4, partsize = 1000)
+parts = sample_partitions(npix = n.pix, npart = 4, partsize = 500)
 data.file = system.file("extdata", "AK_ndvi_common-land.csv",
                         package = "remotePARTS")
 
+# Fit the partitioned GLS
 GLS.part = fitGLS.partition(part_f = "part_csv", dist_f = "dist_km",
-                         partsize = nrow(parts), npart = ncol(parts),
-                         V.meth = "exponential", spatcor = .5,
-                         # additional arguments passed to part_csv():
-                         csv.path = data.file, part.mat = parts)
+                            partsize = nrow(parts), npart = ncol(parts),
+                            V.meth = "exponential", spatcor = .5,
+                            # additional arguments passed to part_csv():
+                            part_csv_path = data.file, part_mat = parts,
+                            part_form = "cls.coef ~ 0 + land")
+## now w. 2 cores:
+
+if(FALSE){ # change to TRUE to run multi-core version
+  GLS.part.mc = fitGLS.partition.mc(part_f = "part_csv", dist_f = "dist_km",
+                                    partsize = nrow(parts), npart = ncol(parts),
+                                    V.meth = "exponential", spatcor = .5,
+                                    # additional arguments passed to part_csv():
+                                    csv.path = data.file, part.mat = parts,
+                                    ncores = 2)
+}
 }
 \seealso{
 [fitGLS()], [sample_partition()], [calc_df()], [dist_km()],
