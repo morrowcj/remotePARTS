@@ -366,16 +366,12 @@ need to gather our key variables into a data frame:
 
 ```{r part function}
 ## combine y, land class, and location into one data frame
-part_input_df = as.data.frame(cbind(rel.est = rel.est, ndvi_AK3000[, c("land", "lng", "lat")]))
+part_input_df = as.data.frame(cbind(rel.est = rel.est, 
+                                    ndvi_AK3000[, c("land", "lng", "lat")]))
 ```
 
-Then, we'll run `fitGLS.partition.mc()`, making sure to supply any arguments needed 
-by `part_data()` to `fitGLS.partition.mc()`, by name.
-
-`fitGLS.partition.mc()`is a multi-core version of `fitGLS.partition()`.
-The syntax is the same for the single-core version but 
-has a few extra arguments. Check the documentation with `?fitGLS.partition()` 
-for more details and examples.
+Then, we'll run `fitGLS.partition()`, making sure to supply the arguments needed 
+by `part_data()` to `fitGLS.partition()`, by name.
 
 ```{r fitGLS_partition, include = TRUE, eval = TRUE}
 ## Partitioned Analysis 
@@ -391,25 +387,30 @@ GLS.part = fitGLS.partition(part_f = "part_data",
                             part_locvars = c("lng", "lat"))
 ```
 
-```{r fitGLS_partition_mc, include = FALSE, eval = FALSE}
+There is also a parallel version, `fitGLS.partition.mc()`.
+The syntax is the same as the single-core version but has a few extra arguments. 
+Check the documentation with `?fitGLS.partition()` for more details and 
+examples.
+
+```{r fitGLS_partition_mc, echo = TRUE, eval = FALSE}
+## Multi-core version
 GLS.part <- fitGLS.partition.mc(part_f = "part_data",
-                                   partsize = nrow(part.mat),
-                                   npart = ncol(part.mat),
-                                   V.meth = meth,
-                                   spatcor = r.est$spatialcor,
-                                   mincross = 4,
-                                   ## multicore arguments:
-                                   ncores = 1, debug = FALSE,
-                                   ## arguments of part_data():
-                                   part_form = "rel.est ~ 0 + land",
-                                   part_mat = part.mat,
-                                   part_df = part_input_df,
-                                   part_locvars = c("lng", "lat")
-                                   )
+                                partsize = nrow(part.mat),
+                                npart = ncol(part.mat),
+                                V.meth = meth,
+                                spatcor = r.est$spatialcor,
+                                mincross = 4,
+                                ## multicore arguments:
+                                ncores = 1, debug = FALSE,
+                                ## arguments of part_data():
+                                part_form = "rel.est ~ 0 + land",
+                                part_mat = part.mat,
+                                part_df = part_input_df,
+                                part_locvars = c("lng", "lat"))
 ```
 
-
-The results are grouped into 3 categories. (1) statistics for each partition:
+The results from the partitioned GLS are grouped into 3 categories. (1) 
+statistics for each partition:
 
 ```{r GLS partition stats}
 GLS.part$part.stats
