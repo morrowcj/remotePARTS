@@ -51,6 +51,8 @@ GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
     2*pt(abs(tval), df = out$dft, lower.tail = FALSE)
   })
   out$pval.F <- stats::pf(out$Fstat, out$df.F[1], out$df.F[2], lower.tail = FALSE) #F test
+  class(out) <- append("remoteGLS", class(out))
+  attr(out, "no_F") = FALSE
 
   return(out)
 }

@@ -13,7 +13,6 @@ fitGLS.partition(
   partsize,
   npart,
   mincross = 6,
-  X0,
   ...
 )
 
@@ -25,7 +24,6 @@ fitGLS.partition.mc(
   partsize,
   npart,
   mincross = 6,
-  X0,
   ncores = parallel::detectCores() - 1,
   export = NA,
   debug = TRUE,
@@ -47,8 +45,6 @@ fitGLS.partition.mc(
 
 \item{mincross}{number of partition pairs to calculate cross-partition
 statistics from.}
-
-\item{X0}{null model matrix with \code{partsize} rows}
 
 \item{...}{additional arguments passed to \code{part_f}}
 
@@ -93,7 +89,7 @@ is the default for \code{GLS.partition}.
 }
 \examples{
 n.pix = 30865 # pixels in AK_ndvi_common-land.csv
-parts = sample_partitions(npix = n.pix, npart = 4, partsize = 500)
+parts = sample_partitions(npix = n.pix, npart = 4, partsize = 200) # small partition matrix
 data.file = system.file("extdata", "AK_ndvi_common-land.csv",
                         package = "remotePARTS")
 
@@ -103,16 +99,18 @@ GLS.part = fitGLS.partition(part_f = "part_csv", dist_f = "dist_km",
                             V.meth = "exponential", spatcor = .5,
                             # additional arguments passed to part_csv():
                             part_csv_path = data.file, part_mat = parts,
-                            part_form = "cls.coef ~ 0 + land")
+                            part_form = "cls.coef ~ 0 + land",
+                            part_form0 = "cls.coef ~ 1")
 ## now w. 2 cores:
 
 if(FALSE){ # change to TRUE to run multi-core version
   GLS.part.mc = fitGLS.partition.mc(part_f = "part_csv", dist_f = "dist_km",
                                     partsize = nrow(parts), npart = ncol(parts),
                                     V.meth = "exponential", spatcor = .5,
-                                    # additional arguments passed to part_csv():
-                                    csv.path = data.file, part.mat = parts,
-                                    ncores = 2)
+                                    part_csv_path = data.file, part_mat = parts,
+                                    part_form = "cls.coef ~ 0 + land",
+                                    part_form0 = "cls.coef ~ 1",
+                                    ncores = 4)
 }
 }
 \seealso{
