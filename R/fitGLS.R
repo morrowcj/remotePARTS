@@ -14,13 +14,34 @@
 #' @param threads integer indicating the number of threads to use. Currently
 #' this parameter does nothin but multi-core functionality will be added soon.
 #'
-#' @return remoteGLS object
+#' @return remoteGLS object see \code{?remoteGLS()} for more info.
+#'
+#' @seealso [remoteGLS()], [part_data()], [GLS_worker()]
 #'
 #' @details
 #'
-#' @examples #TBA
-#'
 #' @export
+#'
+#' @examples
+#' ## read data
+#' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
+#'                         package = "remotePARTS")
+#'
+#' df = data.table::fread(data.file, nrows = 1000) # read first 1000 rows
+#'
+#' ## format data
+#' datalist = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df,
+#'           part_mat = matrix(1:1000, ncol = 1))
+#'
+#' ## fit covariance matrix
+#' V = fitV(geosphere::distm(datalist$coords), spatialcor = 2, method = "exponential")
+#'
+#' ## run GLS
+#' GLS = fitGLS(X = datalist$X, y = datalist$y, X0 = datalist$X0, V = V,
+#'              nugget = 0, save_xx = TRUE)
+#'
+#' print(GLS)
+#'
 fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 
 
@@ -42,7 +63,8 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
   ## add in p values
   out$pval.t <- 2 * pt(abs(out$tstat), df = out$dft, lower.tail = F)
   out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
-  class(out) <- "remoteGLS"
+  class(out) <- append("remoteGLS", class(out))
+  attr(out, "no_F") = FALSE
   out$model.info$call <- match.call()
   out$nugget = nugget
 
@@ -61,7 +83,9 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #' @param no_F logical: should calculations needed for F tests be skipped?
 #' @param ... additional arguments passed to \code{\link{optimize_nugget}}
 #'
-#' @details \code{fitGLS2()} first creates an empty remoteGLS object
+#' @details
+#'
+#' \code{fitGLS2()} first creates an empty remoteGLS object
 #' (with \code{remoteGLS()}) and then fills in the elements by modifying
 #' the remoteGLS object in the C++ function.
 #'
@@ -75,7 +99,13 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #'
 #' @export
 #'
-#' @examples #TBA
+#' @examples
+#'
+#' ## Alternative GLS syntax
+#' GLS2 = fitGLS2(formula = "cls.coef ~ 0 + land", data = df, V = V, form.0 = "cls.coef ~ 1",
+#'              nugget = 0, save_xx = TRUE)
+#'
+#' print(GLS2)
 fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
                     threads = 1, contrasts = NULL, LL_only = FALSE,
                     no_F = FALSE,...){
@@ -147,6 +177,7 @@ fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
   names(GLS$betahat) = names(GLS$SE) = names(GLS$tstat) = names(GLS$pval.t) = colnames(X)
 
   if(!no_F){
+    attr(GLS, "no_F") = TRUE
     GLS$pval.F <- pf(GLS$Fstat, df1 = GLS$df.F[1], df2 = GLS$df.F[2], lower.tail = F)
 
   } else {attr(GLS, "no_F") = TRUE}
@@ -163,8 +194,6 @@ fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
 #' by other functions for optimization but should be deprecated and simply
 #' added as functionality to \code{fitGLS()} and/or \code{fitGLS2()} in future
 #' implementations.
-#'
-#' @examples #TBA
 LogLikGLS <- function(nugget, X, V, y){
   ## coerce to matrices
   X = as.matrix(X)

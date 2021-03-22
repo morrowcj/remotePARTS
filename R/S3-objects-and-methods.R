@@ -337,9 +337,11 @@ print.remoteGLS <- function(x, ret_call = TRUE, ...){
     }
     ## return (needs cleaning)
     if (ret_call){
-      cat("call: ");print(x$model.info$call)
+      cat("call: ");print(x$model.info$call);cat("\n")
     }
-    cat("response:", x$model.info$response,"\n\n")
+    if (!is.null(x$model.info$response)){
+      cat("response:", x$model.info$response,"\n\n")
+    }
     cat("t tests:\n")
     print(format(coefs, digits = 2, nsmall = 2))
 

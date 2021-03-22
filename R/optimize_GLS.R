@@ -57,18 +57,24 @@ optim_GLS_func <- function(par, y, modmat, D, verbose = FALSE,
 #'
 #' @examples
 #' set.seed(916)
+#'
 #' ## load Alaska 3000 data
 #' data("ndvi_AK3000")
+#'
 #' ## take a random subset of 100 pixels (to make example fast)
 #' subsamp = sample.int(n = nrow(ndvi_AK3000), size = 100)
+#'
 #' ## subset the data: we now have 100 pixels, latitude, longitude, and land class
 #' df = ndvi_AK3000[subsamp, c("lng", "lat", "land")] # subset the data
+#'
 #' ## simulate a response variable kappa
 #' df$kappa = .5*df$lat + .2*df$lng + rnorm(100) #simulate response variable
+#'
 #' ## calculate distance matrix
-#' D = geosphere::distm(df[c("lng", "lat")])/1000 #distance in km
+#' D = geosphere::distm(df[, c("lng", "lat")])/1000 #distance in km
+#'
 #' ## fit the GLS, including ML spatial correlation and nugget
-#' optimize_GLS(kappa ~ 0 + land, data = df, D = D, verbose = TRUE)
+#' optimize_GLS(kappa ~ 0 + land, data = df, D = D, verbose = FALSE)
 optimize_GLS <- function(formula, D, V.meth = "exponential-power",
                          nugget = NA, spcor = NA, verbose = FALSE,
                          contrasts = NULL, data, ...){

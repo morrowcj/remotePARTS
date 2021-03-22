@@ -133,16 +133,15 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
               "np" = n.p, "df1" = df1, "df2" = df2))
 }
 
-
-
 #' @title Extract a partition from a csv file
 #' @rdname part_data
 #'
 #' @param part_i which partition to extract (integer)
-#' @param part_csv_path path to csv file containing data
+#' @param part_form formula to make the model matrix
+#' @param part_df object that contains all the data
 #' @param part_mat a matrix whose columns contain indices for a partition.
 #' @param part_locvars character vector of coordinate variable names. Default is c("lng", "lat)
-#' @param part_form formula to make the model matrix
+#' @param part_form0 formula to make null model matrix (if NULL (default), "y ~ 1")
 #'
 #' @return
 #' a list with the following elements:
@@ -151,17 +150,67 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #'     \item{\code{$y}}{the response vector of length \code{partsize}
 #'     corresponding to parition i}
 #'     \item{\code{$X}}{a model matrix for parition i}
+#'     \item{\code{$X0}{a null model matrix for parition i}
 #'     \item{\code{$coords}}{a matrix or data frame of spatial coordinates for
 #'     partition i. The first column are x coordinates and the second are y
 #'     coordinates}
 #' }
 #'
+#' @export
+#'
+#' @examples
+#' ## using part_data and AK_ndvi_common-land.csv:
+#'
+#' n.pix = 30865 # pixels in AK_ndvi_common-land.csv
+#' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 1000)
+#' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
+#'                         package = "remotePARTS")
+#' df = data.table::fread(data.file, data.table = FALSE)
+#'
+#' A.out = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df, part_mat = parts)
+#'
+#' ## look at first 6 values:
+#' lapply(A.out, head)
+#'
+#' #' # dimensions of A.out elements:
+#' dim(A.out$V)
+#' dim(A.out$X)
+#' dim(A.out$X0)
+#' length(A.out$y)
+part_data <- function(part_i, part_form, part_df, part_mat, part_locvars = c("lng", "lat"), part_form0 = NULL){
+  prt = part_mat[, part_i]
+  df = as.data.frame(part_df)
+  df_prt = df[prt, ]
+  mf = stats::model.frame(formula(part_form), data = df_prt)
+  resp = model.response(mf)
+
+  X = stats::model.matrix(formula(part_form), data = df_prt)
+
+  if(is.null(part_form0)){
+    X0 = model.matrix(resp ~ 1)
+  } else {
+    X0 = model.matrix(formula(part_form0), data = df_prt)
+  }
+
+  return(list(y = as.vector(resp),
+              X = as.matrix(X),
+              X0 = as.matrix(X0),
+              coords = as.matrix(df_prt[, part_locvars])))
+}
+
+
+#' @rdname part_data
+#'
+#' @param part_csv_path path to csv file containing data
+#'
 #' @details \code{part_csv()} is meant to be used with \code{fitGLS.partition()}
 #' @seealso [fitGLS.partition()]
 #'
 #' @export
+#'
 #' @examples
-#' ## using part_csv ----
+#'
+#' ## using part_csv:
 #'
 #' n.pix = 30865 # pixels in AK_ndvi_common-land.csv
 #' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 1000)
@@ -169,15 +218,9 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
 #'                         package = "remotePARTS")
 #'
-#' A.out = part_csv(part_i = 1, part_csv_path = data.file, part_mat = parts,
+#' B.out = part_csv(part_i = 1, part_csv_path = data.file, part_mat = parts,
 #'                  part_form = "cls.coef ~ 0 + land")
-#'
-#' # dimensions of A.out elements:
-#' dim(A.out$V)
-#' dim(A.out$X)
-#' dim(A.out$X0)
-#' length(A.out$y)
-part_csv <- function(part_i, part_csv_path, part_mat, part_form, part_locvars = c("lng", "lat")){
+part_csv <- function(part_i, part_form, part_csv_path, part_mat, part_locvars = c("lng", "lat"), part_form0 = NULL){
   partDF = data.frame(part = part_mat[, part_i]) #df with 1 column: current partition
 
   # use SQL syntax with read.csv.sql to only read specific rows (very fast)
@@ -190,41 +233,19 @@ part_csv <- function(part_i, part_csv_path, part_mat, part_form, part_locvars = 
   resp = model.response(mf)
   X = stats::model.matrix(formula(part_form), data = df_prt)
 
-  return(list(y = resp,
-              X = X,
+  if(is.null(part_form0)){
+    X0 = model.matrix(resp ~ 1)
+  } else {
+    X0 = model.matrix(formula(part_form0), data = df_prt)
+  }
+
+  return(list(y = as.vector(resp),
+              X = as.matrix(X),
+              X0 = as.matrix(X0),
               coords = as.matrix(df_prt[, part_locvars])))
 }
 
-#' @rdname part_data
-#'
-#' @param part_df object that contains all the data
-#'
-#' @export
-#'
-#' @examples
-#'
-#' ## using part_data and AK_ndvi_common-land.csv: ----
-#'
-#' n.pix = 30865 # pixels in AK_ndvi_common-land.csv
-#' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 1000)
-#' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
-#'                         package = "remotePARTS")
-#' df = data.table::fread(data.file)
-#'
-#' B.out = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df, part_mat = parts)
-part_data <- function(part_i, part_form, part_df, part_mat, part_locvars = c("lng", "lat")){
-  prt = part_mat[, part_i]
-  df = as.data.frame(part_df)
-  df_prt = df[prt, ]
-  mf = stats::model.frame(formula(part_form), data = df_prt)
-  resp = model.response(mf)
 
-  X = stats::model.matrix(formula(part_form), data = df_prt)
-
-  return(list(X = as.matrix(X),
-              y = as.vector(resp),
-              coords = as.matrix(df_prt[, part_locvars])))
-}
 
 #' @title Compute distance matrix in kilometers
 #'
@@ -258,7 +279,6 @@ dist_km <- function(coords, coords2 = NULL){
 #' @param npart number of partitions
 #' @param mincross number of partition pairs to calculate cross-partition
 #' statistics from.
-#' @param X0 null model matrix with \code{partsize} rows
 #' @param ... additional arguments passed to \code{part_f}
 #'
 #' @details
@@ -297,7 +317,7 @@ dist_km <- function(coords, coords2 = NULL){
 #'
 #' @examples
 #' n.pix = 30865 # pixels in AK_ndvi_common-land.csv
-#' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 500)
+#' parts = sample_partitions(npix = n.pix, npart = 4, partsize = 200) # small partition matrix
 #' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
 #'                         package = "remotePARTS")
 #'
@@ -307,19 +327,15 @@ dist_km <- function(coords, coords2 = NULL){
 #'                             V.meth = "exponential", spatcor = .5,
 #'                             # additional arguments passed to part_csv():
 #'                             part_csv_path = data.file, part_mat = parts,
-#'                             part_form = "cls.coef ~ 0 + land")
+#'                             part_form = "cls.coef ~ 0 + land",
+#'                             part_form0 = "cls.coef ~ 1")
 fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
                              V.meth = "exponential", spatcor,
-                             partsize, npart, mincross = 6, X0, ...){
+                             partsize, npart, mincross = 6, ...){
   # Setup ----
   ## match the input functions
   func <- match.fun(part_f)
   D_func <- match.fun(dist_f)
-
-  ## Default X0
-  if (missing(X0)) {
-    X0 = stats::model.matrix(rep(0, partsize) ~ 1)
-  }
 
   ## adjust mincross
   if (mincross > (npart - 1)){
@@ -341,7 +357,7 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
       # stopifnot("part_f(i)$coords must be a matrix" = is.matrix(out.i$coords))
 
       ## calculate df
-      dfs <- calc_dfpart(partsize, p = ncol(out.i$X), p0 = ncol(X0))
+      dfs <- calc_dfpart(partsize, p = ncol(out.i$X), p0 = ncol(out.i$X0))
       ## setup output
       betas = matrix(NA, ncol = ncol(out.i$X), nrow = npart,
                      dimnames = list(NULL, colnames(out.i$X)))
@@ -359,7 +375,7 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
       D.i <- D_func(out.i$coords)
       V.i <- fitV(D.i, spatcor, V.meth)
       ## fit GLS
-      gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = X0, save_xx = xx.print)
+      gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = xx.print)
     } else {
       ## copy out, V, and gls from previous j
       out.i <-  out.j
@@ -386,7 +402,7 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
     D.j <- D_func(out.j$coords)
     V.j <- fitV(D.j, spatcor, V.meth)
     ## fit GLS
-    gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = X0, save_xx = xx.print)
+    gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = out.j$X0, save_xx = xx.print)
     ## fill in data for the last partition
     if(j == npart){
       betas[j, ] <- gls.j$betahat
@@ -439,7 +455,7 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
                                                         "rSSRmean" = rSSRmean,
                                                         "rSSEmean" = rSSEmean))
   )
-  class(out.list) <- "remoteGLS.parts"
+  class(out.list) <- append("remoteGLS.parts", class(out.list))
   return(out.list)
 }
 
@@ -459,13 +475,14 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
 #'   GLS.part.mc = fitGLS.partition.mc(part_f = "part_csv", dist_f = "dist_km",
 #'                                     partsize = nrow(parts), npart = ncol(parts),
 #'                                     V.meth = "exponential", spatcor = .5,
-#'                                     # additional arguments passed to part_csv():
-#'                                     csv.path = data.file, part.mat = parts,
-#'                                     ncores = 2)
+#'                                     part_csv_path = data.file, part_mat = parts,
+#'                                     part_form = "cls.coef ~ 0 + land",
+#'                                     part_form0 = "cls.coef ~ 1",
+#'                                     ncores = 4)
 #' }
 fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
                                 V.meth = "exponential", spatcor,
-                                partsize, npart, mincross = 6, X0,
+                                partsize, npart, mincross = 6,
                                 ncores = parallel::detectCores() - 1,
                                 export = NA, debug = TRUE,
                                 ...){
@@ -482,11 +499,6 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
   func <- match.fun(part_f)
   D_func <- match.fun(dist_f)
 
-  ## Default X0
-  if (missing(X0)) {
-    X0 = stats::model.matrix(rep(0, partsize) ~ 1)
-  }
-
   ## GLS for each partition ----
   if(debug){print("2. part GLS")}
   part_out = foreach::foreach(i = 1:npart, .packages = "remotePARTS") %dopar% {
@@ -499,13 +511,13 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
     # out.i = func(i, csv.path = data.file, part.mat = parts)
     D.i <- D_func(out.i$coords) # calculate D
     V.i <- fitV(D.i, spatcor, V.meth) # calculate V
-    gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = X0, save_xx = TRUE)
+    gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = TRUE)
     # "return" statement
     list(data = out.i, GLS = gls.i)
   }
 
   ## calculate df
-  dfs <- calc_dfpart(partsize, p = ncol(part_out[[1]]$data$X), p0 = ncol(X0))
+  dfs <- calc_dfpart(partsize, p = ncol(part_out[[1]]$data$X), p0 = ncol(func(1, ...)$X0))
 
 
   ## Cross-partition setup ----

@@ -60,7 +60,7 @@ this parameter does nothin but multi-core functionality will be added soon.}
 \item{...}{additional arguments passed to \code{\link{optimize_nugget}}}
 }
 \value{
-remoteGLS object
+remoteGLS object see \code{?remoteGLS()} for more info.
 }
 \description{
 Fit GLS to remote sensing data
@@ -92,8 +92,32 @@ implementations.
 \code{fitGLS()} is a C++ implementation of \code{fitGLS_R()}.
 }
 \examples{
-#TBA
+## read data
+data.file = system.file("extdata", "AK_ndvi_common-land.csv",
+                        package = "remotePARTS")
 
-#TBA
-#TBA
+df = data.table::fread(data.file, nrows = 1000) # read first 1000 rows
+
+## format data
+datalist = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df,
+          part_mat = matrix(1:1000, ncol = 1))
+
+## fit covariance matrix
+V = fitV(geosphere::distm(datalist$coords), spatialcor = 2, method = "exponential")
+
+## run GLS
+GLS = fitGLS(X = datalist$X, y = datalist$y, X0 = datalist$X0, V = V,
+             nugget = 0, save_xx = TRUE)
+
+print(GLS)
+
+
+## Alternative GLS syntax
+GLS2 = fitGLS2(formula = "cls.coef ~ 0 + land", data = df, V = V, form.0 = "cls.coef ~ 1",
+             nugget = 0, save_xx = TRUE)
+
+print(GLS2)
+}
+\seealso{
+[remoteGLS()], [part_data()], [GLS_worker()]
 }
