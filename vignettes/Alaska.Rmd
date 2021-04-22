@@ -532,16 +532,26 @@ for(cross in seq_len(length(part.results) - 1)){ # each consecutive pair of part
   ## GLS_worker() output
   Li = part.results[[i]] # list containing partition results i
   Lj = part.results[[j]] # list containing partition results j
-  ## Obtain V.ij
+  
   loc.i = location[subs.i, ] # coordinates of i
   loc.j = location[subs.j, ] # coordinates of j
+  
+  Di = geosphere::distm(loc.i)
+  Vi = fitV(Di, r.est$spatialcor, method = "exponential-power")
+  invchol_i <- invert_chol(Vi, Li$nugget)
+  
+  Dj = geosphere::distm(loc.j)
+  Vj = fitV(Dj, r.est$spatialcor, method = "exponential-power")
+  invchol_j <- invert_chol(Vj, Lj$nugget)
+  
+  ## Obtain V.ij
   D.ij = geosphere::distm(loc.i, loc.j) # distance between i and j
   V.ij = fitV(D.ij, r.est$spatialcor) # variance matrix ij
   ## obtain cross-partition results
   cross.results[[cross]] = crosspart_worker(xxi = Li$xx, xxj = Lj$xx,
                                             xxi0 = Li$xx0, xxj0 = Lj$xx0,
-                                            invChol_i = Li$invcholV,
-                                            invChol_j = Lj$invcholV,
+                                            invChol_i = invchol_i,
+                                            invChol_j = invchol_j,
                                             nug_i = Li$nugget,
                                             nug_j = Lj$nugget,
                                             Vsub = V.ij,

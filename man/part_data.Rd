@@ -39,7 +39,17 @@ part_csv(
 \item{part_csv_path}{path to csv file containing data}
 }
 \value{
+a list with the following elements:
 
+\describe{
+    \item{\code{$y}}{the response vector of length \code{partsize}
+    corresponding to parition i}
+    \item{\code{$X}}{a model matrix for parition i}
+    \item{\code{$X0}}{a null model matrix for parition i}
+    \item{\code{$coords}}{a matrix or data frame of spatial coordinates for
+    partition i. The first column are x coordinates and the second are y
+    coordinates}
+}
 }
 \description{
 Extract a partition from a csv file
@@ -62,10 +72,10 @@ A.out = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df, part_mat = p
 lapply(A.out, head)
 
 #' # dimensions of A.out elements:
-dim(A.out$V)
 dim(A.out$X)
 dim(A.out$X0)
 length(A.out$y)
+
 
 ## using part_csv:
 

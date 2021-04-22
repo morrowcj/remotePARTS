@@ -20,3 +20,7 @@ specified within the `part_f` function. `part_data()` and `part_csv()` have also
 been corrected to output X0. 
 
 # v0.1.1.9005
+
+* updated fitGLS.partition functions to prevent them from hogging memory. This
+means that the cholesky inversions cannot be reused and need to be recalculated,
+leading to longer compute times. 

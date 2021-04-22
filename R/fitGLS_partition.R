@@ -150,7 +150,7 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #'     \item{\code{$y}}{the response vector of length \code{partsize}
 #'     corresponding to parition i}
 #'     \item{\code{$X}}{a model matrix for parition i}
-#'     \item{\code{$X0}{a null model matrix for parition i}
+#'     \item{\code{$X0}}{a null model matrix for parition i}
 #'     \item{\code{$coords}}{a matrix or data frame of spatial coordinates for
 #'     partition i. The first column are x coordinates and the second are y
 #'     coordinates}
@@ -173,10 +173,10 @@ fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
 #' lapply(A.out, head)
 #'
 #' #' # dimensions of A.out elements:
-#' dim(A.out$V)
 #' dim(A.out$X)
 #' dim(A.out$X0)
 #' length(A.out$y)
+#'
 part_data <- function(part_i, part_form, part_df, part_mat, part_locvars = c("lng", "lat"), part_form0 = NULL){
   prt = part_mat[, part_i]
   df = as.data.frame(part_df)
@@ -221,11 +221,11 @@ part_data <- function(part_i, part_form, part_df, part_mat, part_locvars = c("ln
 #' B.out = part_csv(part_i = 1, part_csv_path = data.file, part_mat = parts,
 #'                  part_form = "cls.coef ~ 0 + land")
 part_csv <- function(part_i, part_form, part_csv_path, part_mat, part_locvars = c("lng", "lat"), part_form0 = NULL){
-  partDF = data.frame(part = part_mat[, part_i]) #df with 1 column: current partition
+  PartDF = data.frame(part = part_mat[, part_i]) #df with 1 column: current partition
 
   # use SQL syntax with read.csv.sql to only read specific rows (very fast)
   df_prt = sqldf::read.csv.sql(file = part_csv_path,
-                             sql = "select file.* from file join partDF on file.rowid = partDF.part",
+                             sql = "select file.* from file join PartDF on file.rowid = PartDF.part",
                              dbname = tempfile(),
                              header = TRUE)
 
@@ -376,11 +376,15 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
       V.i <- fitV(D.i, spatcor, V.meth)
       ## fit GLS
       gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = xx.print)
+
+      invchol_i <- invert_chol(V.i, gls.i$nugget)
+
     } else {
       ## copy out, V, and gls from previous j
       out.i <-  out.j
       V.i <- V.j
       gls.i <- gls.j
+      invchol_i <- invchol_j
     }
     ## fill in the output
     betas[i, ] <- gls.i$betahat
@@ -403,6 +407,9 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
     V.j <- fitV(D.j, spatcor, V.meth)
     ## fit GLS
     gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = out.j$X0, save_xx = xx.print)
+
+    invchol_j <- invert_chol(V.j, gls.j$nugget)
+
     ## fill in data for the last partition
     if(j == npart){
       betas[j, ] <- gls.j$betahat
@@ -423,8 +430,8 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
     if(i <= mincross){
       cross.ij = crosspart_worker(xxi = gls.i$xx, xxj = gls.j$xx,
                                   xxi0 = gls.i$xx0, xxj0 = gls.j$xx0,
-                                  invChol_i = gls.i$invcholV,
-                                  invChol_j = gls.j$invcholV,
+                                  invChol_i = invchol_i,
+                                  invChol_j = invchol_j,
                                   Vsub = V.ij,
                                   nug_i = gls.i$nugget, nug_j = gls.j$nugget,
                                   df1 = dfs[1], df2 = dfs[2])
@@ -503,6 +510,7 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
   if(debug){print("2. part GLS")}
   part_out = foreach::foreach(i = 1:npart, .packages = "remotePARTS") %dopar% {
     out.i = func(i, ...) # get partition data
+    # out.i = func(i, part_form, part_csv_path, part_mat, part_locvars, part_form0)
     if(i == 1){
       # checks
       stopifnot("part_f(i)$X must be a matrix" = is.matrix(out.i$X))
@@ -513,11 +521,12 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
     V.i <- fitV(D.i, spatcor, V.meth) # calculate V
     gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = TRUE)
     # "return" statement
+
     list(data = out.i, GLS = gls.i)
   }
 
   ## calculate df
-  dfs <- calc_dfpart(partsize, p = ncol(part_out[[1]]$data$X), p0 = ncol(func(1, ...)$X0))
+  dfs <- calc_dfpart(partsize, p = ncol(part_out[[1]]$data$X), p0 = ncol(part_out[[1]]$data$X0))
 
 
   ## Cross-partition setup ----
@@ -537,7 +546,6 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
     used.combs = combs[sample(maxcross, mincross), ]
   }
 
-
   # used.combs = used.combs[order(used.combs[, 1]), ]
 
   ## Cross-partition GLS ----
@@ -546,19 +554,32 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
   cross_out = foreach::foreach(cross = iterators::iter(used.combs, by = "row"),
                                .packages = "remotePARTS") %dopar% {
                                  i = cross[1]; j = cross[2]
+
+                                 ## recompute cholesky from distances
+                                 Di <- D_func(part_out[[i]]$data$coords)
+                                 Vi <- fitV(Di, spatcor, V.meth) # calculate V
+                                 invchol_i = invert_chol(Vi, part_out[[i]]$GLS$nugget)
+
+                                 Dj <- D_func(part_out[[j]]$data$coords)
+                                 Vj <- fitV(Dj, spatcor, V.meth) # calculate V
+                                 invchol_j = invert_chol(Vj, part_out[[j]]$GLS$nugget)
+
                                  ## cross-partition varcovar matrix
                                  D.ij <- D_func(part_out[[i]]$data$coords, part_out[[j]]$data$coords)
                                  V.ij <- fitV(D.ij, spatcor, V.meth)
                                  cross.ij = crosspart_worker(xxi = part_out[[i]]$GLS$xx, xxj = part_out[[j]]$GLS$xx,
                                                              xxi0 = part_out[[i]]$GLS$xx0, xxj0 = part_out[[j]]$GLS$xx0,
-                                                             invChol_i = part_out[[i]]$GLS$invcholV,
-                                                             invChol_j = part_out[[j]]$GLS$invcholV,
+                                                             invChol_i = invchol_i,
+                                                             invChol_j = invchol_j,
                                                              Vsub = V.ij,
                                                              nug_i = part_out[[i]]$GLS$nugget, nug_j = part_out[[j]]$GLS$nugget,
                                                              df1 = dfs[1], df2 = dfs[2])
-
-                                 cross.ij
+                                 # Only return necessary output to save space
+                                 list(rSSRij = cross.ij$rSSRij,
+                                      rSSEij = cross.ij$rSSEij,
+                                      rcoefij = cross.ij$rcoefij)
                                }
+
 
   # Results Collection ----
   if(debug){print("4. Results Collection")}
