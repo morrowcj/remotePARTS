@@ -131,7 +131,8 @@ List fitGLS_cpp(const MapMatd& X,
   if (save_xx){
     res_list.push_back(xx, "xx");
     res_list.push_back(xx0, "xx0");
-    res_list.push_back(tUinv, "invcholV");
+    // res_list.push_back(tUinv, "invcholV");
+    res_list.push_back(NA_REAL, "invcholV");
   } else{
     res_list.push_back(NA_REAL, "xx");
     res_list.push_back(NA_REAL, "xx0");
