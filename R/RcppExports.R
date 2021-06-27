@@ -20,10 +20,11 @@
 #' @param nug_u upper boundary for nugget optimization
 #' @param nug_tol tolerance of nugget optimization
 #' @param save_xx logical: should xx, xx0, and invcholV be returned?
+#' @param threads
 #'
 #' @examples #TBA
-.GLS_worker_cpp <- function(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx = FALSE) {
-    .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug_l, nug_u, nug_tol, save_xx)
+.GLS_worker_cpp <- function(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx = FALSE, threads = 1L) {
+    .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug_l, nug_u, nug_tol, save_xx, threads)
 }
 
 #' Caculate log-liklihood of GLS model
@@ -88,9 +89,7 @@
 #' @param save_xx logical: should xx, xx0, and invcholV be returned? This
 #' functionality is meant for use with the partitioned GLS whereby these
 #' values are used to calculate cross-partition statistics.
-#' @param threads integer indicating the number of threads to use. This current
-#' version does not have multi-thread functionality so this argument does
-#' nothing yet.
+#' @param threads
 #'
 #' @examples #TBA
 .fitGLS_cpp <- function(X, V, y, X0, nugget, save_xx, threads) {
@@ -112,9 +111,7 @@
 #' values are used to calculate cross-partition statistics.
 #' @param LL_only logical: should only the log-liklihood be computed?
 #' @param no_F logical: should calculations needed for F tests be skipped?
-#' @param threads integer indicating the number of threads to use. This current
-#' version does not have multi-thread functionality so this argument does
-#' nothing yet.
+#' @param threads
 #'
 #' @examples #TBA
 .fitGLS2_cpp <- function(L, X, V, y, X0, nugget, save_xx, LL_only, no_F, threads) {
@@ -150,8 +147,9 @@
 #'
 #' @param V numeric matrix
 #' @param nugget numeric nugget to add to variance matrix
+#' @param threads
 #'
-#' @examples #TBA
+#' @examples
 .invchol_cpp <- function(V, nugget = 0.) {
     .Call(`_remotePARTS_invchol_cpp`, V, nugget)
 }

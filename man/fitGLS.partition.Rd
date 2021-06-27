@@ -13,6 +13,7 @@ fitGLS.partition(
   partsize,
   npart,
   mincross = 6,
+  threads = 1,
   ...
 )
 

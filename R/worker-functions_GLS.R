@@ -10,6 +10,7 @@
 #' @param nug_l lower boundary for nugget optimization
 #' @param nug_u upper boundary for nugget optimization
 #' @param nug_tol tolerance of nugget optimization
+#' @param threads
 #' @param save_xx logical: should xx, xx0, and invcholV be returned?
 #'
 #' @details \code{GLS_worker()} is meant to be called by other functions
@@ -24,11 +25,11 @@
 #'
 #' @seealso [fitGLS()] and [fitGLS.parition_rcpp()]
 #'
-#' @examples #TBA
+#' @examples
 #'
 #' @export
 GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
-                       save_xx = FALSE){
+                       save_xx = FALSE, threads = 1){
   ## coerce to matrices
   X = as.matrix(X)
   V = as.matrix(V)
@@ -44,7 +45,7 @@ GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
 
   ## Execute C++ GLS worker function
   out <- .Call(`_remotePARTS_GLS_worker_cpp`, y, X, V, X0, nug_l, nug_u, nug_tol,
-               save_xx)
+               save_xx, threads)
 
   ## calculate p values outside of C++
   out$pval.t <- sapply(out$tstat, function(tval){ #t test
@@ -79,7 +80,7 @@ GLS_worker <- function(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
 #' @details Cross-partition statistics are calculated for a pair of partitions
 #' i and j.
 #'
-#' @examples #TBA
+#' @examples
 #'
 #' @export
 crosspart_worker <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,

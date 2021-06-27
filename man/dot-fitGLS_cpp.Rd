@@ -21,9 +21,7 @@
 functionality is meant for use with the partitioned GLS whereby these
 values are used to calculate cross-partition statistics.}
 
-\item{threads}{integer indicating the number of threads to use. This current
-version does not have multi-thread functionality so this argument does
-nothing yet.}
+\item{threads}{}
 }
 \description{
 Fit GLS to remote sensing data

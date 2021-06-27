@@ -25,6 +25,3 @@ Scale a distance matrix by its maximum value
 a distance matrix is fit using `geosphere::distm()` and then divided
 by itKs maximum distance.
 }
-\examples{
-#TBA
-}

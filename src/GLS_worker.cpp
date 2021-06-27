@@ -26,6 +26,7 @@
 //' @param nug_u upper boundary for nugget optimization
 //' @param nug_tol tolerance of nugget optimization
 //' @param save_xx logical: should xx, xx0, and invcholV be returned?
+//' @param threads
 //'
 //' @examples #TBA
 // [[Rcpp::export(.GLS_worker_cpp)]]
@@ -36,12 +37,13 @@ List GLS_worker_cpp(const MapMatd& y,
                     double nug_l,
                     double nug_u,
                     double nug_tol,
-                    bool save_xx = false){
+                    bool save_xx = false,
+                    int threads = 1){
 
   // Estimate the nugget
   double nug = optimize_nugget_cpp(X, V, y, nug_l, nug_u, nug_tol, false);
   // run GLS
-  List x_gls = fitGLS_cpp(X, V, y, X0, nug, save_xx, 1);
+  List x_gls = fitGLS_cpp(X, V, y, X0, nug, save_xx, threads);
   // add the nugget to the output
   x_gls.push_back(nug, "nugget");
 

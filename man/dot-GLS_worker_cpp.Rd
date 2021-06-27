@@ -4,7 +4,17 @@
 \alias{.GLS_worker_cpp}
 \title{Worker function 1 for paritioned GLS}
 \usage{
-.GLS_worker_cpp(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx = FALSE)
+.GLS_worker_cpp(
+  y,
+  X,
+  V,
+  X0,
+  nug_l,
+  nug_u,
+  nug_tol,
+  save_xx = FALSE,
+  threads = 1L
+)
 }
 \arguments{
 \item{y}{numeric vector}
@@ -22,6 +32,8 @@
 \item{nug_tol}{tolerance of nugget optimization}
 
 \item{save_xx}{logical: should xx, xx0, and invcholV be returned?}
+
+\item{threads}{}
 }
 \description{
 Worker function 1 for paritioned GLS

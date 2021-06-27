@@ -17,6 +17,3 @@ list of p values calculated with different methods
 \description{
 Wrapper for bootsrap test
 }
-\examples{
-#TBA
-}

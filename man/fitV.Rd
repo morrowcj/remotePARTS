@@ -33,6 +33,5 @@ Fit varcov matrix from distance matrix
 \code{fitV.switch()} will likely be removed in future implementations.
 }
 \examples{
-#TBA
 
 }

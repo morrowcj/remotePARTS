@@ -4,7 +4,17 @@
 \alias{GLS_worker}
 \title{Worker function 1 for paritioned GLS}
 \usage{
-GLS_worker(y, X, V, X0, nug_l = 0, nug_u = 1, nug_tol = 1e-05, save_xx = FALSE)
+GLS_worker(
+  y,
+  X,
+  V,
+  X0,
+  nug_l = 0,
+  nug_u = 1,
+  nug_tol = 1e-05,
+  save_xx = FALSE,
+  threads = 1
+)
 }
 \arguments{
 \item{y}{numeric vector}
@@ -39,7 +49,6 @@ At present, \code{GLS_worker()} is only single-core natively but will have
 multi-core functionality eventually.
 }
 \examples{
-#TBA
 
 }
 \seealso{

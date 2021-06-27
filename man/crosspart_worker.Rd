@@ -61,7 +61,6 @@ a reference function. is a purely R version and will be removed in future
 implementations.
 }
 \examples{
-#TBA
 
 }
 \seealso{

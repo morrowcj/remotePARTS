@@ -12,9 +12,7 @@
 //' @param save_xx logical: should xx, xx0, and invcholV be returned? This
 //' functionality is meant for use with the partitioned GLS whereby these
 //' values are used to calculate cross-partition statistics.
-//' @param threads integer indicating the number of threads to use. This current
-//' version does not have multi-thread functionality so this argument does
-//' nothing yet.
+//' @param threads
 //'
 //' @examples #TBA
 // [[Rcpp::export(.fitGLS_cpp)]]
@@ -24,7 +22,9 @@ List fitGLS_cpp(const MapMatd& X,
                 const MapMatd& X0,
                 double nugget,
                 bool save_xx,
-                const int threads){
+                int threads){
+
+  Eigen::setNbThreads(threads);
 
   int nX = X.rows(), pX = X.cols(); // dimensions of X
   MatrixXd tUinv = invchol_cpp(V, nugget); // transpose of chol(V) = t(inv(U))

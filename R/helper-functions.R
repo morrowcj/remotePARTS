@@ -132,7 +132,7 @@ calc_dfpart <- function(partsize, p, p0){
 #' @return list of pvalues, number of bootstrap iterations, and MSR rank
 #' @export
 #'
-#' @examples #TBA
+#' @examples
 boot_corF <- function(Fmean.obs, rSSR, rSSE, df1, df2,
                       npart, nboot = 2000){
   part <- rep(1:npart, each=df1)
@@ -220,7 +220,7 @@ cor_t <- function(coefs, part.SEs, rcoef, df2, npart){
 #' @return list of p values calculated with different methods
 #' @export
 #'
-#' @examples #TBA
+#' @examples
 GLS.partition.pvalue <- function(part.out, nboot = 2000){
   if(is.finite(part.out$rSSR) & !is.na(nboot)) {
     p.Fmean <- boot_corF(Fmean.obs = part.out$Fmean,

@@ -10,7 +10,7 @@
 #'
 #' @details \code{Dist} is transformed via \code{method}
 #'
-#' @examples #TBA
+#' @examples
 #'
 #' @export
 fitV <- function(Dist, spatialcor, method = "exponential") {

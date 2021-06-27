@@ -61,7 +61,6 @@ After further testing, only the most efficeint of the 3 nugget optimizers will
 remain in the package.
 }
 \examples{
-#TBA
 
 }
 \seealso{
