@@ -38,6 +38,7 @@ Suggests:
     rmarkdown,
     microbenchmark,
     sqldf,
-    devtools
+    devtools,
+    ggplot2
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
