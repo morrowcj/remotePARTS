@@ -12,7 +12,7 @@
 
 <meta name="author" content="Clay Morrow" />
 
-<meta name="date" content="2021-01-29" />
+<meta name="date" content="2021-07-19" />
 
 <title>Alaska</title>
 
@@ -43,7 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
 code.sourceCode > span { display: inline-block; line-height: 1.25; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -330,7 +337,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">Alaska</h1>
 <h3 class="subtitle">NDVI analysis {remotePARTS}</h3>
 <h4 class="author">Clay Morrow</h4>
-<h4 class="date">2021-01-29</h4>
+<h4 class="date">2021-07-19</h4>
 
 
 
@@ -362,25 +369,25 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Let’s look at the results for the first 5 pixels. Here are the values of x averaged across time:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">## X averaged across time:</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>fm.cls<span class="op">$</span>mean[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="co">#&gt; [1]  6.359  1.168 12.800 13.244 11.368</span></span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">#&gt; [1]  6.358844  1.168187 12.799719 13.244094 11.368438</span></span></code></pre></div>
 <p>and the effect of <code>t</code> on <code>x</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## Effect of time:</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="kw">head</span>(fm.cls<span class="op">$</span>time.coef, <span class="dt">n =</span> <span class="dv">5</span>)</span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="co">#&gt;           Est      SE       t      p.t</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a><span class="co">#&gt; [1,] -0.22922 0.10869 -2.1090 0.044020</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="co">#&gt; [2,]  0.02476 0.03813  0.6492 0.521473</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a><span class="co">#&gt; [3,]  0.15561 0.09809  1.5864 0.123868</span></span>
-<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt; [4,] -0.78963 0.28122 -2.8079 0.008983</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt; [5,] -0.11754 0.05066 -2.3203 0.027830</span></span></code></pre></div>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="co">#&gt;           Est         SE          t         p.t</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co">#&gt; 1 -0.22921828 0.10868743 -2.1089677 0.044019823</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="co">#&gt; 2  0.02475767 0.03813325  0.6492412 0.521473005</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co">#&gt; 3  0.15561332 0.09808905  1.5864494 0.123867675</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt; 4 -0.78962615 0.28121774 -2.8078818 0.008982851</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt; 5 -0.11753972 0.05065632 -2.3203370 0.027830405</span></span></code></pre></div>
 <p>and the effect of <span class="math inline">\(x_{j}\)</span> on <span class="math inline">\(x_{i}\)</span>.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">## Auto-regressive effect:</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="kw">head</span>(fm.cls<span class="op">$</span>xi.coef, <span class="dt">n =</span> <span class="dv">5</span>)</span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="co">#&gt;           Est     SE       t       p.t</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a><span class="co">#&gt; [1,]  0.57097 0.1548  3.6891 0.0009609</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="co">#&gt; [2,]  0.10799 0.1915  0.5640 0.5772631</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a><span class="co">#&gt; [3,] -0.03857 0.1926 -0.2003 0.8427146</span></span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; [4,]  0.20350 0.1820  1.1179 0.2731260</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; [5,] -0.06431 0.1874 -0.3431 0.7340808</span></span></code></pre></div>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co">#&gt;           Est        SE          t          p.t</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co">#&gt; 1  0.57096874 0.1547736  3.6890568 0.0009608687</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co">#&gt; 2  0.10798651 0.1914750  0.5639718 0.5772631213</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co">#&gt; 3 -0.03857352 0.1926047 -0.2002730 0.8427145926</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; 4  0.20350091 0.1820448  1.1178616 0.2731259808</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; 5 -0.06431173 0.1874393 -0.3431070 0.7340807702</span></span></code></pre></div>
 <p>To use AR REML instead of CLS, see documentation for <code>fitAR.map()</code>.</p>
 <div id="visualize-the-cls-coefficients" class="section level4">
 <h4>Visualize the CLS coefficients</h4>
@@ -426,7 +433,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <!-- ``` -->
 <!-- This histogram doesn't seem to indicate that the outliers exhibit any pattern. -->
 <!-- However, this is not true for the full data set (**TBA: add a figure**) -->
-<p>Black pixels are possible outliers but for the purposes of this document, we will not remove these points. However, depending on the data set, it may be worth considering removal of outlying estimates. A vignette describing diagnostic steps may be created in the future.</p>
+<p>Black pixels are possible outliers but for the purposes of this document, we will not remove these points. However, depending on the data set, it may be worth considering removal of outlying estimates. See the section on Diagnostics below for further diagnostic steps.</p>
 <p>Let’s see if land classes have a similar patterns to NDVI:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>land.col =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;darkorchid3&quot;</span>, <span class="st">&quot;darkorange&quot;</span>, <span class="st">&quot;forestgreen&quot;</span>)[<span class="kw">as.numeric</span>(ndvi_AK3000<span class="op">$</span>land)]</span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="kw">plot</span>(<span class="dt">y =</span> ndvi_AK3000<span class="op">$</span>lat, <span class="dt">x =</span> ndvi_AK3000<span class="op">$</span>lng, <span class="dt">pch =</span> <span class="dv">15</span>, <span class="dt">cex =</span> <span class="fl">.5</span>,</span>
@@ -448,8 +455,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb9-4"><a href="#cb9-4"></a>r.est &lt;-<span class="st"> </span><span class="kw">fit_spatialcor</span>(X, time.scaled, <span class="dt">location =</span> location, </span>
 <span id="cb9-5"><a href="#cb9-5"></a>                         <span class="dt">method =</span> meth) <span class="co">#calculates D internally</span></span>
 <span id="cb9-6"><a href="#cb9-6"></a>r.est<span class="op">$</span>spatialcor <span class="co">#two spatial correlation parameters: range (r) and shape (a)</span></span>
-<span id="cb9-7"><a href="#cb9-7"></a><span class="co">#&gt;        r        a </span></span>
-<span id="cb9-8"><a href="#cb9-8"></a><span class="co">#&gt; 226.3696   0.5543</span></span></code></pre></div>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="co">#&gt;           r           a </span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="co">#&gt; 226.3696408   0.5542822</span></span></code></pre></div>
 <p>which gets used when fitting a covariance matrix with <code>fitV()</code>. <code>fitV()</code> needs a geographic distance matrix. Here we use <code>geosphere::distm()</code> but any distance matrix should work.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># calculate distance matrix (km) to use later</span></span>
 <span id="cb10-2"><a href="#cb10-2"></a>D =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(location)<span class="op">/</span><span class="dv">1000</span></span>
@@ -469,7 +476,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb12-3"><a href="#cb12-3"></a>nugget.ml &lt;-<span class="st"> </span><span class="kw">optimize_nugget</span>(<span class="dt">X =</span> mod.mat, <span class="dt">V =</span> V, <span class="dt">y =</span> rel.est,</span>
 <span id="cb12-4"><a href="#cb12-4"></a>                                <span class="dt">lower =</span> <span class="dv">0</span>, <span class="dt">upper =</span> <span class="dv">1</span>, <span class="dt">tol =</span> tolr)</span>
 <span id="cb12-5"><a href="#cb12-5"></a>nugget.ml</span>
-<span id="cb12-6"><a href="#cb12-6"></a><span class="co">#&gt; [1] 0.168</span></span></code></pre></div>
+<span id="cb12-6"><a href="#cb12-6"></a><span class="co">#&gt; [1] 0.1679947</span></span></code></pre></div>
 <p>Then we can use <code>fitGLS</code> to obtain results.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">## fit GLS </span></span>
 <span id="cb13-2"><a href="#cb13-2"></a>fm.gls &lt;-<span class="st"> </span><span class="kw">fitGLS</span>(<span class="dt">X =</span> mod.mat, <span class="dt">V =</span> V, <span class="dt">y =</span> rel.est, <span class="dt">X0 =</span> X0,</span>
@@ -499,10 +506,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb14-19"><a href="#cb14-19"></a>                <span class="st">&quot;t pval&quot;</span> =<span class="st"> </span>fm.gls<span class="op">$</span>pval.t)</span>
 <span id="cb14-20"><a href="#cb14-20"></a><span class="kw">rownames</span>(t.table) =<span class="st"> </span><span class="kw">levels</span>(ndvi_AK3000<span class="op">$</span>land)</span>
 <span id="cb14-21"><a href="#cb14-21"></a>t.table</span>
-<span id="cb14-22"><a href="#cb14-22"></a><span class="co">#&gt;                 coef      SE   t stat t pval</span></span>
-<span id="cb14-23"><a href="#cb14-23"></a><span class="co">#&gt; Shrubland  0.0006584 0.01047  0.06288 0.9499</span></span>
-<span id="cb14-24"><a href="#cb14-24"></a><span class="co">#&gt; Savanna   -0.0036208 0.01049 -0.34503 0.7301</span></span>
-<span id="cb14-25"><a href="#cb14-25"></a><span class="co">#&gt; Grassland  0.0017393 0.01042  0.16693 0.8674</span></span></code></pre></div>
+<span id="cb14-22"><a href="#cb14-22"></a><span class="co">#&gt;                    coef         SE      t stat    t pval</span></span>
+<span id="cb14-23"><a href="#cb14-23"></a><span class="co">#&gt; Shrubland  0.0006583574 0.01046959  0.06288284 0.9498640</span></span>
+<span id="cb14-24"><a href="#cb14-24"></a><span class="co">#&gt; Savanna   -0.0036207783 0.01049404 -0.34503193 0.7300946</span></span>
+<span id="cb14-25"><a href="#cb14-25"></a><span class="co">#&gt; Grassland  0.0017393264 0.01041942  0.16693119 0.8674355</span></span></code></pre></div>
 <p>We are not able to reject <span class="math inline">\(H_0\)</span> at <span class="math inline">\(\alpha = .05\)</span> for any land class.</p>
 </div>
 <div id="f-test" class="section level4">
@@ -529,9 +536,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb15-19"><a href="#cb15-19"></a>                     <span class="st">&quot;pval F&quot;</span> =<span class="st"> </span><span class="kw">c</span>(fm.gls<span class="op">$</span>pval.F, <span class="ot">NA</span>)</span>
 <span id="cb15-20"><a href="#cb15-20"></a>                     )</span>
 <span id="cb15-21"><a href="#cb15-21"></a>F.table</span>
-<span id="cb15-22"><a href="#cb15-22"></a><span class="co">#&gt;   model   df   SSE       MSE loglik F.stat   pval.F</span></span>
-<span id="cb15-23"><a href="#cb15-23"></a><span class="co">#&gt; 1  full    2 2.753 0.0009188   7533   5.72 0.003314</span></span>
-<span id="cb15-24"><a href="#cb15-24"></a><span class="co">#&gt; 2  null 2997 2.764 0.0009223   7526     NA       NA</span></span></code></pre></div>
+<span id="cb15-22"><a href="#cb15-22"></a><span class="co">#&gt;   model   df      SSE          MSE   loglik   F.stat      pval.F</span></span>
+<span id="cb15-23"><a href="#cb15-23"></a><span class="co">#&gt; 1  full    2 2.753495 0.0009187506 7532.713 5.720461 0.003314096</span></span>
+<span id="cb15-24"><a href="#cb15-24"></a><span class="co">#&gt; 2  null 2997 2.764007 0.0009222579 7525.997       NA          NA</span></span></code></pre></div>
 <p>We are, however, able to reject this <span class="math inline">\(H_0\)</span> that all land classes have the same effect on NDVI trend for this data set at <span class="math inline">\(\alpha = .05\)</span>.</p>
 </div>
 <div id="overall-time-trend-effect" class="section level4">
@@ -555,8 +562,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb16-16"><a href="#cb16-16"></a>                <span class="st">&quot;t stat&quot;</span> =<span class="st"> </span>fm.gls2<span class="op">$</span>tstat,</span>
 <span id="cb16-17"><a href="#cb16-17"></a>                <span class="st">&quot;t pval&quot;</span> =<span class="st"> </span>fm.gls2<span class="op">$</span>pval.t)</span>
 <span id="cb16-18"><a href="#cb16-18"></a>t.table2</span>
-<span id="cb16-19"><a href="#cb16-19"></a><span class="co">#&gt;           coef      SE  t stat t pval</span></span>
-<span id="cb16-20"><a href="#cb16-20"></a><span class="co">#&gt; [1,] 0.0006774 0.01063 0.06372 0.9492</span></span></code></pre></div>
+<span id="cb16-19"><a href="#cb16-19"></a><span class="co">#&gt;              coef         SE     t stat    t pval</span></span>
+<span id="cb16-20"><a href="#cb16-20"></a><span class="co">#&gt; [1,] 0.0006773987 0.01063009 0.06372466 0.9491937</span></span></code></pre></div>
 <p>We are unable to reject <span class="math inline">\(H_0\)</span>.</p>
 </div>
 <div id="partitioned-gls" class="section level4">
@@ -568,208 +575,286 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb17-2"><a href="#cb17-2"></a>part.mat &lt;-<span class="st"> </span><span class="kw">sample_partitions</span>(<span class="dt">npix =</span> <span class="kw">nrow</span>(mod.mat), <span class="dt">npart =</span> <span class="dv">4</span>)</span>
 <span id="cb17-3"><a href="#cb17-3"></a><span class="co">#&gt; [1] &quot;calculating partsize&quot;</span></span></code></pre></div>
 <p><code>part.mat</code> contains 4 columns (corresponding to <code>npart</code>). Each column contains indices for 1000 random pixels corresponding to a partition.</p>
-<p><code>fitGLS.partition()</code> takes a generic function <code>part_f</code> as its first argument. This function will be called 4 times (<code>npart</code>) and needs accesses a different data partition each time it is called. The function needs to return at least three things <code>$X</code>: the model matrix for a specific partition, <code>$y</code>: the response vector for a specific partition, and <code>$coords</code> the spatial coordinates for a partitions pixels. The first argument to <code>part_f</code> will always be a number corresponding to a partition: <code>part_f(1)</code> should return info for partition 1, <code>part_(2)</code> should return info for partition 2, etc.</p>
-<p>Below is a simple user-defined function called <code>part_func()</code> that uses our partition matrix to subset the data at meets the above requirements.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Function to get data partitions (will be passed to GLS_partition)</span></span>
-<span id="cb18-2"><a href="#cb18-2"></a>part_func &lt;-<span class="st"> </span><span class="cf">function</span>(part.i, <span class="dt">part_mat =</span> part.mat, <span class="dt">X.full =</span> mod.mat,</span>
-<span id="cb18-3"><a href="#cb18-3"></a>                      <span class="dt">y.full =</span> rel.est, <span class="dt">location.full =</span> location){</span>
-<span id="cb18-4"><a href="#cb18-4"></a>  part =<span class="st"> </span>part.mat[, part.i]</span>
-<span id="cb18-5"><a href="#cb18-5"></a>  <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">X =</span> X.full[part, ], <span class="dt">y =</span> y.full[part], <span class="dt">coords =</span> location[part, ]))</span>
-<span id="cb18-6"><a href="#cb18-6"></a>}</span></code></pre></div>
-<p>Then, we’ll run <code>fitGLS.partition()</code>, making sure to use our user-defined “part_func” function. Note that <code>part_f</code> can be any function and should be adapted to the specific data input. For example the <code>remotePARTs</code> function <code>part_csv()</code> is an alternative to <code>part_func()</code> and loads partitions of data into memory one at a time from a .csv file. Similar functions could be created for any input type or situation.</p>
+<p><code>fitGLS.partition()</code> takes a generic function <code>part_f</code> as its first argument. This function will be called 4 times (<code>npart</code>) and needs to return a different data partition each time it is called. The function needs to return at least three things <code>$X</code>: the model matrix for a specific partition, <code>$y</code>: the response vector for a specific partition, and <code>$coords</code> the spatial coordinates for a partitions pixels. The first argument to <code>part_f</code> will always be a number corresponding to a partition: <code>part_f(1)</code> should return info for partition 1, <code>part_(2)</code> should return info for partition 2, etc.</p>
+<p>There are two functions that fit this requirement in <code>remotePARTS</code>: <code>part_csv()</code> for reading in data from a csv file, without loading the entire data set into memory, and <code>part_data()</code> for using a dataframe that is already in memory. Any user-defined function should work (see <code>?part_data()</code> for details), but for this vignette, we’ll use <code>part_data()</code>. In order to do so, we first need to gather our key variables into a data frame:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## combine y, land class, and location into one data frame</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>part_input_df =<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(<span class="dt">rel.est =</span> rel.est, </span>
+<span id="cb18-3"><a href="#cb18-3"></a>                                    ndvi_AK3000[, <span class="kw">c</span>(<span class="st">&quot;land&quot;</span>, <span class="st">&quot;lng&quot;</span>, <span class="st">&quot;lat&quot;</span>)]))</span></code></pre></div>
+<p>Then, we’ll run <code>fitGLS.partition()</code>, making sure to supply the arguments needed by <code>part_data()</code> to <code>fitGLS.partition()</code>, by name.</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">## Partitioned Analysis </span></span>
-<span id="cb19-2"><a href="#cb19-2"></a>GLS.part =<span class="st"> </span><span class="kw">fitGLS.partition</span>(<span class="dt">part_f =</span> <span class="st">&quot;part_func&quot;</span>, </span>
+<span id="cb19-2"><a href="#cb19-2"></a>GLS.part =<span class="st"> </span><span class="kw">fitGLS.partition</span>(<span class="dt">part_f =</span> <span class="st">&quot;part_data&quot;</span>, </span>
 <span id="cb19-3"><a href="#cb19-3"></a>                            <span class="dt">partsize =</span> <span class="kw">nrow</span>(part.mat), </span>
 <span id="cb19-4"><a href="#cb19-4"></a>                            <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat), </span>
 <span id="cb19-5"><a href="#cb19-5"></a>                            <span class="dt">V.meth =</span> meth,</span>
-<span id="cb19-6"><a href="#cb19-6"></a>                            <span class="dt">spatcor =</span> r.est<span class="op">$</span>spatialcor, <span class="dt">mincross =</span> <span class="dv">4</span>)</span></code></pre></div>
-<p>The results are grouped into 3 categories. (1) statistics for each partition:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>GLS.part<span class="op">$</span>part.stats</span>
-<span id="cb20-2"><a href="#cb20-2"></a><span class="co">#&gt; $coefficients</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
-<span id="cb20-4"><a href="#cb20-4"></a><span class="co">#&gt; [1,]     0.0054750  -0.0021401     0.0022205</span></span>
-<span id="cb20-5"><a href="#cb20-5"></a><span class="co">#&gt; [2,]    -0.0005539  -0.0021918    -0.0003129</span></span>
-<span id="cb20-6"><a href="#cb20-6"></a><span class="co">#&gt; [3,]     0.0055480  -0.0106986     0.0055500</span></span>
-<span id="cb20-7"><a href="#cb20-7"></a><span class="co">#&gt; [4,]     0.0032069  -0.0005675     0.0054488</span></span>
-<span id="cb20-8"><a href="#cb20-8"></a><span class="co">#&gt; </span></span>
-<span id="cb20-9"><a href="#cb20-9"></a><span class="co">#&gt; $SEs</span></span>
-<span id="cb20-10"><a href="#cb20-10"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
-<span id="cb20-11"><a href="#cb20-11"></a><span class="co">#&gt; [1,]      0.008487    0.008553      0.008339</span></span>
-<span id="cb20-12"><a href="#cb20-12"></a><span class="co">#&gt; [2,]      0.010042    0.010096      0.009890</span></span>
-<span id="cb20-13"><a href="#cb20-13"></a><span class="co">#&gt; [3,]      0.008505    0.008626      0.008393</span></span>
-<span id="cb20-14"><a href="#cb20-14"></a><span class="co">#&gt; [4,]      0.009028    0.009105      0.008971</span></span>
-<span id="cb20-15"><a href="#cb20-15"></a><span class="co">#&gt; </span></span>
-<span id="cb20-16"><a href="#cb20-16"></a><span class="co">#&gt; $t.stats</span></span>
-<span id="cb20-17"><a href="#cb20-17"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
-<span id="cb20-18"><a href="#cb20-18"></a><span class="co">#&gt; [1,]       0.64513    -0.25022       0.26630</span></span>
-<span id="cb20-19"><a href="#cb20-19"></a><span class="co">#&gt; [2,]      -0.05515    -0.21709      -0.03164</span></span>
-<span id="cb20-20"><a href="#cb20-20"></a><span class="co">#&gt; [3,]       0.65233    -1.24034       0.66130</span></span>
-<span id="cb20-21"><a href="#cb20-21"></a><span class="co">#&gt; [4,]       0.35521    -0.06233       0.60738</span></span>
-<span id="cb20-22"><a href="#cb20-22"></a><span class="co">#&gt; </span></span>
-<span id="cb20-23"><a href="#cb20-23"></a><span class="co">#&gt; $pvals.t</span></span>
-<span id="cb20-24"><a href="#cb20-24"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
-<span id="cb20-25"><a href="#cb20-25"></a><span class="co">#&gt; [1,]        0.5190      0.8025        0.7901</span></span>
-<span id="cb20-26"><a href="#cb20-26"></a><span class="co">#&gt; [2,]        0.9560      0.8282        0.9748</span></span>
-<span id="cb20-27"><a href="#cb20-27"></a><span class="co">#&gt; [3,]        0.5144      0.2152        0.5086</span></span>
-<span id="cb20-28"><a href="#cb20-28"></a><span class="co">#&gt; [4,]        0.7225      0.9503        0.5438</span></span>
-<span id="cb20-29"><a href="#cb20-29"></a><span class="co">#&gt; </span></span>
-<span id="cb20-30"><a href="#cb20-30"></a><span class="co">#&gt; $mod.stats</span></span>
-<span id="cb20-31"><a href="#cb20-31"></a><span class="co">#&gt;      nugget logLik    SSE       MSE       MSR  F.stat    pval.F</span></span>
-<span id="cb20-32"><a href="#cb20-32"></a><span class="co">#&gt; [1,] 0.3939   1804 0.5314 0.0007114 0.0027075  3.8057 2.268e-02</span></span>
-<span id="cb20-33"><a href="#cb20-33"></a><span class="co">#&gt; [2,] 0.2108   1836 0.6056 0.0008108 0.0001976  0.2438 7.837e-01</span></span>
-<span id="cb20-34"><a href="#cb20-34"></a><span class="co">#&gt; [3,] 0.3464   1843 0.5040 0.0006747 0.0135874 20.1380 3.032e-09</span></span>
-<span id="cb20-35"><a href="#cb20-35"></a><span class="co">#&gt; [4,] 0.2679   1885 0.4938 0.0006611 0.0014613  2.2104 1.104e-01</span></span></code></pre></div>
+<span id="cb19-6"><a href="#cb19-6"></a>                            <span class="dt">spatcor =</span> r.est<span class="op">$</span>spatialcor, <span class="dt">mincross =</span> <span class="dv">4</span>,</span>
+<span id="cb19-7"><a href="#cb19-7"></a>                            <span class="co">## arguments for part_data()</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>                            <span class="dt">part_form =</span> <span class="st">&quot;rel.est ~ 0 + land&quot;</span>,</span>
+<span id="cb19-9"><a href="#cb19-9"></a>                            <span class="dt">part_mat =</span> part.mat,</span>
+<span id="cb19-10"><a href="#cb19-10"></a>                            <span class="dt">part_df =</span> part_input_df,</span>
+<span id="cb19-11"><a href="#cb19-11"></a>                            <span class="dt">part_locvars =</span> <span class="kw">c</span>(<span class="st">&quot;lng&quot;</span>, <span class="st">&quot;lat&quot;</span>))</span></code></pre></div>
+<p>There is also a parallel version, <code>fitGLS.partition.mc()</code>. The syntax is the same as the single-core version but has a few extra arguments. Check the documentation with <code>?fitGLS.partition()</code> for more details and examples.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">## Multi-core version</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a>GLS.part &lt;-<span class="st"> </span><span class="kw">fitGLS.partition.mc</span>(<span class="dt">part_f =</span> <span class="st">&quot;part_data&quot;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3"></a>                                <span class="dt">partsize =</span> <span class="kw">nrow</span>(part.mat),</span>
+<span id="cb20-4"><a href="#cb20-4"></a>                                <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat),</span>
+<span id="cb20-5"><a href="#cb20-5"></a>                                <span class="dt">V.meth =</span> meth,</span>
+<span id="cb20-6"><a href="#cb20-6"></a>                                <span class="dt">spatcor =</span> r.est<span class="op">$</span>spatialcor,</span>
+<span id="cb20-7"><a href="#cb20-7"></a>                                <span class="dt">mincross =</span> <span class="dv">4</span>,</span>
+<span id="cb20-8"><a href="#cb20-8"></a>                                <span class="co">## multicore arguments:</span></span>
+<span id="cb20-9"><a href="#cb20-9"></a>                                <span class="dt">ncores =</span> <span class="dv">4</span>, <span class="dt">debug =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb20-10"><a href="#cb20-10"></a>                                <span class="co">## arguments of part_data():</span></span>
+<span id="cb20-11"><a href="#cb20-11"></a>                                <span class="dt">part_form =</span> <span class="st">&quot;rel.est ~ 0 + land&quot;</span>,</span>
+<span id="cb20-12"><a href="#cb20-12"></a>                                <span class="dt">part_mat =</span> part.mat,</span>
+<span id="cb20-13"><a href="#cb20-13"></a>                                <span class="dt">part_df =</span> part_input_df,</span>
+<span id="cb20-14"><a href="#cb20-14"></a>                                <span class="dt">part_locvars =</span> <span class="kw">c</span>(<span class="st">&quot;lng&quot;</span>, <span class="st">&quot;lat&quot;</span>))</span></code></pre></div>
+<p>The results from the partitioned GLS are grouped into 3 categories. (1) statistics for each partition:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>GLS.part<span class="op">$</span>part.stats</span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="co">#&gt; $coefficients</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a><span class="co">#&gt;      landShrubland  landSavanna landGrassland</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a><span class="co">#&gt; [1,]  0.0054749548 -0.002140149  0.0022205418</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a><span class="co">#&gt; [2,] -0.0005538646 -0.002191797 -0.0003129229</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a><span class="co">#&gt; [3,]  0.0055479791 -0.010698650  0.0055500427</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a><span class="co">#&gt; [4,]  0.0032069268 -0.000567510  0.0054488218</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a><span class="co">#&gt; </span></span>
+<span id="cb21-9"><a href="#cb21-9"></a><span class="co">#&gt; $SEs</span></span>
+<span id="cb21-10"><a href="#cb21-10"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
+<span id="cb21-11"><a href="#cb21-11"></a><span class="co">#&gt; [1,]   0.008486535 0.008552927   0.008338645</span></span>
+<span id="cb21-12"><a href="#cb21-12"></a><span class="co">#&gt; [2,]   0.010042228 0.010096174   0.009890138</span></span>
+<span id="cb21-13"><a href="#cb21-13"></a><span class="co">#&gt; [3,]   0.008504851 0.008625589   0.008392593</span></span>
+<span id="cb21-14"><a href="#cb21-14"></a><span class="co">#&gt; [4,]   0.009028354 0.009105192   0.008971080</span></span>
+<span id="cb21-15"><a href="#cb21-15"></a><span class="co">#&gt; </span></span>
+<span id="cb21-16"><a href="#cb21-16"></a><span class="co">#&gt; $t.stats</span></span>
+<span id="cb21-17"><a href="#cb21-17"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
+<span id="cb21-18"><a href="#cb21-18"></a><span class="co">#&gt; [1,]    0.64513430 -0.25022421    0.26629529</span></span>
+<span id="cb21-19"><a href="#cb21-19"></a><span class="co">#&gt; [2,]   -0.05515355 -0.21709188   -0.03163989</span></span>
+<span id="cb21-20"><a href="#cb21-20"></a><span class="co">#&gt; [3,]    0.65233113 -1.24033848    0.66130253</span></span>
+<span id="cb21-21"><a href="#cb21-21"></a><span class="co">#&gt; [4,]    0.35520616 -0.06232817    0.60737637</span></span>
+<span id="cb21-22"><a href="#cb21-22"></a><span class="co">#&gt; </span></span>
+<span id="cb21-23"><a href="#cb21-23"></a><span class="co">#&gt; $pvals.t</span></span>
+<span id="cb21-24"><a href="#cb21-24"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
+<span id="cb21-25"><a href="#cb21-25"></a><span class="co">#&gt; [1,]     0.5190382   0.8024828     0.7900853</span></span>
+<span id="cb21-26"><a href="#cb21-26"></a><span class="co">#&gt; [2,]     0.9560309   0.8281960     0.9747677</span></span>
+<span id="cb21-27"><a href="#cb21-27"></a><span class="co">#&gt; [3,]     0.5143883   0.2152397     0.5086222</span></span>
+<span id="cb21-28"><a href="#cb21-28"></a><span class="co">#&gt; [4,]     0.7225354   0.9503182     0.5437857</span></span>
+<span id="cb21-29"><a href="#cb21-29"></a><span class="co">#&gt; </span></span>
+<span id="cb21-30"><a href="#cb21-30"></a><span class="co">#&gt; $mod.stats</span></span>
+<span id="cb21-31"><a href="#cb21-31"></a><span class="co">#&gt;         nugget   logLik       SSE          MSE          MSR     F.stat</span></span>
+<span id="cb21-32"><a href="#cb21-32"></a><span class="co">#&gt; [1,] 0.3939099 1804.034 0.5314421 0.0007114352 0.0027075169  3.8057113</span></span>
+<span id="cb21-33"><a href="#cb21-33"></a><span class="co">#&gt; [2,] 0.2107640 1836.423 0.6056499 0.0008107764 0.0001976434  0.2437705</span></span>
+<span id="cb21-34"><a href="#cb21-34"></a><span class="co">#&gt; [3,] 0.3463964 1843.081 0.5040104 0.0006747127 0.0135873847 20.1380311</span></span>
+<span id="cb21-35"><a href="#cb21-35"></a><span class="co">#&gt; [4,] 0.2679089 1885.349 0.4938331 0.0006610885 0.0014612760  2.2104090</span></span>
+<span id="cb21-36"><a href="#cb21-36"></a><span class="co">#&gt;            pval.F</span></span>
+<span id="cb21-37"><a href="#cb21-37"></a><span class="co">#&gt; [1,] 2.267589e-02</span></span>
+<span id="cb21-38"><a href="#cb21-38"></a><span class="co">#&gt; [2,] 7.837298e-01</span></span>
+<span id="cb21-39"><a href="#cb21-39"></a><span class="co">#&gt; [3,] 3.032445e-09</span></span>
+<span id="cb21-40"><a href="#cb21-40"></a><span class="co">#&gt; [4,] 1.103725e-01</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>cross-partition statistics:</li>
 </ol>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>GLS.part<span class="op">$</span>cross.stats</span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="co">#&gt; $cross.SS</span></span>
-<span id="cb21-3"><a href="#cb21-3"></a><span class="co">#&gt;         rSSR    rSSE</span></span>
-<span id="cb21-4"><a href="#cb21-4"></a><span class="co">#&gt; [1,] 0.03009 0.08307</span></span>
-<span id="cb21-5"><a href="#cb21-5"></a><span class="co">#&gt; [2,] 0.03213 0.08925</span></span>
-<span id="cb21-6"><a href="#cb21-6"></a><span class="co">#&gt; [3,] 0.03153 0.08366</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a><span class="co">#&gt; </span></span>
-<span id="cb21-8"><a href="#cb21-8"></a><span class="co">#&gt; $rcoefs</span></span>
-<span id="cb21-9"><a href="#cb21-9"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
-<span id="cb21-10"><a href="#cb21-10"></a><span class="co">#&gt; [1,]        0.1265      0.1266        0.1245</span></span>
-<span id="cb21-11"><a href="#cb21-11"></a><span class="co">#&gt; [2,]        0.1298      0.1299        0.1279</span></span>
-<span id="cb21-12"><a href="#cb21-12"></a><span class="co">#&gt; [3,]        0.1289      0.1293        0.1269</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>GLS.part<span class="op">$</span>cross.stats</span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="co">#&gt; $cross.SS</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a><span class="co">#&gt;            rSSR       rSSE</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a><span class="co">#&gt; [1,] 0.03008890 0.08307366</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a><span class="co">#&gt; [2,] 0.03213163 0.08924696</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a><span class="co">#&gt; [3,] 0.03152864 0.08366105</span></span>
+<span id="cb22-7"><a href="#cb22-7"></a><span class="co">#&gt; </span></span>
+<span id="cb22-8"><a href="#cb22-8"></a><span class="co">#&gt; $rcoefs</span></span>
+<span id="cb22-9"><a href="#cb22-9"></a><span class="co">#&gt;      landShrubland landSavanna landGrassland</span></span>
+<span id="cb22-10"><a href="#cb22-10"></a><span class="co">#&gt; [1,]     0.1265465   0.1266259     0.1244679</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a><span class="co">#&gt; [2,]     0.1297780   0.1299260     0.1279268</span></span>
+<span id="cb22-12"><a href="#cb22-12"></a><span class="co">#&gt; [3,]     0.1289110   0.1293141     0.1269133</span></span></code></pre></div>
 <p>and (3) overall model statistics:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>GLS.part<span class="op">$</span>overall.stats</span>
-<span id="cb22-2"><a href="#cb22-2"></a><span class="co">#&gt; $dfs</span></span>
-<span id="cb22-3"><a href="#cb22-3"></a><span class="co">#&gt; df1 df2 </span></span>
-<span id="cb22-4"><a href="#cb22-4"></a><span class="co">#&gt;   2 748 </span></span>
-<span id="cb22-5"><a href="#cb22-5"></a><span class="co">#&gt; </span></span>
-<span id="cb22-6"><a href="#cb22-6"></a><span class="co">#&gt; $coefmean</span></span>
-<span id="cb22-7"><a href="#cb22-7"></a><span class="co">#&gt; landShrubland   landSavanna landGrassland </span></span>
-<span id="cb22-8"><a href="#cb22-8"></a><span class="co">#&gt;      0.003419     -0.003900      0.003227 </span></span>
-<span id="cb22-9"><a href="#cb22-9"></a><span class="co">#&gt; </span></span>
-<span id="cb22-10"><a href="#cb22-10"></a><span class="co">#&gt; $rcoefmean</span></span>
-<span id="cb22-11"><a href="#cb22-11"></a><span class="co">#&gt; landShrubland   landSavanna landGrassland </span></span>
-<span id="cb22-12"><a href="#cb22-12"></a><span class="co">#&gt;        0.1284        0.1286        0.1264 </span></span>
-<span id="cb22-13"><a href="#cb22-13"></a><span class="co">#&gt; </span></span>
-<span id="cb22-14"><a href="#cb22-14"></a><span class="co">#&gt; $meanstats</span></span>
-<span id="cb22-15"><a href="#cb22-15"></a><span class="co">#&gt;    fmean rSSRmean rSSEmean </span></span>
-<span id="cb22-16"><a href="#cb22-16"></a><span class="co">#&gt;  6.59948  0.03125  0.08533</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>GLS.part<span class="op">$</span>overall.stats</span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="co">#&gt; $dfs</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="co">#&gt; df1 df2 </span></span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="co">#&gt;   2 748 </span></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="co">#&gt; </span></span>
+<span id="cb23-6"><a href="#cb23-6"></a><span class="co">#&gt; $coefmean</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a><span class="co">#&gt; landShrubland   landSavanna landGrassland </span></span>
+<span id="cb23-8"><a href="#cb23-8"></a><span class="co">#&gt;   0.003418999  -0.003899527   0.003226621 </span></span>
+<span id="cb23-9"><a href="#cb23-9"></a><span class="co">#&gt; </span></span>
+<span id="cb23-10"><a href="#cb23-10"></a><span class="co">#&gt; $rcoefmean</span></span>
+<span id="cb23-11"><a href="#cb23-11"></a><span class="co">#&gt; landShrubland   landSavanna landGrassland </span></span>
+<span id="cb23-12"><a href="#cb23-12"></a><span class="co">#&gt;     0.1284118     0.1286220     0.1264360 </span></span>
+<span id="cb23-13"><a href="#cb23-13"></a><span class="co">#&gt; </span></span>
+<span id="cb23-14"><a href="#cb23-14"></a><span class="co">#&gt; $meanstats</span></span>
+<span id="cb23-15"><a href="#cb23-15"></a><span class="co">#&gt;      fmean   rSSRmean   rSSEmean </span></span>
+<span id="cb23-16"><a href="#cb23-16"></a><span class="co">#&gt; 6.59948047 0.03124973 0.08532722</span></span></code></pre></div>
 <p>There are 3 functions to get p-values for our partitioned GLS.</p>
 <p>To test <span class="math inline">\(H_0\)</span>: “land class <em>i</em> does not have a temporal trend in NDVI”, we can simply use the <code>t.test()</code> function:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">cor_t.test</span>(GLS.part)</span>
-<span id="cb23-2"><a href="#cb23-2"></a><span class="co">#&gt;                     Est       SE  t.stat pval.t</span></span>
-<span id="cb23-3"><a href="#cb23-3"></a><span class="co">#&gt; landShrubland  0.003419 0.005314  0.6434 0.5200</span></span>
-<span id="cb23-4"><a href="#cb23-4"></a><span class="co">#&gt; landSavanna   -0.003900 0.005361 -0.7274 0.4671</span></span>
-<span id="cb23-5"><a href="#cb23-5"></a><span class="co">#&gt; landGrassland  0.003227 0.005233  0.6166 0.5376</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">cor_t.test</span>(GLS.part)</span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="co">#&gt;                        Est          SE     t.stat    pval.t</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a><span class="co">#&gt; landShrubland  0.003418999 0.005313620  0.6434407 0.5199875</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a><span class="co">#&gt; landSavanna   -0.003899527 0.005361136 -0.7273694 0.4670566</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a><span class="co">#&gt; landGrassland  0.003226621 0.005233281  0.6165579 0.5375733</span></span></code></pre></div>
 <p>We are not able to reject <span class="math inline">\(H_0\)</span> at <span class="math inline">\(\alpha = .05\)</span> for any land class.</p>
 <p>And to test <span class="math inline">\(H_0\)</span>: “there is no overall effect of land class on NDVI trend”, there are two options,</p>
 <p>a correlated chi-squared test:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">cor_chisq.test</span>(GLS.part)</span>
-<span id="cb24-2"><a href="#cb24-2"></a><span class="co">#&gt; pval.chisqr </span></span>
-<span id="cb24-3"><a href="#cb24-3"></a><span class="co">#&gt;       1e-06</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">cor_chisq.test</span>(GLS.part)</span>
+<span id="cb25-2"><a href="#cb25-2"></a><span class="co">#&gt; pval.chisqr </span></span>
+<span id="cb25-3"><a href="#cb25-3"></a><span class="co">#&gt;       1e-06</span></span></code></pre></div>
 <p>and a bootstrapped F-test:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">cor_F.test</span>(GLS.part, <span class="dt">nboot =</span> <span class="dv">1000</span>)</span>
-<span id="cb25-2"><a href="#cb25-2"></a><span class="co">#&gt; pval.F </span></span>
-<span id="cb25-3"><a href="#cb25-3"></a><span class="co">#&gt;  0.001</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">cor_F.test</span>(GLS.part, <span class="dt">nboot =</span> <span class="dv">1000</span>)</span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="co">#&gt; pval.F </span></span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="co">#&gt;  0.001</span></span></code></pre></div>
 <p>Both tests suggest that we can reject <span class="math inline">\(H_0\)</span> at significance level <span class="math inline">\(\alpha = 0.05\)</span>. So, all conclusions from the partitioned GLS agree with those from the full GLS for <code>AK3000</code>.</p>
 <p>Note that the chisqr test won’t report p-values lower than .000001 and the F test can’t report p-values lower than <span class="math inline">\(\frac{1}{\text{nboot}}\)</span>.</p>
 </div>
 </div>
+</div>
+<div id="diagnostics" class="section level2">
+<h2>Diagnostics</h2>
+<p>Here we will check if the residuals from the pixel-level time series appear to be normally distributed:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">library</span>(dplyr);<span class="kw">library</span>(ggplot2);<span class="kw">library</span>(lemon)</span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="co">#&gt; Warning: package &#39;dplyr&#39; was built under R version 4.0.4</span></span>
+<span id="cb27-3"><a href="#cb27-3"></a><span class="co">#&gt; </span></span>
+<span id="cb27-4"><a href="#cb27-4"></a><span class="co">#&gt; Attaching package: &#39;dplyr&#39;</span></span>
+<span id="cb27-5"><a href="#cb27-5"></a><span class="co">#&gt; The following objects are masked from &#39;package:stats&#39;:</span></span>
+<span id="cb27-6"><a href="#cb27-6"></a><span class="co">#&gt; </span></span>
+<span id="cb27-7"><a href="#cb27-7"></a><span class="co">#&gt;     filter, lag</span></span>
+<span id="cb27-8"><a href="#cb27-8"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb27-9"><a href="#cb27-9"></a><span class="co">#&gt; </span></span>
+<span id="cb27-10"><a href="#cb27-10"></a><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span id="cb27-11"><a href="#cb27-11"></a><span class="co">#&gt; Warning: package &#39;ggplot2&#39; was built under R version 4.0.3</span></span>
+<span id="cb27-12"><a href="#cb27-12"></a><span class="co">#&gt; Warning: package &#39;lemon&#39; was built under R version 4.0.3</span></span>
+<span id="cb27-13"><a href="#cb27-13"></a><span class="co">#&gt; </span></span>
+<span id="cb27-14"><a href="#cb27-14"></a><span class="co">#&gt; Attaching package: &#39;lemon&#39;</span></span>
+<span id="cb27-15"><a href="#cb27-15"></a><span class="co">#&gt; The following objects are masked from &#39;package:ggplot2&#39;:</span></span>
+<span id="cb27-16"><a href="#cb27-16"></a><span class="co">#&gt; </span></span>
+<span id="cb27-17"><a href="#cb27-17"></a><span class="co">#&gt;     CoordCartesian, element_render</span></span>
+<span id="cb27-18"><a href="#cb27-18"></a></span>
+<span id="cb27-19"><a href="#cb27-19"></a><span class="co"># get 9 random pixels</span></span>
+<span id="cb27-20"><a href="#cb27-20"></a>pixels =<span class="st"> </span><span class="kw">sample.int</span>(<span class="dt">n =</span> <span class="kw">nrow</span>(fm.cls<span class="op">$</span>residuals), <span class="dt">size =</span> <span class="dv">9</span>)</span>
+<span id="cb27-21"><a href="#cb27-21"></a>resid.sub =<span class="st"> </span><span class="kw">t</span>(fm.cls<span class="op">$</span>residuals[pixels, ])</span>
+<span id="cb27-22"><a href="#cb27-22"></a><span class="kw">colnames</span>(resid.sub) =<span class="st"> </span>pixels</span>
+<span id="cb27-23"><a href="#cb27-23"></a></span>
+<span id="cb27-24"><a href="#cb27-24"></a><span class="co"># plot the data, with a panel for each pixel</span></span>
+<span id="cb27-25"><a href="#cb27-25"></a>reshape2<span class="op">::</span><span class="kw">melt</span>(resid.sub) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb27-26"><a href="#cb27-26"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> value)) <span class="op">+</span></span>
+<span id="cb27-27"><a href="#cb27-27"></a><span class="st">  </span><span class="kw">theme_classic</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb27-28"><a href="#cb27-28"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">strip.background =</span> <span class="kw">element_blank</span>(),</span>
+<span id="cb27-29"><a href="#cb27-29"></a>        <span class="dt">strip.text =</span> <span class="kw">element_text</span>(<span class="dt">vjust =</span> <span class="fl">-2.5</span>)) <span class="op">+</span></span>
+<span id="cb27-30"><a href="#cb27-30"></a><span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">bins =</span> <span class="dv">15</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb27-31"><a href="#cb27-31"></a><span class="st">  </span><span class="kw">facet_rep_wrap</span>(<span class="op">~</span><span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;Pixel&quot;</span>, Var2)) <span class="op">+</span></span>
+<span id="cb27-32"><a href="#cb27-32"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="st">&quot;Frequency&quot;</span>, <span class="dt">x =</span> <span class="st">&quot;Time-series residuals&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>The above figure shows that the time-series residuals are reasonably normally distributed for individual pixels.</p>
+<p>Next we’ll see if the residuals from the GLS analysis are normally distributed:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="co"># calculate residuals</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a>gls.resid =<span class="st"> </span>rel.est <span class="op">-</span><span class="st"> </span>fm.gls<span class="op">$</span>betahat[<span class="kw">as.numeric</span>(ndvi_AK3000<span class="op">$</span>land)]</span>
+<span id="cb28-3"><a href="#cb28-3"></a><span class="co"># plot them</span></span>
+<span id="cb28-4"><a href="#cb28-4"></a><span class="kw">hist</span>(gls.resid, <span class="dt">breaks =</span> <span class="dv">20</span>, <span class="dt">xlab =</span> <span class="st">&quot;GLS residuals&quot;</span>, <span class="dt">main =</span> <span class="ot">NULL</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Again, this figure shows that the GLS residuals are quite normally distributed.</p>
+<p>Together, these diagnostics show that our normallity assumptions are met.</p>
 </div>
 <div id="more-on-the-partitioned-gls-method" class="section level2">
 <h2>More on the partitioned GLS method</h2>
 <p>Here, we will provide a further look at how to use the individual functions for the partitioned GLS method. The following code shows how <code>fitGLS.partition()</code> works and allows for greater flexibility in terms of parallel and distributed computing.</p>
 <p>The below code chunk first, calculates degrees of freedom, then subsets the data according in a loop according <code>part.mat</code> and completes a GLS on each parition.</p>
 <p>Notice that <code>GLS_worker()</code> is used instead of <code>fitGLS()</code>. The main difference between <code>GLS_worker()</code> and <code>fitGLS()</code> is that <code>fitGLS()</code> needs a nugget input (defaults to 0) while <code>GLS_worker()</code> finds the maximum likelihood estimator of the nugget internally (similar to <code>optimize_nugget()</code>).</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># calculate degrees of freedom up front</span></span>
-<span id="cb26-2"><a href="#cb26-2"></a>dfs &lt;-<span class="st"> </span><span class="kw">calc_dfpart</span>(<span class="dt">partsize =</span> <span class="kw">nrow</span>(part.mat), </span>
-<span id="cb26-3"><a href="#cb26-3"></a>               <span class="dt">p =</span> <span class="kw">ncol</span>(mod.mat), </span>
-<span id="cb26-4"><a href="#cb26-4"></a>               <span class="dt">p0 =</span> <span class="kw">ncol</span>(X0))</span>
-<span id="cb26-5"><a href="#cb26-5"></a>df1 &lt;-<span class="st"> </span>dfs[<span class="dv">1</span>]</span>
-<span id="cb26-6"><a href="#cb26-6"></a>df2 &lt;-<span class="st"> </span>dfs[<span class="dv">2</span>]</span>
-<span id="cb26-7"><a href="#cb26-7"></a></span>
-<span id="cb26-8"><a href="#cb26-8"></a><span class="co"># make empty list to store the output</span></span>
-<span id="cb26-9"><a href="#cb26-9"></a>part.results &lt;-<span class="st"> </span><span class="kw">list</span>() </span>
-<span id="cb26-10"><a href="#cb26-10"></a></span>
-<span id="cb26-11"><a href="#cb26-11"></a><span class="co"># Use GLS worker function on each partition</span></span>
-<span id="cb26-12"><a href="#cb26-12"></a><span class="cf">for</span>(part <span class="cf">in</span> <span class="kw">seq_len</span>(<span class="kw">ncol</span>(part.mat))){</span>
-<span id="cb26-13"><a href="#cb26-13"></a>  <span class="co">## index setup</span></span>
-<span id="cb26-14"><a href="#cb26-14"></a>  subs =<span class="st"> </span>part.mat[, part] <span class="co"># current subset index</span></span>
-<span id="cb26-15"><a href="#cb26-15"></a>  X.sub =<span class="st"> </span>mod.mat[subs, ] <span class="co"># current subset of model matrix</span></span>
-<span id="cb26-16"><a href="#cb26-16"></a>  y.sub =<span class="st"> </span>rel.est[subs] <span class="co"># current subset of Y</span></span>
-<span id="cb26-17"><a href="#cb26-17"></a>  loc.sub =<span class="st"> </span>location[subs, ] <span class="co"># current coordinates</span></span>
-<span id="cb26-18"><a href="#cb26-18"></a>  X0.sub =<span class="st"> </span>X0[subs, ] <span class="co"># current subset of X0</span></span>
-<span id="cb26-19"><a href="#cb26-19"></a>  <span class="co">## calculate variance matrix</span></span>
-<span id="cb26-20"><a href="#cb26-20"></a>  D.sub =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.sub)<span class="op">/</span><span class="dv">1000</span> <span class="co"># distance between subset points</span></span>
-<span id="cb26-21"><a href="#cb26-21"></a>  V.sub =<span class="st"> </span><span class="kw">fitV</span>(D.sub, <span class="dt">spatialcor =</span> r.est<span class="op">$</span>spatialcor, </span>
-<span id="cb26-22"><a href="#cb26-22"></a>               <span class="dt">method =</span> <span class="st">&quot;exponential-power&quot;</span>) <span class="co"># variance of subset points</span></span>
-<span id="cb26-23"><a href="#cb26-23"></a>  <span class="co">## obtain GLS results</span></span>
-<span id="cb26-24"><a href="#cb26-24"></a>  part.results[[part]] &lt;-<span class="st"> </span><span class="kw">GLS_worker</span>(y.sub, X.sub, V.sub, X0.sub,</span>
-<span id="cb26-25"><a href="#cb26-25"></a>                                     <span class="dt">save_xx =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb26-26"><a href="#cb26-26"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="co"># calculate degrees of freedom up front</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>dfs &lt;-<span class="st"> </span><span class="kw">calc_dfpart</span>(<span class="dt">partsize =</span> <span class="kw">nrow</span>(part.mat), </span>
+<span id="cb29-3"><a href="#cb29-3"></a>               <span class="dt">p =</span> <span class="kw">ncol</span>(mod.mat), </span>
+<span id="cb29-4"><a href="#cb29-4"></a>               <span class="dt">p0 =</span> <span class="kw">ncol</span>(X0))</span>
+<span id="cb29-5"><a href="#cb29-5"></a>df1 &lt;-<span class="st"> </span>dfs[<span class="dv">1</span>]</span>
+<span id="cb29-6"><a href="#cb29-6"></a>df2 &lt;-<span class="st"> </span>dfs[<span class="dv">2</span>]</span>
+<span id="cb29-7"><a href="#cb29-7"></a></span>
+<span id="cb29-8"><a href="#cb29-8"></a><span class="co"># make empty list to store the output</span></span>
+<span id="cb29-9"><a href="#cb29-9"></a>part.results &lt;-<span class="st"> </span><span class="kw">list</span>() </span>
+<span id="cb29-10"><a href="#cb29-10"></a></span>
+<span id="cb29-11"><a href="#cb29-11"></a><span class="co"># Use GLS worker function on each partition</span></span>
+<span id="cb29-12"><a href="#cb29-12"></a><span class="cf">for</span>(part <span class="cf">in</span> <span class="kw">seq_len</span>(<span class="kw">ncol</span>(part.mat))){</span>
+<span id="cb29-13"><a href="#cb29-13"></a>  <span class="co">## index setup</span></span>
+<span id="cb29-14"><a href="#cb29-14"></a>  subs =<span class="st"> </span>part.mat[, part] <span class="co"># current subset index</span></span>
+<span id="cb29-15"><a href="#cb29-15"></a>  X.sub =<span class="st"> </span>mod.mat[subs, ] <span class="co"># current subset of model matrix</span></span>
+<span id="cb29-16"><a href="#cb29-16"></a>  y.sub =<span class="st"> </span>rel.est[subs] <span class="co"># current subset of Y</span></span>
+<span id="cb29-17"><a href="#cb29-17"></a>  loc.sub =<span class="st"> </span>location[subs, ] <span class="co"># current coordinates</span></span>
+<span id="cb29-18"><a href="#cb29-18"></a>  X0.sub =<span class="st"> </span>X0[subs, ] <span class="co"># current subset of X0</span></span>
+<span id="cb29-19"><a href="#cb29-19"></a>  <span class="co">## calculate variance matrix</span></span>
+<span id="cb29-20"><a href="#cb29-20"></a>  D.sub =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.sub)<span class="op">/</span><span class="dv">1000</span> <span class="co"># distance between subset points</span></span>
+<span id="cb29-21"><a href="#cb29-21"></a>  V.sub =<span class="st"> </span><span class="kw">fitV</span>(D.sub, <span class="dt">spatialcor =</span> r.est<span class="op">$</span>spatialcor, </span>
+<span id="cb29-22"><a href="#cb29-22"></a>               <span class="dt">method =</span> <span class="st">&quot;exponential-power&quot;</span>) <span class="co"># variance of subset points</span></span>
+<span id="cb29-23"><a href="#cb29-23"></a>  <span class="co">## obtain GLS results</span></span>
+<span id="cb29-24"><a href="#cb29-24"></a>  part.results[[part]] &lt;-<span class="st"> </span><span class="kw">GLS_worker</span>(y.sub, X.sub, V.sub, X0.sub,</span>
+<span id="cb29-25"><a href="#cb29-25"></a>                                     <span class="dt">save_xx =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb29-26"><a href="#cb29-26"></a>}</span></code></pre></div>
 <p>The list <code>part.results</code> now has 4 elements - one for each partition - which are GLS output lists (i.e. results for partition 1 are stored in <code>part.results[[1]]</code>, etc.).</p>
 <p>For each pair of GLS partition results in that list, we next calculate cross-partition statistics with <code>crosspart_worker()</code>. This function takes as input (1) the statistics returned by <code>GLS_worker()</code> (including nugget estimate), (2) degrees of freedom, and (3) a cross-partition variance matrix <code>V.ij</code> which can be obtained from distances between points from subsets <code>i</code> and <code>j</code>:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="co"># make empty list for cross-partition results</span></span>
-<span id="cb27-2"><a href="#cb27-2"></a>cross.results =<span class="st"> </span><span class="kw">list</span>()</span>
-<span id="cb27-3"><a href="#cb27-3"></a></span>
-<span id="cb27-4"><a href="#cb27-4"></a><span class="co"># use crosspart_worker() to get cross-partition statistics</span></span>
-<span id="cb27-5"><a href="#cb27-5"></a><span class="cf">for</span>(cross <span class="cf">in</span> <span class="kw">seq_len</span>(<span class="kw">length</span>(part.results) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)){ <span class="co"># each consecutive pair of partitions</span></span>
-<span id="cb27-6"><a href="#cb27-6"></a>  <span class="co">## index setup</span></span>
-<span id="cb27-7"><a href="#cb27-7"></a>  i =<span class="st"> </span>cross <span class="co"># first partition</span></span>
-<span id="cb27-8"><a href="#cb27-8"></a>  j =<span class="st"> </span>cross <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="co"># second partition</span></span>
-<span id="cb27-9"><a href="#cb27-9"></a>  subs.i =<span class="st"> </span>part.mat[, i] <span class="co"># index for part i</span></span>
-<span id="cb27-10"><a href="#cb27-10"></a>  subs.j =<span class="st"> </span>part.mat[, j] <span class="co"># index for part j</span></span>
-<span id="cb27-11"><a href="#cb27-11"></a>  <span class="co">## GLS_worker() output</span></span>
-<span id="cb27-12"><a href="#cb27-12"></a>  Li =<span class="st"> </span>part.results[[i]] <span class="co"># list containing partition results i</span></span>
-<span id="cb27-13"><a href="#cb27-13"></a>  Lj =<span class="st"> </span>part.results[[j]] <span class="co"># list containing partition results j</span></span>
-<span id="cb27-14"><a href="#cb27-14"></a>  <span class="co">## Obtain V.ij</span></span>
-<span id="cb27-15"><a href="#cb27-15"></a>  loc.i =<span class="st"> </span>location[subs.i, ] <span class="co"># coordinates of i</span></span>
-<span id="cb27-16"><a href="#cb27-16"></a>  loc.j =<span class="st"> </span>location[subs.j, ] <span class="co"># coordinates of j</span></span>
-<span id="cb27-17"><a href="#cb27-17"></a>  D.ij =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.i, loc.j) <span class="co"># distance between i and j</span></span>
-<span id="cb27-18"><a href="#cb27-18"></a>  V.ij =<span class="st"> </span><span class="kw">fitV</span>(D.ij, r.est<span class="op">$</span>spatialcor) <span class="co"># variance matrix ij</span></span>
-<span id="cb27-19"><a href="#cb27-19"></a>  <span class="co">## obtain cross-partition results</span></span>
-<span id="cb27-20"><a href="#cb27-20"></a>  cross.results[[cross]] =<span class="st"> </span><span class="kw">crosspart_worker</span>(<span class="dt">xxi =</span> Li<span class="op">$</span>xx, <span class="dt">xxj =</span> Lj<span class="op">$</span>xx,</span>
-<span id="cb27-21"><a href="#cb27-21"></a>                                            <span class="dt">xxi0 =</span> Li<span class="op">$</span>xx0, <span class="dt">xxj0 =</span> Lj<span class="op">$</span>xx0,</span>
-<span id="cb27-22"><a href="#cb27-22"></a>                                            <span class="dt">invChol_i =</span> Li<span class="op">$</span>invcholV,</span>
-<span id="cb27-23"><a href="#cb27-23"></a>                                            <span class="dt">invChol_j =</span> Lj<span class="op">$</span>invcholV,</span>
-<span id="cb27-24"><a href="#cb27-24"></a>                                            <span class="dt">nug_i =</span> Li<span class="op">$</span>nugget,</span>
-<span id="cb27-25"><a href="#cb27-25"></a>                                            <span class="dt">nug_j =</span> Lj<span class="op">$</span>nugget,</span>
-<span id="cb27-26"><a href="#cb27-26"></a>                                            <span class="dt">Vsub =</span> V.ij,</span>
-<span id="cb27-27"><a href="#cb27-27"></a>                                            <span class="dt">df1 =</span> df1, <span class="dt">df2 =</span> df2)</span>
-<span id="cb27-28"><a href="#cb27-28"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="co"># make empty list for cross-partition results</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a>cross.results =<span class="st"> </span><span class="kw">list</span>()</span>
+<span id="cb30-3"><a href="#cb30-3"></a></span>
+<span id="cb30-4"><a href="#cb30-4"></a><span class="co"># use crosspart_worker() to get cross-partition statistics</span></span>
+<span id="cb30-5"><a href="#cb30-5"></a><span class="cf">for</span>(cross <span class="cf">in</span> <span class="kw">seq_len</span>(<span class="kw">length</span>(part.results) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)){ <span class="co"># each consecutive pair of partitions</span></span>
+<span id="cb30-6"><a href="#cb30-6"></a>  <span class="co">## index setup</span></span>
+<span id="cb30-7"><a href="#cb30-7"></a>  i =<span class="st"> </span>cross <span class="co"># first partition</span></span>
+<span id="cb30-8"><a href="#cb30-8"></a>  j =<span class="st"> </span>cross <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="co"># second partition</span></span>
+<span id="cb30-9"><a href="#cb30-9"></a>  subs.i =<span class="st"> </span>part.mat[, i] <span class="co"># index for part i</span></span>
+<span id="cb30-10"><a href="#cb30-10"></a>  subs.j =<span class="st"> </span>part.mat[, j] <span class="co"># index for part j</span></span>
+<span id="cb30-11"><a href="#cb30-11"></a>  <span class="co">## GLS_worker() output</span></span>
+<span id="cb30-12"><a href="#cb30-12"></a>  Li =<span class="st"> </span>part.results[[i]] <span class="co"># list containing partition results i</span></span>
+<span id="cb30-13"><a href="#cb30-13"></a>  Lj =<span class="st"> </span>part.results[[j]] <span class="co"># list containing partition results j</span></span>
+<span id="cb30-14"><a href="#cb30-14"></a>  </span>
+<span id="cb30-15"><a href="#cb30-15"></a>  loc.i =<span class="st"> </span>location[subs.i, ] <span class="co"># coordinates of i</span></span>
+<span id="cb30-16"><a href="#cb30-16"></a>  loc.j =<span class="st"> </span>location[subs.j, ] <span class="co"># coordinates of j</span></span>
+<span id="cb30-17"><a href="#cb30-17"></a>  </span>
+<span id="cb30-18"><a href="#cb30-18"></a>  Di =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.i)</span>
+<span id="cb30-19"><a href="#cb30-19"></a>  Vi =<span class="st"> </span><span class="kw">fitV</span>(Di, r.est<span class="op">$</span>spatialcor, <span class="dt">method =</span> <span class="st">&quot;exponential-power&quot;</span>)</span>
+<span id="cb30-20"><a href="#cb30-20"></a>  invchol_i &lt;-<span class="st"> </span><span class="kw">invert_chol</span>(Vi, Li<span class="op">$</span>nugget)</span>
+<span id="cb30-21"><a href="#cb30-21"></a>  </span>
+<span id="cb30-22"><a href="#cb30-22"></a>  Dj =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.j)</span>
+<span id="cb30-23"><a href="#cb30-23"></a>  Vj =<span class="st"> </span><span class="kw">fitV</span>(Dj, r.est<span class="op">$</span>spatialcor, <span class="dt">method =</span> <span class="st">&quot;exponential-power&quot;</span>)</span>
+<span id="cb30-24"><a href="#cb30-24"></a>  invchol_j &lt;-<span class="st"> </span><span class="kw">invert_chol</span>(Vj, Lj<span class="op">$</span>nugget)</span>
+<span id="cb30-25"><a href="#cb30-25"></a>  </span>
+<span id="cb30-26"><a href="#cb30-26"></a>  <span class="co">## Obtain V.ij</span></span>
+<span id="cb30-27"><a href="#cb30-27"></a>  D.ij =<span class="st"> </span>geosphere<span class="op">::</span><span class="kw">distm</span>(loc.i, loc.j) <span class="co"># distance between i and j</span></span>
+<span id="cb30-28"><a href="#cb30-28"></a>  V.ij =<span class="st"> </span><span class="kw">fitV</span>(D.ij, r.est<span class="op">$</span>spatialcor) <span class="co"># variance matrix ij</span></span>
+<span id="cb30-29"><a href="#cb30-29"></a>  <span class="co">## obtain cross-partition results</span></span>
+<span id="cb30-30"><a href="#cb30-30"></a>  cross.results[[cross]] =<span class="st"> </span><span class="kw">crosspart_worker</span>(<span class="dt">xxi =</span> Li<span class="op">$</span>xx, <span class="dt">xxj =</span> Lj<span class="op">$</span>xx,</span>
+<span id="cb30-31"><a href="#cb30-31"></a>                                            <span class="dt">xxi0 =</span> Li<span class="op">$</span>xx0, <span class="dt">xxj0 =</span> Lj<span class="op">$</span>xx0,</span>
+<span id="cb30-32"><a href="#cb30-32"></a>                                            <span class="dt">invChol_i =</span> invchol_i,</span>
+<span id="cb30-33"><a href="#cb30-33"></a>                                            <span class="dt">invChol_j =</span> invchol_j,</span>
+<span id="cb30-34"><a href="#cb30-34"></a>                                            <span class="dt">nug_i =</span> Li<span class="op">$</span>nugget,</span>
+<span id="cb30-35"><a href="#cb30-35"></a>                                            <span class="dt">nug_j =</span> Lj<span class="op">$</span>nugget,</span>
+<span id="cb30-36"><a href="#cb30-36"></a>                                            <span class="dt">Vsub =</span> V.ij,</span>
+<span id="cb30-37"><a href="#cb30-37"></a>                                            <span class="dt">df1 =</span> df1, <span class="dt">df2 =</span> df2)</span>
+<span id="cb30-38"><a href="#cb30-38"></a>}</span></code></pre></div>
 <p><code>crosspart_worker()</code> is usually much faster than <code>GLS_worker()</code>.</p>
 <p>Finally, we can calculate some average statistics for the entire analysis by aggregating across the list elements. Here, I’ve chosen to use <code>sapply()</code> because of the way the <code>part.results</code> and <code>cross.results</code> are structured:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">## Calculate Average partition stats </span></span>
-<span id="cb28-2"><a href="#cb28-2"></a>F.mean =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>Fstat})) <span class="co"># average partition F</span></span>
-<span id="cb28-3"><a href="#cb28-3"></a>coef.means =<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>betahat})) <span class="co"># coef est (land class)</span></span>
-<span id="cb28-4"><a href="#cb28-4"></a>coef0.mean =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>betahat0})) <span class="co"># null coefs</span></span>
-<span id="cb28-5"><a href="#cb28-5"></a>part.SEs =<span class="st"> </span><span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>SE}) <span class="co"># partition standard errors</span></span>
-<span id="cb28-6"><a href="#cb28-6"></a></span>
-<span id="cb28-7"><a href="#cb28-7"></a><span class="co">## average cross-partition stats</span></span>
-<span id="cb28-8"><a href="#cb28-8"></a>rcoef.mean =<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rcoef})) <span class="co">#cross-coef for conf ints</span></span>
-<span id="cb28-9"><a href="#cb28-9"></a>rSSR =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rSSRij})) <span class="co"># regression sum of squares</span></span>
-<span id="cb28-10"><a href="#cb28-10"></a>rSSE =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rSSEij})) <span class="co"># residual sum of squares</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="co">## Calculate Average partition stats </span></span>
+<span id="cb31-2"><a href="#cb31-2"></a>F.mean =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>Fstat})) <span class="co"># average partition F</span></span>
+<span id="cb31-3"><a href="#cb31-3"></a>coef.means =<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>betahat})) <span class="co"># coef est (land class)</span></span>
+<span id="cb31-4"><a href="#cb31-4"></a>coef0.mean =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>betahat0})) <span class="co"># null coefs</span></span>
+<span id="cb31-5"><a href="#cb31-5"></a>part.SEs =<span class="st"> </span><span class="kw">sapply</span>(part.results, <span class="cf">function</span>(x){x<span class="op">$</span>SE}) <span class="co"># partition standard errors</span></span>
+<span id="cb31-6"><a href="#cb31-6"></a></span>
+<span id="cb31-7"><a href="#cb31-7"></a><span class="co">## average cross-partition stats</span></span>
+<span id="cb31-8"><a href="#cb31-8"></a>rcoef.mean =<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rcoef})) <span class="co">#cross-coef for conf ints</span></span>
+<span id="cb31-9"><a href="#cb31-9"></a>rSSR =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rSSRij})) <span class="co"># regression sum of squares</span></span>
+<span id="cb31-10"><a href="#cb31-10"></a>rSSE =<span class="st"> </span><span class="kw">mean</span>(<span class="kw">sapply</span>(cross.results, <span class="cf">function</span>(x){x<span class="op">$</span>rSSEij})) <span class="co"># residual sum of squares</span></span></code></pre></div>
 <p>these summary statistics can then be used to peform the tests. You will notice that the functions used to obtain the p values are different than the ones we used with <code>fitGLS.partition()</code>. the earlier functions <code>t.test()</code>, <code>cor_chisq.test()</code> and <code>cor_F.test()</code> are simply wrappers for <code>cor_t()</code>, <code>cor_chisq()</code>, and <code>boot_corF()</code> respectively.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="co"># perform the correlated tests</span></span>
-<span id="cb29-2"><a href="#cb29-2"></a><span class="co">## correlated chisquared test: are trends different among land class?</span></span>
-<span id="cb29-3"><a href="#cb29-3"></a>(<span class="dt">p.chisqr =</span> <span class="kw">cor_chisq</span>(F.mean, rSSR, df1, <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat)) )</span>
-<span id="cb29-4"><a href="#cb29-4"></a><span class="co">#&gt; pval.chisqr </span></span>
-<span id="cb29-5"><a href="#cb29-5"></a><span class="co">#&gt;       1e-06</span></span>
-<span id="cb29-6"><a href="#cb29-6"></a><span class="co"># correlated F test: are trends different among land class?</span></span>
-<span id="cb29-7"><a href="#cb29-7"></a>(<span class="dt">p.corF =</span> <span class="kw">boot_corF</span>(F.mean, rSSR, rSSE, df1, df2, </span>
-<span id="cb29-8"><a href="#cb29-8"></a>                    <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat), <span class="dt">nboot =</span> <span class="dv">1000</span>) )</span>
-<span id="cb29-9"><a href="#cb29-9"></a><span class="co">#&gt; $pvalue</span></span>
-<span id="cb29-10"><a href="#cb29-10"></a><span class="co">#&gt; [1] 0.001</span></span>
-<span id="cb29-11"><a href="#cb29-11"></a><span class="co">#&gt; </span></span>
-<span id="cb29-12"><a href="#cb29-12"></a><span class="co">#&gt; $nboot</span></span>
-<span id="cb29-13"><a href="#cb29-13"></a><span class="co">#&gt; [1] 1000</span></span>
-<span id="cb29-14"><a href="#cb29-14"></a><span class="co">#&gt; </span></span>
-<span id="cb29-15"><a href="#cb29-15"></a><span class="co">#&gt; $rank.MSR</span></span>
-<span id="cb29-16"><a href="#cb29-16"></a><span class="co">#&gt; [1] NA</span></span>
-<span id="cb29-17"><a href="#cb29-17"></a><span class="co"># t-test: are trends in land classes different from 0?</span></span>
-<span id="cb29-18"><a href="#cb29-18"></a>(<span class="dt">t.test =</span> <span class="kw">cor_t</span>(<span class="dt">coefs =</span> coef.means, <span class="dt">part.SEs =</span> <span class="kw">t</span>(part.SEs), <span class="dt">rcoef =</span> rcoef.mean, </span>
-<span id="cb29-19"><a href="#cb29-19"></a>                <span class="dt">df2 =</span> df2, <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat)))</span>
-<span id="cb29-20"><a href="#cb29-20"></a><span class="co">#&gt;            Est       SE  t.stat pval.t</span></span>
-<span id="cb29-21"><a href="#cb29-21"></a><span class="co">#&gt; [1,]  0.003419 0.004519  0.7566 0.4493</span></span>
-<span id="cb29-22"><a href="#cb29-22"></a><span class="co">#&gt; [2,] -0.003900 0.004558 -0.8556 0.3923</span></span>
-<span id="cb29-23"><a href="#cb29-23"></a><span class="co">#&gt; [3,]  0.003227 0.004460  0.7235 0.4695</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># perform the correlated tests</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a><span class="co">## correlated chisquared test: are trends different among land class?</span></span>
+<span id="cb32-3"><a href="#cb32-3"></a>(<span class="dt">p.chisqr =</span> <span class="kw">cor_chisq</span>(F.mean, rSSR, df1, <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat)) )</span>
+<span id="cb32-4"><a href="#cb32-4"></a><span class="co">#&gt; pval.chisqr </span></span>
+<span id="cb32-5"><a href="#cb32-5"></a><span class="co">#&gt;       1e-06</span></span>
+<span id="cb32-6"><a href="#cb32-6"></a><span class="co"># correlated F test: are trends different among land class?</span></span>
+<span id="cb32-7"><a href="#cb32-7"></a>(<span class="dt">p.corF =</span> <span class="kw">boot_corF</span>(F.mean, rSSR, rSSE, df1, df2, </span>
+<span id="cb32-8"><a href="#cb32-8"></a>                    <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat), <span class="dt">nboot =</span> <span class="dv">1000</span>) )</span>
+<span id="cb32-9"><a href="#cb32-9"></a><span class="co">#&gt; $pvalue</span></span>
+<span id="cb32-10"><a href="#cb32-10"></a><span class="co">#&gt; [1] 0.001</span></span>
+<span id="cb32-11"><a href="#cb32-11"></a><span class="co">#&gt; </span></span>
+<span id="cb32-12"><a href="#cb32-12"></a><span class="co">#&gt; $nboot</span></span>
+<span id="cb32-13"><a href="#cb32-13"></a><span class="co">#&gt; [1] 1000</span></span>
+<span id="cb32-14"><a href="#cb32-14"></a><span class="co">#&gt; </span></span>
+<span id="cb32-15"><a href="#cb32-15"></a><span class="co">#&gt; $rank.MSR</span></span>
+<span id="cb32-16"><a href="#cb32-16"></a><span class="co">#&gt; [1] NA</span></span>
+<span id="cb32-17"><a href="#cb32-17"></a><span class="co"># t-test: are trends in land classes different from 0?</span></span>
+<span id="cb32-18"><a href="#cb32-18"></a>(<span class="dt">t.test =</span> <span class="kw">cor_t</span>(<span class="dt">coefs =</span> coef.means, <span class="dt">part.SEs =</span> <span class="kw">t</span>(part.SEs), <span class="dt">rcoef =</span> rcoef.mean, </span>
+<span id="cb32-19"><a href="#cb32-19"></a>                <span class="dt">df2 =</span> df2, <span class="dt">npart =</span> <span class="kw">ncol</span>(part.mat)))</span>
+<span id="cb32-20"><a href="#cb32-20"></a><span class="co">#&gt;               Est          SE     t.stat    pval.t</span></span>
+<span id="cb32-21"><a href="#cb32-21"></a><span class="co">#&gt; [1,]  0.003418999 0.004518789  0.7566184 0.4493381</span></span>
+<span id="cb32-22"><a href="#cb32-22"></a><span class="co">#&gt; [2,] -0.003899527 0.004557896 -0.8555542 0.3923129</span></span>
+<span id="cb32-23"><a href="#cb32-23"></a><span class="co">#&gt; [3,]  0.003226621 0.004459987  0.7234597 0.4694540</span></span></code></pre></div>
 <p><code>fitGLS_partition()</code> does all of this internally but it may be important when analyzing extremely large data sets to know how the individual components work together. As mentioned before, these steps could be easily extended for distributed or parallel computing to improve efficiency.</p>
 <p>For example, each subset partition (say, 100K pixels) could be run through <code>GLS_worker()</code> separately, output could be saved to individual files, memory could be cleaned or recycled at each step. Then, you could load the output files, 2 at a time, and run them through <code>crosspart_worker()</code>, saving the cross-partition results to files and cleaning up memory after each pair.</p>
 <p>Average statistics (<code>F.mean</code>, <code>rSSR</code>, etc) could then be calculated by looping through the files and keeping only the relevant statistics in memory (or writing them to separate files).</p>

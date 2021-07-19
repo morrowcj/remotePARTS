@@ -149,8 +149,8 @@ while pixels in Southern Alaska seem to have decreasing NDVI trends (brown).
 
 Black pixels are possible outliers but for the purposes of this document, 
 we will not remove these points. However, depending on the data set, it may be 
-worth considering removal of outlying estimates. A vignette describing
-diagnostic steps may be created in the future. 
+worth considering removal of outlying estimates. See the section on Diagnostics
+below for further diagnostic steps.
 
 Let's see if land classes have a similar patterns to NDVI:
 
@@ -462,6 +462,47 @@ Note that the chisqr test won't report p-values lower than
 .000001 and the F test can't report p-values lower than
 $\frac{1}{\text{nboot}}$.
 
+## Diagnostics
+
+Here we will check if the residuals from the pixel-level time series appear
+to be normally distributed:
+
+```{r pixel_resids, fig.asp = .8, fig.width = 5}
+library(dplyr);library(ggplot2);library(lemon)
+
+# get 9 random pixels
+pixels = sample.int(n = nrow(fm.cls$residuals), size = 9)
+resid.sub = t(fm.cls$residuals[pixels, ])
+colnames(resid.sub) = pixels
+
+# plot the data, with a panel for each pixel
+reshape2::melt(resid.sub) %>% 
+  ggplot(aes(x = value)) +
+  theme_classic() + 
+  theme(strip.background = element_blank(),
+        strip.text = element_text(vjust = -2.5)) +
+  geom_histogram(fill = NA, col = "black", bins = 15) + 
+  facet_rep_wrap(~ paste("Pixel", Var2)) +
+  labs(y = "Frequency", x = "Time-series residuals")
+
+```
+
+The above figure shows that the time-series residuals are reasonably normally
+distributed for individual pixels.
+
+Next we'll see if the residuals from the GLS analysis are normally distributed:
+
+```{r GLS_resids, fig.asp = .8, fig.width = 4}
+# calculate residuals
+gls.resid = rel.est - fm.gls$betahat[as.numeric(ndvi_AK3000$land)]
+# plot them
+hist(gls.resid, breaks = 20, xlab = "GLS residuals", main = NULL)
+```
+
+Again, this figure shows that the GLS residuals are quite normally distributed.
+
+Together, these diagnostics show that our normallity assumptions are met.
+
 ## More on the partitioned GLS method
 
 Here, we will provide a further look at how to use the individual functions for
@@ -479,7 +520,7 @@ that `fitGLS()` needs a nugget input (defaults to 0) while `GLS_worker()` finds
 the maximum likelihood estimator of the nugget internally (similar to 
 `optimize_nugget()`).
 
-```{r GLS part dissect}
+```{r GLS_part_dissect}
 # calculate degrees of freedom up front
 dfs <- calc_dfpart(partsize = nrow(part.mat), 
                p = ncol(mod.mat), 
