@@ -26,9 +26,9 @@
 //' @param nug_u upper boundary for nugget optimization
 //' @param nug_tol tolerance of nugget optimization
 //' @param save_xx logical: should xx, xx0, and invcholV be returned?
-//' @param threads
+//' @param threads number of threads used by Eigen for matrix algebra
 //'
-//' @examples #TBA
+//' @examples
 // [[Rcpp::export(.GLS_worker_cpp)]]
 List GLS_worker_cpp(const MapMatd& y,
                     const MapMatd& X,

@@ -10,7 +10,7 @@
 #' @param nug_l lower boundary for nugget optimization
 #' @param nug_u upper boundary for nugget optimization
 #' @param nug_tol tolerance of nugget optimization
-#' @param threads
+#' @param threads number of threads used by Eigen for matrix algebra
 #' @param save_xx logical: should xx, xx0, and invcholV be returned?
 #'
 #' @details \code{GLS_worker()} is meant to be called by other functions

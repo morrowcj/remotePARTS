@@ -32,6 +32,8 @@ GLS_worker(
 \item{nug_tol}{tolerance of nugget optimization}
 
 \item{save_xx}{logical: should xx, xx0, and invcholV be returned?}
+
+\item{threads}{number of threads used by Eigen for matrix algebra}
 }
 \value{
 a list of remoteGLS output

@@ -10,8 +10,6 @@
 \item{V}{numeric matrix}
 
 \item{nugget}{numeric nugget to add to variance matrix}
-
-\item{threads}{}
 }
 \description{
 Invert the cholesky decomposition of V

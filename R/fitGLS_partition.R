@@ -277,7 +277,7 @@ dist_km <- function(coords, coords2 = NULL){
 #' @param spatcor spatial correlation used by \code{fitV()}
 #' @param partsize number of pixels in each partition
 #' @param npart number of partitions
-#' @param threads
+#' @param threads number of threads used by Eigen for matrix algebra
 #' @param mincross number of partition pairs to calculate cross-partition
 #' statistics from.
 #' @param ... additional arguments passed to \code{part_f}

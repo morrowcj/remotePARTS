@@ -11,7 +11,7 @@
 #' @param save_xx logical: should xx, xx0, and invcholV be returned? This
 #' functionality is meant for use with the partitioned GLS whereby these
 #' values are used to calculate cross-partition statistics.
-#' @param threads
+#' @param threads number of threads used by Eigen for matrix algebra
 #'
 #' @return remoteGLS object see \code{?remoteGLS()} for more info.
 #'

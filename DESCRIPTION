@@ -36,9 +36,12 @@ Suggests:
     raster,
     knitr,
     rmarkdown,
+    markdown,
     microbenchmark,
     sqldf,
     devtools,
-    ggplot2
+    ggplot2,
+    lemon,
+    reshape2
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr

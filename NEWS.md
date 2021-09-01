@@ -24,3 +24,7 @@ been corrected to output X0.
 * updated fitGLS.partition functions to prevent them from hogging memory. This
 means that the cholesky inversions cannot be reused and need to be recalculated,
 leading to longer compute times. 
+
+* fixed installation bug where vignette would not build.
+
+* added multithreading capability, through Eigen, to the GLS suite of functions.

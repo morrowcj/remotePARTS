@@ -21,14 +21,11 @@
 functionality is meant for use with the partitioned GLS whereby these
 values are used to calculate cross-partition statistics.}
 
-\item{threads}{}
+\item{threads}{number of threads used by Eigen for matrix algebra}
 }
 \description{
 Fit GLS to remote sensing data
 }
 \details{
 see `fitGLS()`
-}
-\examples{
-#TBA
 }

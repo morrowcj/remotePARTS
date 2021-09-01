@@ -33,7 +33,7 @@
 
 \item{save_xx}{logical: should xx, xx0, and invcholV be returned?}
 
-\item{threads}{}
+\item{threads}{number of threads used by Eigen for matrix algebra}
 }
 \description{
 Worker function 1 for paritioned GLS
@@ -47,7 +47,4 @@ and adds it to the output.
 
 NOTE: eventually, the worker functions will perform the analysis using
 multiple cores but that has not yet been implemented.
-}
-\examples{
-#TBA
 }

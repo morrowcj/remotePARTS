@@ -4,7 +4,6 @@
 //'
 //' @param V numeric matrix
 //' @param nugget numeric nugget to add to variance matrix
-//' @param threads
 //'
 //' @examples
 // [[Rcpp::export(.invchol_cpp)]]

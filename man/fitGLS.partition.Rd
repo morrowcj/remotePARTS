@@ -47,6 +47,8 @@ fitGLS.partition.mc(
 \item{mincross}{number of partition pairs to calculate cross-partition
 statistics from.}
 
+\item{threads}{number of threads used by Eigen for matrix algebra}
+
 \item{...}{additional arguments passed to \code{part_f}}
 
 \item{ncores}{number of cores for parallel processing. Default is total cores - 1}

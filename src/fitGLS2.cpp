@@ -15,9 +15,9 @@
 //' values are used to calculate cross-partition statistics.
 //' @param LL_only logical: should only the log-liklihood be computed?
 //' @param no_F logical: should calculations needed for F tests be skipped?
-//' @param threads
+//' @param threads number of threads used by Eigen for matrix algebra
 //'
-//' @examples #TBA
+//' @examples
 // [[Rcpp::export(.fitGLS2_cpp)]]
 void fitGLS2_cpp(List L,
                 const MapMatd& X,
