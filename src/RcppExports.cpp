@@ -7,6 +7,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // GLS_worker_cpp
 List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V, const MapMatd& X0, double nug_l, double nug_u, double nug_tol, bool save_xx, int threads);
 RcppExport SEXP _remotePARTS_GLS_worker_cpp(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP nug_lSEXP, SEXP nug_uSEXP, SEXP nug_tolSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {

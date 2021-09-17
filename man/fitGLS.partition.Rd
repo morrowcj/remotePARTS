@@ -10,6 +10,7 @@ fitGLS.partition(
   dist_f = "dist_km",
   V.meth = "exponential",
   spatcor,
+  nug = NA,
   partsize,
   npart,
   mincross = 6,
@@ -39,6 +40,8 @@ fitGLS.partition.mc(
 \item{V.meth}{method passed to \code{fitV()}}
 
 \item{spatcor}{spatial correlation used by \code{fitV()}}
+
+\item{nug}{nugget, if NA (default), the nugget is estimated}
 
 \item{partsize}{number of pixels in each partition}
 

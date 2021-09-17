@@ -275,6 +275,7 @@ dist_km <- function(coords, coords2 = NULL){
 #' @param dist_f function to calculate distance. See details for more info
 #' @param V.meth method passed to \code{fitV()}
 #' @param spatcor spatial correlation used by \code{fitV()}
+#' @param nug nugget, if NA (default), the nugget is estimated
 #' @param partsize number of pixels in each partition
 #' @param npart number of partitions
 #' @param threads number of threads used by Eigen for matrix algebra
@@ -331,7 +332,7 @@ dist_km <- function(coords, coords2 = NULL){
 #'                             part_form = "cls.coef ~ 0 + land",
 #'                             part_form0 = "cls.coef ~ 1")
 fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
-                             V.meth = "exponential", spatcor,
+                             V.meth = "exponential", spatcor, nug = NA,
                              partsize, npart, mincross = 6, threads = 1, ...){
   # Setup ----
   ## match the input functions
@@ -376,7 +377,20 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
       D.i <- D_func(out.i$coords)
       V.i <- fitV(D.i, spatcor, V.meth)
       ## fit GLS
-      gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = xx.print, threads = threads)
+      if(is.na(nug)){
+        gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = xx.print, threads = threads)
+      } else {
+        Xi = as.matrix(out.i$X)
+        Vi = as.matrix(V.i)
+        yi = as.matrix(out.i$y)
+        X0i = as.matrix(out.i$X0)
+        gls.i <- .Call(`_remotePARTS_fitGLS_cpp`, Xi, Vi, yi ,X0i ,nug, save_xx = xx.print, threads = threads)
+        gls.i$nugget = nug
+        gls.i$pval.t = sapply(gls.i$tstat, function(t){2*pt(abs(t), df=gls.i$dft)})
+        gls.i$pval.F = stats::pf(gls.i$Fstat, gls.i$df.F[1], gls.i$df.F[2], lower.tail = FALSE)
+        class(gls.i) <- append("remoteGLS", class(gls.i))
+        attr(gls.i, "no_F") = FALSE
+      }
 
       invchol_i <- invert_chol(V.i, gls.i$nugget)
 
@@ -407,7 +421,20 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
     D.j <- D_func(out.j$coords)
     V.j <- fitV(D.j, spatcor, V.meth)
     ## fit GLS
-    gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = out.j$X0, save_xx = xx.print, threads = threads)
+    if(is.na(nug)){
+      gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = out.j$X0, save_xx = xx.print, threads = threads)
+    } else {
+      Xj = as.matrix(out.j$X)
+      Vj = as.matrix(V.j)
+      yj = as.matrix(out.j$y)
+      X0j = as.matrix(out.j$X0)
+      gls.j <- .Call(`_remotePARTS_fitGLS_cpp`, Xj, Vj, yj, X0j, nug, save_xx = xx.print, threads = threads)
+      gls.j$nugget = nug
+      gls.j$pval.t = sapply(gls.j$tstat, function(t){2*pt(abs(t), df=gls.j$dft)})
+      gls.j$pval.F = stats::pf(gls.j$Fstat, gls.j$df.F[1], gls.j$df.F[2], lower.tail = FALSE)
+      class(gls.j) <- append("remoteGLS", class(gls.j))
+      attr(gls.j, "no_F") = FALSE
+    }
 
     invchol_j <- invert_chol(V.j, gls.j$nugget)
 
