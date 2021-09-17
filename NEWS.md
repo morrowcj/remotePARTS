@@ -27,4 +27,13 @@ leading to longer compute times.
 
 * fixed installation bug where vignette would not build.
 
-* added multithreading capability, through Eigen, to the GLS suite of functions.
+* added multithreading capability, through Eigen, to the GLS suite of functions, 
+though this seems to have limited utility since eigen already uses all available
+threads for matrix operations.
+
+* added functionality that allows co-estimation of spatial autocorrelation
+and nugget parameters from the data - i.e., fixed `optimize_GLS()`. 
+
+* added lower and upper limits to optimize_GLS (and new partitioned version)
+
+* added new vignette describing optimize_GLS's new funtionality

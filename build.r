@@ -10,3 +10,7 @@ if(file.exists("doc/Alaska.html")){
   file.copy(from = "doc/Alaska.html", to = "docs/Alaska.html",
             overwrite = TRUE)
 }
+if(file.exists("doc/GLS_optimization.html")){
+  file.copy(from = "doc/GLS_optimization.html",
+            to = "docs/GLS_optimization.html", overwrite = TRUE)
+}

@@ -1,5 +1,5 @@
 ---
-title: "Partition-wise PARTS parameter optimization"
+title: "GLSopt"
 author: "Clay Morrow"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -8,6 +8,8 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
+
+Partition-wise PARTS parameter optimization
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,

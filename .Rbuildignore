@@ -27,3 +27,6 @@
 # temporarily stop tests
 tinytest_backup
 ^LICENSE\.md$
+
+## Temporarily ignore the GLS_optimization.Rmd
+GLS_optimization.Rmd
