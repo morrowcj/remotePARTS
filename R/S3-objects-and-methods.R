@@ -276,7 +276,8 @@ remoteGLS <- function(form){
                "betahat0", "SSE0", "MSE0", "SE0",
                "MSR", "df0", "logLik0", "df.F",
                "Fstat","pval.F",
-               "xx", "xx0", "invcholV", "nugget")
+               "xx", "xx0", "invcholV", "nugget",
+               "spcor")
   GLS.obj = vector("list", length(elements))
   names(GLS.obj) = elements
 
@@ -339,9 +340,9 @@ print.remoteGLS <- function(x, ret_call = TRUE, ...){
     if (ret_call){
       cat("call: ");print(x$model.info$call);cat("\n")
     }
-    if (!is.null(x$model.info$response)){
-      cat("response:", x$model.info$response,"\n\n")
-    }
+    # if (!is.null(x$model.info$response)){
+    #   cat("response:", x$model.info$response,"\n\n")
+    # }
     cat("t tests:\n")
     print(format(coefs, digits = 2, nsmall = 2))
 
@@ -352,6 +353,7 @@ print.remoteGLS <- function(x, ret_call = TRUE, ...){
     }
     print(format(mod.stats, digits = 2, nsmall = 2, scientific = -2))
   }
+
 }
 
 ## summary function

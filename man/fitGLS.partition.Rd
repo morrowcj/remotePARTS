@@ -10,9 +10,11 @@ fitGLS.partition(
   dist_f = "dist_km",
   V.meth = "exponential",
   spatcor,
+  nug = NA,
   partsize,
   npart,
   mincross = 6,
+  threads = 1,
   ...
 )
 
@@ -39,12 +41,16 @@ fitGLS.partition.mc(
 
 \item{spatcor}{spatial correlation used by \code{fitV()}}
 
+\item{nug}{nugget, if NA (default), the nugget is estimated}
+
 \item{partsize}{number of pixels in each partition}
 
 \item{npart}{number of partitions}
 
 \item{mincross}{number of partition pairs to calculate cross-partition
 statistics from.}
+
+\item{threads}{number of threads used by Eigen for matrix algebra}
 
 \item{...}{additional arguments passed to \code{part_f}}
 

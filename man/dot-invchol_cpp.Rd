@@ -14,6 +14,3 @@
 \description{
 Invert the cholesky decomposition of V
 }
-\examples{
-#TBA
-}

@@ -5,9 +5,11 @@
 //' @param V numeric matrix
 //' @param nugget numeric nugget to add to variance matrix
 //'
-//' @examples #TBA
+//' @examples
 // [[Rcpp::export(.invchol_cpp)]]
 MatrixXd invchol_cpp(const MapMatd& V, double nugget = 0.){
+
+  //Eigen::setNbThreads(threads);
 
   double n = V.rows(); //dim of V
 

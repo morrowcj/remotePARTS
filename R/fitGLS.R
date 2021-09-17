@@ -11,8 +11,7 @@
 #' @param save_xx logical: should xx, xx0, and invcholV be returned? This
 #' functionality is meant for use with the partitioned GLS whereby these
 #' values are used to calculate cross-partition statistics.
-#' @param threads integer indicating the number of threads to use. Currently
-#' this parameter does nothin but multi-core functionality will be added soon.
+#' @param threads number of threads used by Eigen for matrix algebra
 #'
 #' @return remoteGLS object see \code{?remoteGLS()} for more info.
 #'
@@ -54,7 +53,7 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
   ## error handling
   stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
   stopifnot(all.equal(nrow(X), nrow(V), nrow(X0), nrow(y)))
-  stopifnot(all(check_posdef(V)))
+  # stopifnot(all(check_posdef(V)))
 
 
   ## call the c++ function
@@ -78,6 +77,7 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #' @param formula formula to build the model with
 #' @param data object containing the data
 #' @param form.0 null model formula (default: "y ~ 1")
+#' @param threads
 #' @param contrasts optional linear contrasts to use
 #' @param LL_only logical: should only the log-liklihood be computed?
 #' @param no_F logical: should calculations needed for F tests be skipped?
@@ -108,7 +108,7 @@ fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
 #' print(GLS2)
 fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
                     threads = 1, contrasts = NULL, LL_only = FALSE,
-                    no_F = FALSE,...){
+                    no_F = FALSE, ...){
 
   ## Parse formula arguments to make model matrix ----
   call <- match.call() # function call

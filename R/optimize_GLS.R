@@ -5,18 +5,23 @@
 #' @param par parameters to optimize
 #' @param y response vector
 #' @param modmat predictor model matrix
+#' @param D distance matrix
 #' @rdname optimize_GLS
 optim_GLS_func <- function(par, y, modmat, D, verbose = FALSE,
                            V.meth = "exponential-power"){
 
+  ## logit function
+  logit = function(p) {log(p / (1 - p))}
+  inv_logit = function(l) {1 / (1 + exp(-l))}
+
   if (V.meth == "exponential-power"){
-    spcor = c(r = par["r"], a = par["a"])
+    spcor = c(r = exp(par["r"]), a = exp(par["a"]))
   } else {
-    spcor = c(r = par["r"])
+    spcor = c(r = exp(par["r"]))
   }
-  r = unname(par["r"])
-  a = unname(par["a"])
-  nug = unname(par["nug"])
+  r = exp(unname(par["r"]))
+  a = exp(unname(par["a"]))
+  nug = inv_logit(unname(par["nug"]))
 
   ## fit a variance matrix
   V = fitV(Dist = D/max(D), spatialcor = spcor, method = V.meth)
@@ -35,24 +40,28 @@ optim_GLS_func <- function(par, y, modmat, D, verbose = FALSE,
   return(-LL)
 }
 
-
 #' Fit a GLS by estimating r, a, and nugget
 #'
-#' @rdname optimize_GLS
-#'
 #' @param formula model formula
-#' @param D Distance matrix
-#' @param V.meth method passed to \code{fitV()} default: "exponential-power"
-#' @param nugget NA: find maximum liklihood nugget
-#' @param spcor NA: find maximum liklihood spatial correlation
-#' @param verbose should the optimizer steps be printed to the console?
-#' @param data optional data to search for objects in formula
-#' @param contrasts possible contrasts object
+#' @param coords 2-column matrix of x and y coordinates
+#' @param dist_f distance function to use
+#' @param V.meth covariance method for fitting V
+#' @param nugget spatial nugget. If NA, a nugget will be estimated
+#' @param spcor spatial correlation paramters either NA, a single value (r) or
+#' a named vector: c(r = ..., a = ...). if spcor = NA, these parameters will be
+#' estimated
+#' @param verbose should additional info be printed?
+#' @param contrasts linear contrasts to apply
+#' @param data data object for which formula tries to match
+#' @param pars.start default starting values for the spcor
+#' @param save_xx save cross correlation stats?
+#' @param ret.GLS return GLS?
 #' @param ... additional arguments passed to \code{fitGLS2()}
 #'
 #' @seealso [fitGLS2()]
 #'
 #' @return a remoteGLS object
+#'
 #' @export
 #'
 #' @examples
@@ -74,11 +83,139 @@ optim_GLS_func <- function(par, y, modmat, D, verbose = FALSE,
 #' D = geosphere::distm(df[, c("lng", "lat")])/1000 #distance in km
 #'
 #' ## fit the GLS, including ML spatial correlation and nugget
-#' optimize_GLS(kappa ~ 0 + land, data = df, D = D, verbose = FALSE)
-optimize_GLS <- function(formula, D, V.meth = "exponential-power",
-                         nugget = NA, spcor = NA, verbose = FALSE,
-                         contrasts = NULL, data, ...){
+#' optimize_GLS(kappa ~ 0 + land, data = df, coords = df[, c("lng", "lat")], verbose = FALSE)
+optimize_GLS <- function (formula, coords, dist_f = "dist_km",
+                          V.meth = "exponential-power", nugget = NA,
+                          spcor = NA, verbose = FALSE, contrasts = NULL, data,
+                          pars.start = c(r = 0.1, a = 1, nug = 1e-9), save_xx = F,
+                          ret.GLS = TRUE, ...)
+{
+  # Setup ----
+  ## logit function
+  logit = function(p) {log(p / (1 - p))}
+  inv_logit = function(l) {1 / (1 + exp(-l))}
+  ## formula handling
+  call <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset", "weights", "na.action",
+               "offset"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
+  mf$drop.unused.levels <- TRUE
+  mf[[1L]] <- quote(stats::model.frame)
+  mf <- eval(mf, parent.frame())
+  mt <- attr(mf, "terms")
+  y <- model.response(mf, "numeric")
+  if (is.matrix(y)) {
+    stop("response is a matrix: must be a vector")
+  }
+  ny <- length(y)
+  modmat <- model.matrix(mt, mf, contrasts)
+  rm(mf)
+  ## setup optimizer parameters
+  pars.fixed = pars.start
+  pars.fixed["r"] = spcor[1]
+  pars.fixed["nug"] = nugget
+  if (V.meth == "exponential-power") {
+    pars.fixed["a"] = spcor[2]
+  }
+  pars.full = pars.start
+  pars.full[!is.na(pars.fixed)] = pars.fixed[!is.na(pars.fixed)]
+  pars = pars.full[is.na(pars.fixed)]
+  ## setup upper and lower bounds for spatial parameters
+  lowr.all = c(r = 1e-9, a = 1e-9, nug = 0)
+  uppr.all = c(r = 1, a = Inf, nug = 1)
+  lowr = lowr.all[is.na(pars.fixed)]
+  uppr = uppr.all[is.na(pars.fixed)]
 
+  # Run Optimizer ----
+  if (verbose) {
+    cat("optimizing parameters:\n")
+  }
+  ## calculate D once
+  D_func <- match.fun(dist_f)
+  D = D_func(coords)
+  ## optimize over the custom function
+  # opt.out = optim(par = pars,
+  #                 fn = remotePARTS:::optim_GLS_func,
+  #                 y = y, V.meth = V.meth,
+  #                 modmat = modmat, D = D,
+  #                 verbose = verbose,
+  #                 control = list(pgtol = 1e-6), # tolerance
+  #                 lower = lowr, upper = uppr, # bounds
+  #                 method = "L-BFGS-B") # fast optimizer that allows bounds
+
+  ## transform the parameters
+  pars["r"] = log(pars["r"])
+  pars["a"] = log(pars["a"])
+  pars["nug"] = logit(pars["nug"])
+  ## use alternate optimized function
+  opt.out = optim(par = pars,
+                  fn = optim_GLS_func,
+                  y = y, V.meth = V.meth,
+                  modmat = modmat, D = D,
+                  verbose = verbose,
+                  # control = list(pgtol = 1e-6), # tolerance
+                  # lower = lowr, upper = uppr, # bounds
+                  method = "Nelder-Mead") # fast optimizer that allows bounds
+
+  ## add blank line after trace
+  if (verbose) {
+    cat("\n")
+  }
+
+  # Collect parameters ----
+  # r.ml = opt.out$par["r"] # range param
+  # a.ml = opt.out$par["a"] # shape param
+  # nug.ml = opt.out$par["nug"] # nugget
+  r.ml = exp(opt.out$par["r"]) # range param
+  a.ml = exp(opt.out$par["a"]) # shape param
+  nug.ml = inv_logit(opt.out$par["nug"]) # nugget
+  ## r and/or a
+  if (V.meth == "exponential-power") {
+    spcor.ml = c(r.ml, a.ml)
+  }
+  else {
+    spcor.ml = r.ml
+  }
+
+  # Fit GLS one last time with estimated parameters ----
+  if(ret.GLS){
+    V = fitV(Dist = D/max(D), spatialcor = spcor.ml, method = V.meth)
+    GLS.out = fitGLS2(formula = y ~ 0 + modmat, V = V,
+                                    nugget = nug.ml, save_xx=save_xx, ...)
+    GLS.out$model.info$call = call
+    ret.list = list(GLS = GLS.out,
+                    spatial.pars = c(r.ml, a.ml, nug.ml),
+                    scaled.range = unname(r.ml * max(D)))
+  } else {
+    ret.list = list(spatial.pars = c(r.ml, a.ml, nug.ml),
+                    scaled.range = unname(r.ml * max(D)))
+  }
+
+  # Return statement ----
+  return(ret.list)
+}
+
+
+#' OLD Fit a GLS by estimating r, a, and nugget
+#'
+#' @param formula model formula
+#' @param D Distance matrix
+#' @param V.meth method passed to \code{fitV()} default: "exponential-power"
+#' @param nugget NA: find maximum liklihood nugget
+#' @param spcor NA: find maximum liklihood spatial correlation
+#' @param verbose should the optimizer steps be printed to the console?
+#' @param data optional data to search for objects in formula
+#' @param contrasts possible contrasts object
+#' @param ... additional arguments passed to \code{fitGLS2()}
+#'
+#' @seealso [fitGLS2()]
+#'
+#' @return a remoteGLS object
+#'
+optimize_GLS_OLD <- function(formula, D, V.meth = "exponential-power",
+                             nugget = NA, spcor = NA, verbose = FALSE,
+                             contrasts = NULL, data, ...){
   ## Parse formula arguments to make model matrix ----
   call <- match.call() # function call
   mf <- match.call(expand.dots = FALSE) # don't expand ...

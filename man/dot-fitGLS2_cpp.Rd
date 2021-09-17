@@ -27,16 +27,11 @@ values are used to calculate cross-partition statistics.}
 
 \item{no_F}{logical: should calculations needed for F tests be skipped?}
 
-\item{threads}{integer indicating the number of threads to use. This current
-version does not have multi-thread functionality so this argument does
-nothing yet.}
+\item{threads}{number of threads used by Eigen for matrix algebra}
 }
 \description{
 Fit GLS to remote sensing data
 }
 \details{
 see `fitGLS()`
-}
-\examples{
-#TBA
 }

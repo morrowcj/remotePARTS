@@ -27,6 +27,3 @@ list of pvalues, number of bootstrap iterations, and MSR rank
 \description{
 bootsrap test
 }
-\examples{
-#TBA
-}

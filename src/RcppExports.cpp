@@ -7,9 +7,14 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // GLS_worker_cpp
-List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V, const MapMatd& X0, double nug_l, double nug_u, double nug_tol, bool save_xx);
-RcppExport SEXP _remotePARTS_GLS_worker_cpp(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP nug_lSEXP, SEXP nug_uSEXP, SEXP nug_tolSEXP, SEXP save_xxSEXP) {
+List GLS_worker_cpp(const MapMatd& y, const MapMatd& X, const MapMatd& V, const MapMatd& X0, double nug_l, double nug_u, double nug_tol, bool save_xx, int threads);
+RcppExport SEXP _remotePARTS_GLS_worker_cpp(SEXP ySEXP, SEXP XSEXP, SEXP VSEXP, SEXP X0SEXP, SEXP nug_lSEXP, SEXP nug_uSEXP, SEXP nug_tolSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +26,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type nug_u(nug_uSEXP);
     Rcpp::traits::input_parameter< double >::type nug_tol(nug_tolSEXP);
     Rcpp::traits::input_parameter< bool >::type save_xx(save_xxSEXP);
-    rcpp_result_gen = Rcpp::wrap(GLS_worker_cpp(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx));
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(GLS_worker_cpp(y, X, V, X0, nug_l, nug_u, nug_tol, save_xx, threads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -61,7 +67,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // fitGLS_cpp
-List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, const int threads);
+List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, int threads);
 RcppExport SEXP _remotePARTS_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -72,7 +78,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const MapMatd& >::type X0(X0SEXP);
     Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
     Rcpp::traits::input_parameter< bool >::type save_xx(save_xxSEXP);
-    Rcpp::traits::input_parameter< const int >::type threads(threadsSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
     rcpp_result_gen = Rcpp::wrap(fitGLS_cpp(X, V, y, X0, nugget, save_xx, threads));
     return rcpp_result_gen;
 END_RCPP
@@ -161,7 +167,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_remotePARTS_GLS_worker_cpp", (DL_FUNC) &_remotePARTS_GLS_worker_cpp, 8},
+    {"_remotePARTS_GLS_worker_cpp", (DL_FUNC) &_remotePARTS_GLS_worker_cpp, 9},
     {"_remotePARTS_LogLikGLS_cpp", (DL_FUNC) &_remotePARTS_LogLikGLS_cpp, 4},
     {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 11},
     {"_remotePARTS_fitGLS_cpp", (DL_FUNC) &_remotePARTS_fitGLS_cpp, 7},

@@ -42,8 +42,7 @@ fitGLS_R(X, V, y, X0 = NULL, nugget = 0)
 functionality is meant for use with the partitioned GLS whereby these
 values are used to calculate cross-partition statistics.}
 
-\item{threads}{integer indicating the number of threads to use. Currently
-this parameter does nothin but multi-core functionality will be added soon.}
+\item{threads}{number of threads used by Eigen for matrix algebra}
 
 \item{formula}{formula to build the model with}
 

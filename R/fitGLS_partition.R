@@ -26,7 +26,7 @@
 #' matrix \code{Dist}. \code{fitGLS.partition()} is in development and will
 #' not require the full matrix be loaded into memory.
 #'
-#' @examples #TBA
+#' @examples
 #'
 #' @export
 fitGLS.partition_rcpp <- function(X, y, X0, Dist, spatcor,
@@ -275,8 +275,10 @@ dist_km <- function(coords, coords2 = NULL){
 #' @param dist_f function to calculate distance. See details for more info
 #' @param V.meth method passed to \code{fitV()}
 #' @param spatcor spatial correlation used by \code{fitV()}
+#' @param nug nugget, if NA (default), the nugget is estimated
 #' @param partsize number of pixels in each partition
 #' @param npart number of partitions
+#' @param threads number of threads used by Eigen for matrix algebra
 #' @param mincross number of partition pairs to calculate cross-partition
 #' statistics from.
 #' @param ... additional arguments passed to \code{part_f}
@@ -330,8 +332,8 @@ dist_km <- function(coords, coords2 = NULL){
 #'                             part_form = "cls.coef ~ 0 + land",
 #'                             part_form0 = "cls.coef ~ 1")
 fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
-                             V.meth = "exponential", spatcor,
-                             partsize, npart, mincross = 6, ...){
+                             V.meth = "exponential", spatcor, nug = NA,
+                             partsize, npart, mincross = 6, threads = 1, ...){
   # Setup ----
   ## match the input functions
   func <- match.fun(part_f)
@@ -375,7 +377,20 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
       D.i <- D_func(out.i$coords)
       V.i <- fitV(D.i, spatcor, V.meth)
       ## fit GLS
-      gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = xx.print)
+      if(is.na(nug)){
+        gls.i <- GLS_worker(y = out.i$y, X = out.i$X, V = V.i, X0 = out.i$X0, save_xx = xx.print, threads = threads)
+      } else {
+        Xi = as.matrix(out.i$X)
+        Vi = as.matrix(V.i)
+        yi = as.matrix(out.i$y)
+        X0i = as.matrix(out.i$X0)
+        gls.i <- .Call(`_remotePARTS_fitGLS_cpp`, Xi, Vi, yi ,X0i ,nug, save_xx = xx.print, threads = threads)
+        gls.i$nugget = nug
+        gls.i$pval.t = sapply(gls.i$tstat, function(t){2*pt(abs(t), df=gls.i$dft)})
+        gls.i$pval.F = stats::pf(gls.i$Fstat, gls.i$df.F[1], gls.i$df.F[2], lower.tail = FALSE)
+        class(gls.i) <- append("remoteGLS", class(gls.i))
+        attr(gls.i, "no_F") = FALSE
+      }
 
       invchol_i <- invert_chol(V.i, gls.i$nugget)
 
@@ -406,7 +421,20 @@ fitGLS.partition <- function(part_f = "part_csv", dist_f = "dist_km",
     D.j <- D_func(out.j$coords)
     V.j <- fitV(D.j, spatcor, V.meth)
     ## fit GLS
-    gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = out.j$X0, save_xx = xx.print)
+    if(is.na(nug)){
+      gls.j <- GLS_worker(y = out.j$y, X = out.j$X, V = V.j, X0 = out.j$X0, save_xx = xx.print, threads = threads)
+    } else {
+      Xj = as.matrix(out.j$X)
+      Vj = as.matrix(V.j)
+      yj = as.matrix(out.j$y)
+      X0j = as.matrix(out.j$X0)
+      gls.j <- .Call(`_remotePARTS_fitGLS_cpp`, Xj, Vj, yj, X0j, nug, save_xx = xx.print, threads = threads)
+      gls.j$nugget = nug
+      gls.j$pval.t = sapply(gls.j$tstat, function(t){2*pt(abs(t), df=gls.j$dft)})
+      gls.j$pval.F = stats::pf(gls.j$Fstat, gls.j$df.F[1], gls.j$df.F[2], lower.tail = FALSE)
+      class(gls.j) <- append("remoteGLS", class(gls.j))
+      attr(gls.j, "no_F") = FALSE
+    }
 
     invchol_j <- invert_chol(V.j, gls.j$nugget)
 
@@ -640,107 +668,3 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
   class(out.list) <- append("remoteGLS.parts", class(out.list))
   return(out.list)
 }
-
-# # # Test how to call a function, passed as an argument: ----
-# # The best way I can think of to make a versatile and memory-limited
-# # fitGLS.partition() function is by taking a function as an argument.
-# # This function could be user-defined so that any input structure could
-# # be used. this user function func() would need the following characteristics
-# #
-# # 1) the first argument of the function should be a single integer that
-# # indicates which partition the function will be creating/revealing.
-# #
-#
-# # 2) the output should be a list that contains at least the following NAMED
-# # elements: "X" a design matrix of predictors with exactly n.p rows; "y"
-# # the GLS response vector (e.g. residuals from CLS) that is exactly length n.p;
-# # Either "D" an n.p x n.p distance matrix OR "V" a n.p x n.p Covariance matrix.
-# # if "D" is output instead of "V", an additional object "Vfit.meth" containing
-# # method by which "V" should be obtained from "D" (see Vfit()).
-# #
-# test.data <- as.data.frame(matrix(rnorm(1000*20), ncol = 20))
-#
-# test.partition = sample_partitions(1000, npart = 4)
-#
-# part_funct.A <- function(part_i, data, partition){
-#   sub.index = as.vector(partition[,part_i])
-#   return(data[sub.index, ])
-# }
-#
-# call_part_funct.A <- function(func, part_i, ...){
-#   f <- match.fun(func)
-#   f(part_i, ...)
-# }
-
-## OLD first attempt at fitGLS.partition() ----
-# #' fit GLS model by partitioning remote sensing data
-# #'
-# #' @details
-# #'
-# #' Note: This function is not complete yet. Use the C++ version instead
-# #'
-# #' @param X n x p numeric design matrix for predictor variables
-# #' @param V n x n numeric covariance matrix
-# #' @param y length n numeric resposne vector
-# #' @param X0 n x p0 null numeric design matrix
-# #' @param nugget nugget to be added to variance matrix. see `?invert_cholR()`
-# #' @param npart integer: number of of partitions to divide the data into
-# #' @param mincross intiger: minimum number of partition pairs from which to
-# #' calculate statistics (i.e. )
-# #' @param nug.int interval of nugget passed to fitGLS_R()
-# #' @param nug.tol accuracy of nugget calculation passed to fitGLS_R()
-# #'
-# #' @return list of GLS statistics
-# #' @export
-# #'
-# #' @examples #TBA
-# fitGLS.partition <- function(X, V, y, X0, nugget = 0, npart = 10, mincross = 5,
-#                              nug.int = c(0, 1), nug.tol = 0.00001){
-#   ## Select random subsets according to the number of partitions
-#   n <- nrow(data) # full data n
-#   nn <- n - (n%%npart) # n divisible by npart
-#   n.p <- nn/npart # size of each partition
-#   shuff <- sample(n)[1:nn] # shuffled rows
-#   # shuff.mat <- matrix(shuff, nrow = npart)
-#   ## TBA: handle user-defined partitions?
-#
-#   ## calculate degrees of freedom
-#   df2 <- n.p - (ncol(X) - 1)
-#   df0 <- n.p - (ncol(X0) - 1)
-#   df1 <- df0 - df2
-#
-#   ## adjust the minimum number of crossed partitions
-#   if(mincross > npart | is.na(mincross)|is.null(mincross) | missing(mincross)){
-#     mincross <- npart
-#   }
-#
-#   ## loop through each partition and gather results
-#   # for(partition in seq_len(npart)){ ## lapply is better for now
-#   results <- lapply(seq_len(npart), function(partition){
-#     ## subset the full data according to the partion
-#     subset <- (partition - 1)*n.p + (seq_len(n.p))
-#     tmp <- fitGLS_R(X = X[subset, ], V = V[subset, subset], y = y[subset],
-#                     X0 = X0[subset, ], nugget = nugget)
-#
-#     ## TBA: fit V matrix to individual partitions
-#     ## TBA: allow for non-fixed nugget
-#
-#     out <- tmp[c("SSR", "SSE", "SSE0","betahat", "betahat0", "SE", "SE0",
-#                  "Fstat", "pval.F", "logLik", "logLik0")]
-#
-#     ## include incvhol, xx, and xx0 for the first few subsets
-#     if(!is.na(mincross) && partition <= mincross){
-#       out$invcholV <- invert_cholR(V[subset, subset], nugget = nugget)
-#       out$xx <- tmp$xx
-#       out$xx0 <- tmp$xx0
-#     } else{
-#       out$invcholV <- NULL
-#       out$xx <- NULL
-#       out$xx0 <- NULL
-#     }
-#     return(out)})
-#
-#   ## Calculate pairwise cross-partition statistics
-#   return(results)
-#
-# }

@@ -19,6 +19,3 @@ taper-spherical transformation of d
 \description{
 Note: this documentation is incomplete - arguments need better documenting
 }
-\examples{
-#TBA
-}

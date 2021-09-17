@@ -26,7 +26,7 @@
 #'
 #' @seealso [stats::optimize()]
 #'
-#' @examples #TBA
+#' @examples
 #'
 #' @export
 optimize_nugget <- function(X, V, y, lower = 0, upper = 1, tol = 1e-5,

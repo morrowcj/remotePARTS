@@ -484,7 +484,6 @@ reshape2::melt(resid.sub) %>%
   geom_histogram(fill = NA, col = "black", bins = 15) + 
   facet_rep_wrap(~ paste("Pixel", Var2)) +
   labs(y = "Frequency", x = "Time-series residuals")
-
 ```
 
 The above figure shows that the time-series residuals are reasonably normally

@@ -16,13 +16,17 @@ optim_GLS_func(
 
 optimize_GLS(
   formula,
-  D,
+  coords,
+  dist_f = "dist_km",
   V.meth = "exponential-power",
   nugget = NA,
   spcor = NA,
   verbose = FALSE,
   contrasts = NULL,
   data,
+  pars.start = c(r = 0.1, a = 1, nug = 1e-09),
+  save_xx = F,
+  ret.GLS = TRUE,
   ...
 )
 }
@@ -33,21 +37,33 @@ optimize_GLS(
 
 \item{modmat}{predictor model matrix}
 
-\item{D}{Distance matrix}
+\item{D}{distance matrix}
 
-\item{verbose}{should the optimizer steps be printed to the console?}
+\item{verbose}{should additional info be printed?}
 
-\item{V.meth}{method passed to \code{fitV()} default: "exponential-power"}
+\item{V.meth}{covariance method for fitting V}
 
 \item{formula}{model formula}
 
-\item{nugget}{NA: find maximum liklihood nugget}
+\item{coords}{2-column matrix of x and y coordinates}
 
-\item{spcor}{NA: find maximum liklihood spatial correlation}
+\item{dist_f}{distance function to use}
 
-\item{contrasts}{possible contrasts object}
+\item{nugget}{spatial nugget. If NA, a nugget will be estimated}
 
-\item{data}{optional data to search for objects in formula}
+\item{spcor}{spatial correlation paramters either NA, a single value (r) or
+a named vector: c(r = ..., a = ...). if spcor = NA, these parameters will be
+estimated}
+
+\item{contrasts}{linear contrasts to apply}
+
+\item{data}{data object for which formula tries to match}
+
+\item{pars.start}{default starting values for the spcor}
+
+\item{save_xx}{save cross correlation stats?}
+
+\item{ret.GLS}{return GLS?}
 
 \item{...}{additional arguments passed to \code{fitGLS2()}}
 }
@@ -78,7 +94,7 @@ df$kappa = .5*df$lat + .2*df$lng + rnorm(100) #simulate response variable
 D = geosphere::distm(df[, c("lng", "lat")])/1000 #distance in km
 
 ## fit the GLS, including ML spatial correlation and nugget
-optimize_GLS(kappa ~ 0 + land, data = df, D = D, verbose = FALSE)
+optimize_GLS(kappa ~ 0 + land, data = df, coords = df[, c("lng", "lat")], verbose = FALSE)
 }
 \seealso{
 [fitGLS2()]
