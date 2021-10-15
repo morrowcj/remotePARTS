@@ -559,21 +559,22 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
 
   ## Cross-partition setup ----
   ## all possible pairwise combinations
-  combs = t(utils::combn(npart, 2))
-  maxcross = nrow(combs)
-  ## adjust mincross if it is greater than maxcross
-  if (mincross > maxcross){
-    mincross <- maxcross
-  }
-
-  ## Calculate which combinations to use
-  if (mincross <= (npart - 1)){
-    combs = combs[which(combs[, 2] - combs[, 1] == 1), ]
-    used.combs = combs[sample(nrow(combs), mincross), ]
-  } else {
-    used.combs = combs[sample(maxcross, mincross), ]
-  }
-
+  mincross = ifelse(mincross > npart, npart, mincross)
+  used.combs = t(utils::combn(mincross, 2))
+  ncrosses = nrow(used.combs)
+  # maxcross = nrow(combs)
+  # ## adjust mincross if it is greater than maxcross
+  # if (mincross > maxcross){
+  #   ### NEED TO FIX THIS !!!!!
+  #   mincross <- maxcross
+  # }
+  #
+  # ## Calculate which combinations to use
+  # if (mincross < maxcross){
+  #   used.combs = combs[sample(nrow(combs), mincross), ]
+  # } else {
+  #   used.combs = combs[sample(maxcross, mincross), ]
+  # }
   # used.combs = used.combs[order(used.combs[, 1]), ]
 
   ## Cross-partition GLS ----
@@ -621,9 +622,9 @@ fitGLS.partition.mc <- function(part_f = "part_csv", dist_f = "dist_km",
   mod.stats = matrix(NA, nrow = npart, ncol = 7,
                      dimnames = list(NULL, c("nugget","logLik", "SSE", "MSE",
                                              "MSR", "F.stat", "pval.F")))
-  cross.SS = matrix(NA, nrow = mincross, ncol = 2,
+  cross.SS = matrix(NA, nrow = ncrosses, ncol = 2,
                     dimnames = list(NULL, c("rSSR", "rSSE")))
-  rcoefs = matrix(NA, nrow = mincross, ncol = ncol(f1$X),
+  rcoefs = matrix(NA, nrow = ncrosses, ncol = ncol(f1$X),
                   dimnames = list(NULL, colnames(f1$X)))
   ## fill in the output
   # Partition stats
