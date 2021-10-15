@@ -218,7 +218,6 @@ cor_t <- function(coefs, part.SEs, rcoef, df2, npart){
 #' @param nboot number of bootstraps to run for F-test (NA skips bootstrap)
 #'
 #' @return list of p values calculated with different methods
-#' @export
 #'
 #' @examples
 GLS.partition.pvalue <- function(part.out, nboot = 2000){
