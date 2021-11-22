@@ -68,7 +68,7 @@ old.gls$overall.stats$meanstats["rSSEmean"] = new.gls$overall.stats["rSSEmean"]
 cor_t.test(old.gls)
 ```
 
-# v0.1.1.9009
+# v0.1.1.9010
 
 * Fixed a bug in `optimize_GLS` where `V.meth = 'exponential-power'` was not 
 working properly.
