@@ -6,32 +6,34 @@
 \title{function to optimize GLS parameters r, a, and nugget}
 \usage{
 optim_GLS_func(
-  par,
+  in.pars = c(r = 0.01, a = 1, nug = 0.1),
   y,
   modmat,
   D,
   verbose = FALSE,
-  V.meth = "exponential-power"
+  V.meth = "exponential-power",
+  constrain = FALSE
 )
 
 optimize_GLS(
   formula,
   coords,
   dist_f = "dist_km",
-  V.meth = "exponential-power",
+  V.meth = "exponential",
   nugget = NA,
   spcor = NA,
   verbose = FALSE,
-  contrasts = NULL,
   data,
-  pars.start = c(r = 0.1, a = 1, nug = 1e-09),
-  save_xx = F,
-  ret.GLS = TRUE,
+  pars.start = c(r = 0.1, a = 1, nug = 0.2),
+  save_xx = FALSE,
+  ret.GLS = FALSE,
+  algorithm = "Nelder-Mead",
+  debug = FALSE,
   ...
 )
 }
 \arguments{
-\item{par}{parameters to optimize}
+\item{in.pars}{parameters to optimize}
 
 \item{y}{response vector}
 
@@ -42,6 +44,8 @@ optimize_GLS(
 \item{verbose}{should additional info be printed?}
 
 \item{V.meth}{covariance method for fitting V}
+
+\item{constrain}{do parameters need to be constrained internally?}
 
 \item{formula}{model formula}
 
@@ -55,8 +59,6 @@ optimize_GLS(
 a named vector: c(r = ..., a = ...). if spcor = NA, these parameters will be
 estimated}
 
-\item{contrasts}{linear contrasts to apply}
-
 \item{data}{data object for which formula tries to match}
 
 \item{pars.start}{default starting values for the spcor}
@@ -64,6 +66,11 @@ estimated}
 \item{save_xx}{save cross correlation stats?}
 
 \item{ret.GLS}{return GLS?}
+
+\item{algorithm}{method passed to optimizer (default = 'Nelder-Mead')
+see \code{?optim()} for available methods}
+
+\item{debug}{boolean: debug mode?}
 
 \item{...}{additional arguments passed to \code{fitGLS2()}}
 }
@@ -75,26 +82,14 @@ function to optimize GLS parameters r, a, and nugget
 
 Fit a GLS by estimating r, a, and nugget
 }
-\examples{
-set.seed(916)
+\details{
+When \code{constrain = FALSE}, it is assumed that parameter values
+ given by \code{in.pars} are already constrained to their desired range. When
+ When \code{constrain = TRUE}, parameter values are internally transformed.
 
-## load Alaska 3000 data
-data("ndvi_AK3000")
-
-## take a random subset of 100 pixels (to make example fast)
-subsamp = sample.int(n = nrow(ndvi_AK3000), size = 100)
-
-## subset the data: we now have 100 pixels, latitude, longitude, and land class
-df = ndvi_AK3000[subsamp, c("lng", "lat", "land")] # subset the data
-
-## simulate a response variable kappa
-df$kappa = .5*df$lat + .2*df$lng + rnorm(100) #simulate response variable
-
-## calculate distance matrix
-D = geosphere::distm(df[, c("lng", "lat")])/1000 #distance in km
-
-## fit the GLS, including ML spatial correlation and nugget
-optimize_GLS(kappa ~ 0 + land, data = df, coords = df[, c("lng", "lat")], verbose = FALSE)
+ r and nugget are transformed with an inverse logit
+ (i.e., \code{function(x){1 / (1 + exp(-x))}}) and \code{a} is transformed
+ with an exponential function (i.e., exp(a)).
 }
 \seealso{
 [fitGLS2()]
