@@ -72,3 +72,17 @@ cor_t.test(old.gls)
 
 * Fixed a bug in `optimize_GLS` where `V.meth = 'exponential-power'` was not 
 working properly.
+
+# v0.1.1.9011
+
+## Restructuring: 
+
+* [x] update fitCLS
+  - now handles formula
+  - now outputs lm-style list object
+* [ ] update fitCLS.map to handle new fitCLS output
+* [ ] update fitAR to have similar output to fitCLS
+* [ ] update fitAR.map to 
+  - handle new fitAR output and 
+  - have similar output to fitCLS.map
+

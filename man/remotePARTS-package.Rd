@@ -6,8 +6,7 @@
 \alias{remotePARTS-package}
 \title{remotePARTS: Spatio-Temporal Auto-Regression for Remote Sensing Data}
 \description{
-"remoteSTAR is a set of tools for analyzing sets of spatially 
-  correlated time series data, collected via remote sensing methods."
+"remoteSTAR is a set of tools for analyzing sets of spatially correlated time series data, collected via remote sensing methods."
 }
 \section{remotePARTS functions}{
 

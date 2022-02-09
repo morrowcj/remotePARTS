@@ -2,19 +2,14 @@
 % Please edit documentation in R/invert_chol.R
 \name{invert_chol}
 \alias{invert_chol}
-\alias{invert_cholR}
 \title{Invert the cholesky decomposition of V}
 \usage{
 invert_chol(M, nugget = 0)
-
-invert_cholR(M, nugget = 0, debug = FALSE)
 }
 \arguments{
 \item{M}{numeric (double), positive definite matrix}
 
 \item{nugget}{numeric (double) nugget to add to M}
-
-\item{debug}{logical debug mode}
 }
 \value{
 numeric matrix: inverse of the Cholesky decomposition (lower triangle)
@@ -26,14 +21,13 @@ Invert the cholesky decomposition of V
 Calculates the inverse of the Cholesky decomposition of M which
 should not be confused with the inverse of M *derived* from the
 Cholesky decomposition (i.e. `chol2inv(M)`).
-
-\code{invert_chol()} is a C++ implementation of \code{invert_cholR()}.
 }
 \examples{
 M <- crossprod(matrix(1:6, 3))
+
 # without a nugget:
 invert_chol(M)
+
 # with a nugget:
 invert_chol(M, nugget = 0.2)
-
 }

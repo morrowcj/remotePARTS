@@ -1,32 +1,16 @@
 # R files
 .*Rproj
 ^\.Rproj\.user$
-.*.tar.gz
+  .*.tar.gz
 .Rprofile
 ..Rcheck
-
-# folders
-^docs$
-^old-code$
-^data-raw$
-^src_old$
-^vignettes_backup$
-^doc$
-^Meta$
-
-# specific files
-^README\.Rmd$
 ^.*\.Rproj$
-^build.r$
-^\.travis\.yml$
-^\.github$
 
-# other files
-.*\.txt
+## remove default C++ exported functions
+R/RcppExports.R
 
-# temporarily stop tests
-tinytest_backup
-^LICENSE\.md$
+## raw data folder
+data-raw/
 
-## Temporarily ignore the GLS_optimization.Rmd
-GLS_optimization.Rmd
+## github folder
+^.github$
