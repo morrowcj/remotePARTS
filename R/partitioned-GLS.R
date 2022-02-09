@@ -1,3 +1,4 @@
+## fitGLS_partition ----
 #' @title fit a partitioned GLS
 #'
 #' @description fit a GLS model to a large data set by partitioning the data
@@ -412,6 +413,25 @@ calc_dfpart <- function(partsize, p, p0){
 #' and \code{rSSEij}
 #'
 #' @return
+#' \code{crosspart_GLS} returns a list of cross-partition statistics.
+#'
+#' If \code{small = FALSE}, the list contains the following elements
+#'
+#' \describe{
+#'     \item{Rij}{}
+#'     \item{Hi}{}
+#'     \item{Hj}{}
+#'     \item{Hi0}{}
+#'     \item{Hj0}{}
+#'     \item{SiR}{}
+#'     \item{SjR}{}
+#'     \item{rcoefij}{}
+#'     \item{rSSRij}{}
+#'     \item{rSSEij}{}
+#' }
+#'
+#' If \code{small = FALSE}, the list only contains the necessary elements
+#' \code{rcoefij}, \code{rSSRij}, and \code{rSSEij}.
 #'
 #' @details
 #'
