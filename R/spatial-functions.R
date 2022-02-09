@@ -9,7 +9,7 @@
 #' @return distance matrix
 #'
 #' @details this function is simply a wrapper for \code{geosphere::distm()}
-#' @seealso [geosphere::distm()]
+#' @seealso \code{?geosphere::distm()}
 #'
 #' @export
 distm_km <- function(coords, coords2 = NULL){

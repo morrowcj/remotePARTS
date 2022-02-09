@@ -13,6 +13,16 @@ fitCLS_map(
   lag.x = 1,
   resids.only = FALSE
 )
+
+fitCLS_map(
+  Y,
+  coords,
+  formula = "y ~ t",
+  X.list = list(t = 1:ncol(Y)),
+  lag.y = 1,
+  lag.x = 1,
+  resids.only = FALSE
+)
 }
 \arguments{
 \item{Y}{a spatiotemporal response variable: a numeric matrix or data frame
@@ -67,12 +77,51 @@ correspond to time points and vector elements correspond to pixels.
 
 An attribute called "resids.only" is also set to match the value of
 \code{resids.only}
+
+\code{fitCLS_map} returns a list object of class "mapTS".
+
+The output will always contain at least these elements:
+
+\describe{
+   \item{\code{call}}{the function call}
+   \item{\code{coords}}{the coordinate matrix or dataframe}
+   \item{\code{residuals}}{time series residuals: rows correspond to pixels
+   (\code{coords})}
+}
+
+When \code{resids.only = FALSE}, the output will also contain the following
+components. Matrices have rows that correspond to pixels and columns that
+correspond to time points and vector elements correspond to pixels.
+
+\describe{
+   \item{\code{coefficients}}{a numeric matrix of coefficeints}
+   \item{\code{SEs}}{a numeric matrix of coefficient standard errors}
+   \item{\code{tstats}}{a numeric matrix of t-statistics for coefficients}
+   \item{\code{pvals}}{a numeric matrix of p-values for coefficients t-tests}
+   \item{\code{MSEs}}{a numeric vector of MSEs}
+   \item{\code{LLs}}{a numeric vector of log-likelihoods}
+   \item{\code{fitted.values}}{a numeric matrix of fitted values}
+}
+
+An attribute called "resids.only" is also set to match the value of
+\code{resids.only}
 }
 \description{
 \code{fitCLS_map} is used to fit conditional least squares
 regression to each spatial location (pixel) within spatiotemporal data.
+
+\code{fitCLS_map} is used to fit conditional least squares
+regression to each spatial location (pixel) within spatiotemporal data.
 }
 \details{
+\code{fitCLS_map} is a wrapper function that applies
+\code{fitCLS()} to many pixels.
+
+The function loops through the rows of \code{Y}, matched with rows of
+spatiotemporal predictor matrices. Purely temporal predictors, given by
+vectors, are used for all pixels. These predictor variables, given by the
+right side of \code{formula} are sourced from named elements in \code{X.list}.
+
 \code{fitCLS_map} is a wrapper function that applies
 \code{fitCLS()} to many pixels.
 
@@ -123,10 +172,57 @@ summary(CLS.map)
 residuals(CLS.map)
 coefficients(CLS.map)
 
+
+# simulate dummy data
+time.points = 9 # time series length
+map.width = 5 # square map width
+coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
+## create empty spatiotemporal variables:
+X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
+Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
+# setup first time point:
+Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
+X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
+## project through time:
+for(t in 2:time.points){
+  Z[, t] <- Z[, t-1] + rnorm(map.width^2)
+  X[, t] <- .2*X[, t-1] + .1*Z[, t] + .05*t + rnorm(nrow(coords), 0 , .25)
+}
+
+# # visualize dummy data (NOT RUN)
+# library(ggplot2);library(dplyr)
+# data.frame(coords, X) \%>\%
+#   reshape2::melt(id.vars = c("x", "y")) \%>\%
+#   ggplot(aes(x = x, y = y, fill = value)) +
+#   geom_tile() +
+#   facet_wrap(~variable)
+
+# fit CLS, showing all output
+fitCLS_map(X, coords, formula = y ~ t, resids.only = TRUE)
+
+# fit CLS with temporal and spatiotemporal predictors
+(CLS.map <- fitCLS_map(X, coords, formula = y ~ t + Z,
+                       X.list = list(t = 1:ncol(X), Z = Z),
+                       resids.only = FALSE))
+## extract some values
+CLS.map$coefficients # coefficients
+CLS.map$LL # log-likelihoods
+
+## Methods
+summary(CLS.map)
+residuals(CLS.map)
+coefficients(CLS.map)
+
 }
 \seealso{
-[fitCLS()] for fitting CLS on individual time series and [fitAR()]
-& [fitAR.map()] for AR REML time series analysis.
+
+
+
+
+Other remoteTS: 
+\code{\link{fitAR_map}()},
+\code{\link{fitAR}()},
+\code{\link{fitCLS}()}
 
 Other remoteTS: 
 \code{\link{fitAR_map}()},

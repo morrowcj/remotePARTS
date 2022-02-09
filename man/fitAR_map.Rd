@@ -116,8 +116,8 @@ coefficients(AR.map)
 
 }
 \seealso{
-[fitAR()] for fitting AR REML to individual time series and [fitCLS()]
-& [fitCLS_map()] for time series analysis based on conditional least squares.
+\code{\link{fitAR}} for fitting AR REML to individual time series and \code{\link{fitCLS}}
+& \code{\link{fitCLS_map}} for time series analysis based on conditional least squares.
 
 Other remoteTS: 
 \code{\link{fitAR}()},

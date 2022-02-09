@@ -24,7 +24,7 @@
 #' \code{LogLikGLS()} functionality is absorbed by \code{fitGLS()}, it will
 #' be used instead.
 #'
-#' @seealso [stats::optimize()]
+#' @seealso \code{?stats::optimize()}
 #'
 #' @examples
 #' ## read data

@@ -13,6 +13,16 @@ fitCLS(
   model = FALSE,
   y = FALSE
 )
+
+fitCLS(
+  formula,
+  data = NULL,
+  lag.y = 1,
+  lag.x = 1,
+  debug = FALSE,
+  model = FALSE,
+  y = FALSE
+)
 }
 \arguments{
 \item{formula}{a model formula, as used by \code{stats::lm()}}
@@ -44,12 +54,34 @@ contains these additional list elements:
    \item{\code{MSE}}{the model mean squared error}
    \item{\code{LL}}{the log-likelihood of the model fit}
 }
+
+\code{fitCLS} returns a list object of class "remoteTS", which
+inherits from  "lm". In addition to the default "lm" components, the output
+contains these additional list elements:
+
+\describe{
+   \item{\code{tstat}}{the t-statistics for coefficients}
+   \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
+   \item{\code{MSE}}{the model mean squared error}
+   \item{\code{LL}}{the log-likelihood of the model fit}
+}
 }
 \description{
 \code{fitCLS} is used to fit conditional least squares regression
 to time series data.
+
+\code{fitCLS} is used to fit conditional least squares regression
+to time series data.
 }
 \details{
+This function regresses the response variable (y) at time t, conditional on the
+response at time t-\code{lag.y } and the specified dependent variables (X) at
+time t-\code{lag.x}:
+
+\deqn{y_{t} = y_{t - \text{lag.y}} + U_{t - \text{lag.x}} + \varepsilon}
+
+\code{stats::lm()} is then called, using the above equation.
+
 This function regresses the response variable (y) at time t, conditional on the
 response at time t-\code{lag.y } and the specified dependent variables (X) at
 time t-\code{lag.x}:
@@ -98,10 +130,57 @@ fitCLS(x ~ t + Z, df, lag.y = 0, lag.x = 2, debug = TRUE)$lag
 summary(CLS)
 residuals(CLS)
 
+
+# simulate dummy data
+t = 1:30 # times series
+Z = rnorm(30) # random independent variable
+x = .2*Z + (.05*t) # generate dependent effects
+x[2:30] = x[2:30] + .2*x[1:29] # add autocorrelation
+x = x + rnorm(30, 0, .01)
+df = data.frame(x, t, Z) # collect in data frame
+
+# fit a CLS model with previous x, t, and Z as predictors
+## note, this model does not follow the underlying process.
+### See below for a better fit.
+(CLS <- fitCLS(x ~ t + Z, data = df))
+
+# extract other values
+CLS$MSE #MSE
+CLS$LL #log-likelihood
+
+# fit with no lag in independent variables (as simulated):
+(CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
+summary(CLS2)
+
+# no lag in x
+fitCLS(x ~ t + Z, df, lag.y = 0)
+
+# visualize the lag
+## large lag in x
+fitCLS(x ~ t + Z, df, lag.y = 2, lag.x = 0, debug = TRUE)$lag
+## large lag in Z
+fitCLS(x ~ t + Z, df, lag.y = 0, lag.x = 2, debug = TRUE)$lag
+
+# # throws errors (NOT RUN)
+# fitCLS(x ~ t + Z, df, lag.y = 28) # longer lag than time
+# fitCLS(cbind(x, rnorm(30)) ~ t + Z, df) # matrix response
+
+## Methods
+summary(CLS)
+residuals(CLS)
+
 }
 \seealso{
-[fitCLS_map()] to easily apply \code{fitCLS} to many pixels;
-[fitAR()] and [fitAR_map()] for AR time series analyses.
+\code{\link{fitCLS_map}} to easily apply \code{fitCLS} to many pixels;
+\code{\link{fitAR}} and \code{\link{fitAR_map}} for AR time series analyses.
+
+\code{\link{fitCLS_map}} to easily apply \code{fitCLS} to many pixels;
+\code{\link{fitAR}} and \code{\link{fitAR_map}} for AR time series analyses.
+
+Other remoteTS: 
+\code{\link{fitAR_map}()},
+\code{\link{fitAR}()},
+\code{\link{fitCLS_map}()}
 
 Other remoteTS: 
 \code{\link{fitAR_map}()},

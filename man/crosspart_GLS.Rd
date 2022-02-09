@@ -46,7 +46,25 @@ crosspart_GLS(
 and \code{rSSEij}}
 }
 \value{
+\code{crosspart_GLS} returns a list of cross-partition statistics.
 
+If \code{small = FALSE}, the list contains the following elements
+
+\describe{
+    \item{Rij}{}
+    \item{Hi}{}
+    \item{Hj}{}
+    \item{Hi0}{}
+    \item{Hj0}{}
+    \item{SiR}{}
+    \item{SjR}{}
+    \item{rcoefij}{}
+    \item{rSSRij}{}
+    \item{rSSEij}{}
+}
+
+If \code{small = FALSE}, the list only contains the necessary elements
+\code{rcoefij}, \code{rSSRij}, and \code{rSSEij}.
 }
 \description{
 Calculate cross-partition statistics between two GLS partitions

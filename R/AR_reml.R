@@ -259,8 +259,8 @@ AR_fun <- function(par, y, X, LL.only = TRUE) {
 #' vectors, are used for all pixels. These predictor variables, given by the
 #' right side of \code{formula} are sourced from named elements in \code{X.list}.
 #'
-#' @seealso [fitAR()] for fitting AR REML to individual time series and [fitCLS()]
-#' & [fitCLS_map()] for time series analysis based on conditional least squares.
+#' @seealso \code{\link{fitAR}} for fitting AR REML to individual time series and \code{\link{fitCLS}}
+#' & \code{\link{fitCLS_map}} for time series analysis based on conditional least squares.
 #'
 #' @return \code{fitCLS_map} returns a list object of class "mapTS".
 #'
