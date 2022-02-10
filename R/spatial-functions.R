@@ -1,30 +1,28 @@
 
 ## distance in km ----
-#' @title Calculate distance matrix in kilometers
-#' @family distm
+#' @rdname distm_scaled
 #'
-#' @param coords coordinate matrix
-#' @param coords2 optional coordinate matrix
+#' @return \code{distm_km} returns a distance matrix in km
 #'
-#' @return distance matrix
-#'
-#' @details this function is simply a wrapper for \code{geosphere::distm()}
-#' @seealso \code{?geosphere::distm()}
+#' @details \code{distm_km} is simply a wrapper for \code{geosphere::distm()}
 #'
 #' @export
 distm_km <- function(coords, coords2 = NULL){
   if(is.null(coords2)){
-    return(geosphere::distm(coords)/1000)
+    D = geosphere::distm(coords)/1000
   } else {
-    return(geosphere::distm(coords, coords2)/1000)
+    D = geosphere::distm(coords, coords2)/1000
   }
+  attr(D, "max.dist") <- max(D, na.rm = TRUE)
+  return(D)
 }
 
 ## scaled distance ----
-#' @title Calculate a unit distance matrix
-#' @family distm
+#' @title Calculate a distance matrix from coordinates
+#' @rdname distm_scaled
 #'
-#' @details a distance matrix is fit and then divided by its maximum distance.
+#' @description Calculate the distances among points from a single coordinate matrix
+#' or
 #'
 #' @param coords a coordinate matrix with 2 columns and rows corresponding to
 #' each location.
@@ -33,14 +31,23 @@ distm_km <- function(coords, coords2 = NULL){
 #' @param distm_FUN function used to calculate the distance matrix. This function
 #' dictates the units of "max.dist"
 #'
-#' @return a distance matrix, scaled between 0 and 1, with a `max.dist`
-#' attribute containing the maximum distance by which the initial values were
-#' scaled.
+#' @return A distance matrix is returned.
+#'
+#' If \code{coords2 = NULL}, then distances among points in \code{coords} are
+#' calculated. Otherwise, distances are calculated between points in \code{coords}
+#' and \code{coords2}
+#'
+#' \code{distm_km} returns a distance matrix in km and \code{distm_scaled} returns
+#' relative distances (between 0 and 1). The resulting matrix has the attribute
+#' "max.dist" which stores the maximum distance of the map. "max.dist" is in
+#' km for \code{distm_km} and in the units of \code{distm_FUN} for \code{distm_scaled}.
+#'
+#' @seealso \code{?geosphere::distm()}
 #'
 #' @examples
 #' map.width = 3 # square map width
 #' coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
-#' distm_scaled(coords) # calculate distance matrix
+#' distm_scaled(coords) # calculate relative distance matrix
 #'
 #' @export
 distm_scaled <- function(coords, coords2 = NULL, distm_FUN = "distm_km"){

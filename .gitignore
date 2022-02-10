@@ -22,3 +22,5 @@ old-code/data-backup/
 doc
 Meta
 inst/doc
+/doc/
+/Meta/

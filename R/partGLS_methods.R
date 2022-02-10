@@ -30,13 +30,23 @@ print.partGLS <- function(x, ...){
 #' @examples
 #' remotePARTS:::part_chisqr(Fmean = 3.6, rSSR = .021, df1 = 2, npart = 5)
 part_chisqr <- function(Fmean, rSSR, df1, npart){
-  rZ <- rSSR^.5/df1
+  rZ <- (rSSR/df1)^0.5
   v.MSR <- diag(df1) - rZ
   V.MSR <- kronecker(diag(npart),v.MSR) + rZ
+  D.MSR <- t(chol(V.MSR, pivot = TRUE))
+  if (attr(D.MSR, "rank") < npart*df1) {
+    rank.deficient.MSR <- npart*df1-attr(D.MSR, "rank")
+    v.MSR <- diag(df1) - (0.99/df1)
+    V.MSR <- kronecker(diag(npart), v.MSR) + (0.99/df1)
+  } else {
+    rank.deficient.MSR <- 0
+  }
   lambda <- eigen(V.MSR)$values
   pvalue <- suppressWarnings(CompQuadForm::imhof(q = npart * df1 * Fmean, lambda = lambda)$Qq)
   pvalue = ifelse(pvalue <= 1e-06, 1e-06, pvalue) # prevent from being negative/too low
-  return(c("pval.chisqr" = pvalue))
+  out = c("pval.chisqr" = pvalue)
+  attr(out, 'rankdef.MSR') <- rank.deficient.MSR
+  return(out)
 }
 
 #' Conduct a chi-squared test

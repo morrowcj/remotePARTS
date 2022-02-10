@@ -63,5 +63,5 @@ remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
 
 }
 \seealso{
-[stats::optimize()]
+\code{?stats::optimize()}
 }

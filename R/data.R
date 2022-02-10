@@ -48,3 +48,12 @@
 #' }
 
 "ndvi_AK3000"
+
+#' partitioned GLS results
+#'
+#' Example output from fitGLS_partition() fit to the \code{ndvi_AK} data set
+#'
+#' @format an S3 class "partGLS" object. See ?fitGLS_partition() for further
+#' details
+
+"partGLS_ndviAK"

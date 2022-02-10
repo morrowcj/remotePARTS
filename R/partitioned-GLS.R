@@ -236,6 +236,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     if (debug) {cat("i =", i, "\n")}
     # partition data
     idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, ...)
+    # idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, data = data)
+
     # Calculate GLS, if not already done
     if (is.null(partGLS[[i]])){
       ## covariance of parition
@@ -258,11 +260,12 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         rcoefs = matrix(NA, nrow = npairs, ncol = p,
                        dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
       }
+      colmatch = match(names(partGLS[[i]]$coefficients), colnames(coefs))
       # collect some stats
-      coefs[i, ] = partGLS[[i]]$coefficients
-      SEs[i, ] = partGLS[[i]]$SE
-      tstats[i, ] = partGLS[[i]]$tstat
-      tpvals[i, ] = partGLS[[i]]$pval_t
+      coefs[i, colmatch] = partGLS[[i]]$coefficients
+      SEs[i, colmatch] = partGLS[[i]]$SE
+      tstats[i, colmatch] = partGLS[[i]]$tstat
+      tpvals[i, colmatch] = partGLS[[i]]$pval_t
       nuggets[i] = partGLS[[i]]$nugget
       LLs[i] = partGLS[[i]]$LL
       SSEs[i] = partGLS[[i]]$SSE
@@ -281,17 +284,20 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       if (debug) {cat("j =", j, "\n")}
       # parition data
       jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
+      # jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, data = data)
+
       # calculate GLS, if not already done
       if (is.null(partGLS[[j]])){
         Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar_pars)))
         partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
                                nugget = nugget, formula0 = formula0, save_xx = TRUE,
                                no_F = FALSE, save_invchol = TRUE, LL_only = FALSE)
+        colmatch = match(names(partGLS[[j]]$coefficients), colnames(coefs))
         ## collect some stats
-        coefs[j, ] = partGLS[[j]]$coefficients
-        SEs[j, ] = partGLS[[j]]$SE
-        tstats[j, ] = partGLS[[j]]$tstat
-        tpvals[j, ] = partGLS[[j]]$pval_t
+        coefs[j, colmatch] = partGLS[[j]]$coefficients
+        SEs[j, colmatch] = partGLS[[j]]$SE
+        tstats[j, colmatch] = partGLS[[j]]$tstat
+        tpvals[j, colmatch] = partGLS[[j]]$pval_t
         nuggets[j] = partGLS[[j]]$nugget
         LLs[j] = partGLS[[j]]$LL
         SSEs[j] = partGLS[[j]]$SSE

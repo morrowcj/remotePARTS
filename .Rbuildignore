@@ -14,3 +14,5 @@ data-raw/
 
 ## github folder
 ^.github$
+^doc$
+^Meta$

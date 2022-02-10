@@ -86,6 +86,9 @@ if the function \code{covar_FUN = function(d, r, a){-(d/r)^a}} is used
 with \code{distm_FUN = "distm_scaled"}, the estimated range parameter \code{r}
 can be re-scaled to units of your map by multiplying \code{r} by the
 \code{max.distance}. The shape parameter \code{a} would not need re-scaling.
+
+note that when \code{distm_FUN = "distm_scaled"}, \code{max.distance} is
+the maximum distance before re-scaling (in km by default).
 }
 \examples{
 

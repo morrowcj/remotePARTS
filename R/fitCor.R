@@ -54,6 +54,9 @@
 #' can be re-scaled to units of your map by multiplying \code{r} by the
 #' \code{max.distance}. The shape parameter \code{a} would not need re-scaling.
 #'
+#' note that when \code{distm_FUN = "distm_scaled"}, \code{max.distance} is
+#' the maximum distance before re-scaling (in km by default).
+#'
 #' @return \code{fitCor} returns a list object of class "remoteCor", which contains
 #' these elements:
 #'
@@ -135,7 +138,12 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
     fit.n = ifelse(fit.n < n, fit.n, n)
 
     # max distance
-    max.d = max(dist.f(coords))
+    max.d = dist.f(coords)
+    if("max.dist" %in% names(attributes(max.d))){
+      max.d = attr(max.d, "max.dist")
+    } else {
+      max.d = max(max.d, na.rm = TRUE)
+    }
 
     # subset
     sub.inx = sample.int(n, fit.n)
