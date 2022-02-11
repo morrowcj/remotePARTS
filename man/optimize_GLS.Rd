@@ -12,11 +12,11 @@ optimize_GLS(
   covar_FUN = "covar_exp",
   start = c(range = 0.01, nugget = 0),
   fixed = c(),
-  opt_only = FALSE,
+  opt.only = FALSE,
   formula0 = NULL,
-  save_xx = FALSE,
-  save_invchol = FALSE,
-  no_F = TRUE,
+  save.xx = FALSE,
+  save.invchol = FALSE,
+  no.F = TRUE,
   ...
 )
 }
@@ -39,16 +39,16 @@ names must match the names of arguments in \code{covar_FUN} or "nugget"}
 \item{fixed}{an optional named vector of fixed parameter values; names
 must match the names of arguments in \code{covar_FUN} or "nugget"}
 
-\item{opt_only}{logical: if TRUE, execution will halt after estimating the parameters;
+\item{opt.only}{logical: if TRUE, execution will halt after estimating the parameters;
 a final GLS will not be fit with the estimated parameters}
 
-\item{formula0, save_xx, save_invchol, no_F}{arguments passed to \code{fitGLS}
+\item{formula0, save.xx, save.invchol, no.F}{arguments passed to \code{fitGLS}
 for final GLS output}
 
 \item{...}{additional arguments passed to \code{stats::optim()}}
 }
 \value{
-If \code{opt_only = TRUE}, \code{optimize_GLS} returns the
+If \code{opt.only = TRUE}, \code{optimize_GLS} returns the
 output from \code{stats::optim()}: see it's documentation for more details.
 
 Otherwise, a list with two elements is returned:
@@ -89,9 +89,9 @@ inverse cholesky matrix in each GLS computation. A non-zero nugget requires
 inversion of a different matrix at each iteration, which can be
 substantially slower.
 
-If \code{opt_only = FALSE}, the estimated parameters are used to fit the final
+If \code{opt.only = FALSE}, the estimated parameters are used to fit the final
 maximum likelihood GLS solution with \code{fitGLS()} and arguments
-\code{formula0}, \code{save_xx}, \code{save_invchol}, and \code{no_F}.
+\code{formula0}, \code{save.xx}, \code{save.invchol}, and \code{no.F}.
 
 Some parameter combinations may not produce valid covariance matrices. During
 the optimization step messages about non-positive definitive V may result on
@@ -111,7 +111,7 @@ df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 ## estimate nugget and range
 optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
             coords = df[, c("lng", "lat")], start = c(range = .1, nugget = 0),
-            opt_only = TRUE)
+            opt.only = TRUE)
 
 ## estimate range only, fixed nugget at 0, and fit full GLS
 optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,

@@ -4,7 +4,7 @@
 //'
 //' @details this is the C++ version of `optimize()` which is specific to
 //' finding the nugget value that maximizes the log-likelihood of `fitGLS_cpp()`
-//' by minimizing the partial log likelihood (i.e., fitGLS_cpp(LL_only = TRUE)[["LL"]] )
+//' by minimizing the partial log likelihood (i.e., fitGLS_cpp(LL_only = TRUE)[["logLik"]] )
 //'
 //' This function is a translation from the forchan algorithm fmin into C++:
 //' http://www.netlib.org/fmm/fmin.f
@@ -84,7 +84,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
   e = 0.;
   // fx = -LogLikGLS_cpp(x, X, V, y, invchol, use_invchol); //invert function to minimize
   fxL = fitGLS_cpp(X, V, y, X0, x, false, false, true, false, false, 0., 0., 0., invchol, false);
-  fxV = fxL["LL"];
+  fxV = fxL["logLik"];
   fx = fxV[0] * -1;
   fv = fx;
   fw = fx;
@@ -148,7 +148,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
     if (abs(d) < tol1) {u = x + copysign(tol1, d);}
     // fu = -LogLikGLS_cpp(u, X, V, y, invchol, use_invchol);
     fuL = fitGLS_cpp(X, V, y, X0, u, false, false, true, false, false, 0., 0., 0., invchol, false);
-    fuV = fuL["LL"];
+    fuV = fuL["logLik"];
     fu = fuV[0] * -1;
     // Rcout << "u = " << u << " fu = " << fu << endl;
     //update  a, b, v, w, and x
@@ -196,7 +196,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
     if (ax + tol >= f_min){
       // if (fx <= -LogLikGLS_cpp(f_min, X, V, y, invchol, use_invchol)){
       fxL2 = fitGLS_cpp(X, V, y, X0, f_min, false, false, true, false, false, 0., 0., 0., invchol, false);
-      fxV2 = fxL2["LL"];
+      fxV2 = fxL2["logLik"];
       fx2 = fxV2[0] * -1;
       if (fx <= fx2){
         // Rcout << "returning starting value instead of f_min" << endl;

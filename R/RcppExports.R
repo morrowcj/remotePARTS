@@ -96,7 +96,7 @@
 #'
 #' @details this is the C++ version of `optimize()` which is specific to
 #' finding the nugget value that maximizes the log-likelihood of `fitGLS_cpp()`
-#' by minimizing the partial log likelihood (i.e., fitGLS_cpp(LL_only = TRUE)[["LL"]] )
+#' by minimizing the partial log likelihood (i.e., fitGLS_cpp(LL_only = TRUE)[["logLik"]] )
 #'
 #' This function is a translation from the forchan algorithm fmin into C++:
 #' http://www.netlib.org/fmm/fmin.f

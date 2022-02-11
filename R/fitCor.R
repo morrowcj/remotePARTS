@@ -65,7 +65,7 @@
 #'      \item{mod}{the \code{nls} fit object}
 #'      \item{spcor}{a vector of the estimated spatial correlation parameters}
 #'      \item{max.distance}{the maximum distance between pixels. Units are determined by \code{distm_FUN}}
-#'      \item{LL}{the log-likelihood of the fit}
+#'      \item{logLik}{the log-likelihood of the fit}
 #' }
 #'
 #' @examples
@@ -180,7 +180,7 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
 
   spcor = coef(fit)
 
-  out <- list(call = call, mod = fit, spcor = spcor, max.distance = max.d, LL = logLik(fit))
+  out <- list(call = call, mod = fit, spcor = spcor, max.distance = max.d, logLik = logLik(fit))
   class(out) <- append("remoteCor", class(out))
   return(out)
 }
@@ -190,14 +190,14 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
 #' @param x remoteCor object to print
 #' @param ... additional arguments passed to print()
 print.remoteCor <- function(x, ...){
-  # list(call = call, mod = fit, spcor = spcor, max.distance = max.d, LL = logLik(fit))
+  # list(call = call, mod = fit, spcor = spcor, max.distance = max.d, logLik = logLik(fit))
   cat("\nCall:\n")
   print(x$call, ...)
   cat("\nSpatial parameter estimates:\n")
   print(x$spcor, ...)
   cat("\nMax distance:", x$max.distance,"\n")
   cat("\nLog-likelihood:\n")
-  print(x$LL, ...)
+  print(x$logLik, ...)
 }
 
 ## test function ----
@@ -206,23 +206,23 @@ print.remoteCor <- function(x, ...){
 #' @param d numeric vector or matrix of distances
 #' @param covar_FUN distance-based covariance function to use,
 #' which must take \code{d} as its first argument
-#' @param covar_pars vector or list of parameters (other than d) passed to the
+#' @param covar.pars vector or list of parameters (other than d) passed to the
 #' covar function
 #'
 #' @examples
 #' #  # distance vector
 #' #  d = seq(0, 1, length.out = 10)
 #' #  # named parameter list
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = list(range = .5))
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = list(range = .5, shape = .5))
+#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5))
+#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5, shape = .5))
 #' #  # unnamed parameter vector
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = .5)
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = c(.5, .5))
+#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = .5)
+#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = c(.5, .5))
 #' #  # different function
-#' #  test_covar_fun(d = d, covar_FUN = "covar_taper", covar_pars = list(theta = .5))
+#' #  test_covar_fun(d = d, covar_FUN = "covar_taper", covar.pars = list(theta = .5))
 #' #  # user-defined function, with no extra parameters
-#' #  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar_pars = NULL)
-#' #  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar_pars = list())
+#' #  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = NULL)
+#' #  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = list())
 #' #
 #' #  map.width = 5 # square map width
 #' #  coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
@@ -230,15 +230,15 @@ print.remoteCor <- function(x, ...){
 #' #  # calculate distance
 #' #  D = geosphere::distm(coords) # distance matrix
 #' #
-#' #  test_covar_fun(D, covar_pars = list(range = .1*max(D)))
+#' #  test_covar_fun(D, covar.pars = list(range = .1*max(D)))
 #'
-test_covar_fun <- function(d, covar_FUN = "covar_exppow", covar_pars = list(range = .5)){
+test_covar_fun <- function(d, covar_FUN = "covar_exppow", covar.pars = list(range = .5)){
   cov_f <- match.fun(covar_FUN)
-  # covar_pars$d = d
-  if (is.null(covar_pars)){
-    covar_pars = list(d)
+  # covar.pars$d = d
+  if (is.null(covar.pars)){
+    covar.pars = list(d)
   } else {
-    covar_pars = as.list(append(list(d), covar_pars))
+    covar.pars = as.list(append(list(d), covar.pars))
   }
-  return(do.call(cov_f, covar_pars))
+  return(do.call(cov_f, covar.pars))
 }

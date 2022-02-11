@@ -43,7 +43,7 @@ these elements:
      \item{mod}{the \code{nls} fit object}
      \item{spcor}{a vector of the estimated spatial correlation parameters}
      \item{max.distance}{the maximum distance between pixels. Units are determined by \code{distm_FUN}}
-     \item{LL}{the log-likelihood of the fit}
+     \item{logLik}{the log-likelihood of the fit}
 }
 }
 \description{

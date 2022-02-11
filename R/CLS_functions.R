@@ -35,7 +35,7 @@
 #'    \item{\code{tstat}}{the t-statistics for coefficients}
 #'    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
 #'    \item{\code{MSE}}{the model mean squared error}
-#'    \item{\code{LL}}{the log-likelihood of the model fit}
+#'    \item{\code{logLik}}{the log-likelihood of the model fit}
 #' }
 #'
 #' @seealso \code{\link{fitCLS_map}} to easily apply \code{fitCLS} to many pixels;
@@ -58,7 +58,7 @@
 #'
 #' # extract other values
 #' CLS$MSE #MSE
-#' CLS$LL #log-likelihood
+#' CLS$logLik #log-likelihood
 #'
 #' # fit with no lag in independent variables (as simulated):
 #' (CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
@@ -124,7 +124,7 @@ fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
   fm$tstat <- smry$coefficients[, "t value"] #t-statistic
   fm$pval <- smry$coefficients[, "Pr(>|t|)"] #p-value
   fm$MSE <- suppressWarnings(anova(fm))["Residuals", "Mean Sq"]#MSE
-  fm$LL <- logLik(fm) # include log-likelihood
+  fm$logLik <- logLik(fm) # include log-likelihood
 
   class(fm) <- append("remoteTS", class(fm))
 
@@ -239,7 +239,7 @@ fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
 #'                        resids.only = FALSE))
 #' ## extract some values
 #' CLS.map$coefficients # coefficients
-#' CLS.map$LL # log-likelihoods
+#' CLS.map$logLik # log-likelihoods
 #'
 #' ## Methods
 #' summary(CLS.map)
@@ -249,7 +249,7 @@ fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
 #' @export
 fitCLS_map <- function(Y, coords, formula = "y ~ t",
                        X.list = list(t = 1:ncol(Y)),
-                       lag.y = 1, lag.x = 1, resids.only = FALSE){
+                       lag.y = 1, lag.x = 0, resids.only = FALSE){
   call = match.call()
 
   ## input checks
@@ -325,7 +325,7 @@ fitCLS_map <- function(Y, coords, formula = "y ~ t",
       tstats[i, ] <- cls$tstat
       pvals[i, ] <- cls$pval
       MSEs[i] <- cls$MSE
-      LLs[i] <- cls$LL
+      LLs[i] <- cls$logLik
       fitted.values[i, ] <- cls$fitted.values
     }
   }
@@ -382,7 +382,7 @@ fitCLS_map <- function(Y, coords, formula = "y ~ t",
 #'    \item{\code{tstat}}{the t-statistics for coefficients}
 #'    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
 #'    \item{\code{MSE}}{the model mean squared error}
-#'    \item{\code{LL}}{the log-likelihood of the model fit}
+#'    \item{\code{logLik}}{the log-likelihood of the model fit}
 #' }
 #'
 #' @seealso \code{\link{fitCLS_map}} to easily apply \code{fitCLS} to many pixels;
@@ -405,7 +405,7 @@ fitCLS_map <- function(Y, coords, formula = "y ~ t",
 #'
 #' # extract other values
 #' CLS$MSE #MSE
-#' CLS$LL #log-likelihood
+#' CLS$logLik #log-likelihood
 #'
 #' # fit with no lag in independent variables (as simulated):
 #' (CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
@@ -471,7 +471,7 @@ fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
   fm$tstat <- smry$coefficients[, "t value"] #t-statistic
   fm$pval <- smry$coefficients[, "Pr(>|t|)"] #p-value
   fm$MSE <- suppressWarnings(anova(fm))["Residuals", "Mean Sq"]#MSE
-  fm$LL <- logLik(fm) # include log-likelihood
+  fm$logLik <- logLik(fm) # include log-likelihood
 
   class(fm) <- append("remoteTS", class(fm))
 
@@ -586,7 +586,7 @@ fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
 #'                        resids.only = FALSE))
 #' ## extract some values
 #' CLS.map$coefficients # coefficients
-#' CLS.map$LL # log-likelihoods
+#' CLS.map$logLik # log-likelihoods
 #'
 #' ## Methods
 #' summary(CLS.map)
@@ -672,7 +672,7 @@ fitCLS_map <- function(Y, coords, formula = "y ~ t",
       tstats[i, ] <- cls$tstat
       pvals[i, ] <- cls$pval
       MSEs[i] <- cls$MSE
-      LLs[i] <- cls$LL
+      LLs[i] <- cls$logLik
       fitted.values[i, ] <- cls$fitted.values
     }
   }

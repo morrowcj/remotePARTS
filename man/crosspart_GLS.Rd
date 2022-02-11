@@ -93,10 +93,10 @@ V.i = covar_exp(distm_scaled(coords.i), range = .01)
 V.j = covar_exp(distm_scaled(coords.j), range = .01)
 
 ## partition GLS
-GLS.i = fitGLS(CLS_coef ~ 0 + land, data.i, V.i, nugget = 0, save_xx = TRUE,
-               save_invchol = TRUE, no_F = FALSE)
-GLS.j = fitGLS(CLS_coef ~ 0 + land, data.j, V.j, nugget = 0, save_xx = TRUE,
-               save_invchol = TRUE, no_F = FALSE)
+GLS.i = fitGLS(CLS_coef ~ 0 + land, data.i, V.i, nugget = 0, save.xx = TRUE,
+               save.invchol = TRUE, no.F = FALSE)
+GLS.j = fitGLS(CLS_coef ~ 0 + land, data.j, V.j, nugget = 0, save.xx = TRUE,
+               save.invchol = TRUE, no.F = FALSE)
 
 ## cross-covariance
 V.ij = covar_exp(distm_scaled(coords.i, coords.j), range = .01)

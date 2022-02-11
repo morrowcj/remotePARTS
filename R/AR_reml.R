@@ -37,7 +37,7 @@
 #'     \item{\code{tstat}}{the t-statistics for coefficients}
 #'     \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
 #'     \item{\code{MSE}}{the model mean squared error}
-#'     \item{\code{LL}}{the log-likelihood of the model fit}
+#'     \item{\code{logLik}}{the log-likelihood of the model fit}
 #'     \item{\code{residuals}}{the residuals: response minus fitted values}
 #'     \item{\code{fitted.values}}{the fitted mean values}
 #'     \item{\code{rho}}{The AR parameter, determined via REML}
@@ -98,14 +98,14 @@ fitAR <- function(formula, data = NULL){
   # return(list(call, mf = mf, mt = mt, resp = resp, X = X))
 
   # Optimize over AR_fun() for par
-  opt <- stats::optim(fn = AR_fun, par = 0.2, y = resp, X = X, LL.only = TRUE,
+  opt <- stats::optim(fn = AR_fun, par = 0.2, y = resp, X = X, logLik.only = TRUE,
                       method = "Brent", upper = 1, lower = -1,
                       control = list(maxit = 10^4))
 
   b <- opt$par # optimized parameter
 
   # Perform the AR regression with the optimized parameter and return results
-  AR.out = AR_fun(par = b, y = resp, X = X, LL.only = FALSE)
+  AR.out = AR_fun(par = b, y = resp, X = X, logLik.only = FALSE)
   AR.out$call = call
 
   AR.out$rho = b
@@ -126,7 +126,7 @@ fitAR <- function(formula, data = NULL){
 #' @param par AR parameter value
 #' @param y vector of time series (response)
 #' @param X model matrix (predictors)
-#' @param LL.only logical: should only the partial log-likelihood be computed
+#' @param logLik.only logical: should only the partial log-likelihood be computed
 #'
 #' @details \code{AR_fun} fits a linear model to data and a given AR parameter.
 #' This function is the work horse behind \code{fitAR}, it calculates
@@ -140,24 +140,24 @@ fitAR <- function(formula, data = NULL){
 #' # U = stats::model.matrix(formula(x ~ time))
 #'
 #' # fit an AR
-#' # remotePARTS:::AR_fun(par = .2, y = x, X = U, LL.only = FALSE)
+#' # remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
 #'
-#' # get the partial LL of the AR parameter, given the data.
-#' # remotePARTS:::AR_fun(par = .2, y = x, X = U, LL.only = FALSE)
+#' # get the partial logLik of the AR parameter, given the data.
+#' # remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
 #'
-#' # # show that minimizing the partial LL maximizes the true LL (NOT RUN)
+#' # # show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
 #' # n = 100
 #' # out.mat = matrix(NA, nrow = n, ncol = 3,
-#' #                  dimnames = list(NULL, c("par", "LL", "partialLL")))
+#' #                  dimnames = list(NULL, c("par", "logLik", "partialLL")))
 #' # out.mat[, "par"] = seq(-10, 10, length.out = n)
 #' # for (i in seq_len(n) ) {
 #' #    p = out.mat[i, "par"]
-#' #    out.mat[i, "LL"] = remotePARTS:::AR_fun(par = p, y = x, X = U, LL.only = TRUE)
+#' #    out.mat[i, "logLik"] = remotePARTS:::AR_fun(par = p, y = x, X = U, logLik.only = TRUE)
 #' #    out.mat[i, "partialLL"] = remotePARTS:::AR_fun(par = p, y = x, X = U,
-#' #                                                   LL.only = FALSE)$LL
+#' #                                                   logLik.only = FALSE)$logLik
 #' # }
-#' # plot(x = out.mat[, "partialLL"], y = out.mat[, "LL"])
-AR_fun <- function(par, y, X, LL.only = TRUE) {
+#' # plot(x = out.mat[, "partialLL"], y = out.mat[, "logLik"])
+AR_fun <- function(par, y, X, logLik.only = TRUE) {
   call = match.call()
 
   # setup variables
@@ -189,13 +189,13 @@ AR_fun <- function(par, y, X, LL.only = TRUE) {
   # estimate the variance
   s2 <- (t(H) %*% iV %*% H)/(n.obs - q)
   # calculate the partial log-likelihood of b given y and X
-  LL <- 0.5 * ((n.obs - q) * log(s2) + logdetV +
+  logLik <- 0.5 * ((n.obs - q) * log(s2) + logdetV +
                  determinant(t(X) %*% iV %*% X)$modulus[1] +
                  (n.obs - q))
 
-  if(LL.only){
+  if(logLik.only){
     # return log-likelihood
-    return(as.vector(LL))
+    return(as.vector(logLik))
 
   } else {
 
@@ -210,7 +210,7 @@ AR_fun <- function(par, y, X, LL.only = TRUE) {
 
     # log likelihood without constants (i.e. s2) - no parameter dependancy
     logLik <- 0.5 * (n.obs - q) * log(2 * pi) +
-      determinant(t(X) %*% X)$modulus[1] - LL
+      determinant(t(X) %*% X)$modulus[1] - logLik
 
     # collect output
     out.list <- list(call = call,
@@ -219,7 +219,7 @@ AR_fun <- function(par, y, X, LL.only = TRUE) {
                      tstat = t.stat[, 1],
                      pval = pval[, 1],
                      MSE = MSE,
-                     LL = logLik[, 1],
+                     logLik = logLik[, 1],
                      residuals = as.vector(H),
                      fitted.values = as.vector(yhat))
 
@@ -323,7 +323,7 @@ AR_fun <- function(par, y, X, LL.only = TRUE) {
 #'                      Z = Z), resids.only = FALSE))
 #' ## extract some values
 #' AR.map$coefficients # coefficients
-#' AR.map$LL # log-likelihoods
+#' AR.map$logLik # log-likelihoods
 #'
 #' ## Methods
 #' summary(AR.map)
@@ -406,7 +406,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
       tstats[i, ] <- ar$tstat
       pvals[i, ] <- ar$pval
       MSEs[i] <- ar$MSE
-      LLs[i] <- ar$LL
+      LLs[i] <- ar$logLik
       fitted.values[i, ] <- ar$fitted.values
     }
   }

@@ -100,7 +100,7 @@ List fitGLS_cpp(const MapMatd& X,
 
   // exit the function if LL_only
   if (LL_only) {
-    List LL_list = List::create(Named("LL") = logLik);
+    List LL_list = List::create(Named("logLik") = logLik);
     return LL_list;
   }
 
@@ -144,7 +144,7 @@ List fitGLS_cpp(const MapMatd& X,
                              Named("logDetV") = logDetV,
                              Named("tstat") = tstat,
                              Named("pval_t") = NA_REAL,
-                             Named("LL") = logLik,
+                             Named("logLik") = logLik,
                              Named("nugget") = nug);
 
     if (save_xx){
@@ -173,7 +173,7 @@ List fitGLS_cpp(const MapMatd& X,
   VectorXd SSE0 = AtA(yy - xx0 * betahat0); // SSE
   double MSE0 = SSE0.array()[0]/(nX - xx.cols()); // MSE
   double MSR = (SSE0.array()[0] - SSE.array()[0])/(xx.cols() - xx0.cols());
-  // LL
+  // logLik
   double logLik0 = -0.5 * (nX * log(2 * M_PI) + nX * log((nX - df0) * MSE0/nX) +
                            logDetV + nX);
   // covariance matrix
@@ -223,7 +223,7 @@ List fitGLS_cpp(const MapMatd& X,
                                Named("logDetV") = logDetV,
                                Named("tstat") = tstat,
                                Named("pval_t") = NA_REAL,
-                               Named("LL") = logLik,
+                               Named("logLik") = logLik,
                                Named("nugget") = nug,
                                Named("coefficients0") = betahat0,
                                Named("SSE0") = SSE0,

@@ -145,7 +145,7 @@ summary.remoteTS <- function(object, digits = max(3L, getOption("digits") - 3L),
 
   # MSE
   cat("\nMean squared error:", round(object$MSE, digits))
-  cat("\nLog-likelihood:", round(object$LL, digits))
+  cat("\nLog-likelihood:", round(object$logLik, digits))
 }
 
 #' @title S3 print method for mapTS class
@@ -216,7 +216,7 @@ summary.mapTS <- function(object, digits = max(3L, getOption("digits") - 3L), CL
 
     cat("\nModel fit:\n")
     print(rbind(MSE = smry_funV(object$MSE, CL = CL, na.rm = na.rm),
-                LogLik = smry_funV(object$LL, CL = CL, na.rm = na.rm)),
+                LogLik = smry_funV(object$logLik, CL = CL, na.rm = na.rm)),
           digits = digits)
   }
 }

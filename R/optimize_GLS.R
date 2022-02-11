@@ -15,9 +15,9 @@
 #' names must match the names of arguments in \code{covar_FUN} or "nugget"
 #' @param fixed an optional named vector of fixed parameter values; names
 #' must match the names of arguments in \code{covar_FUN} or "nugget"
-#' @param opt_only logical: if TRUE, execution will halt after estimating the parameters;
+#' @param opt.only logical: if TRUE, execution will halt after estimating the parameters;
 #' a final GLS will not be fit with the estimated parameters
-#' @param formula0,save_xx,save_invchol,no_F arguments passed to \code{fitGLS}
+#' @param formula0,save.xx,save.invchol,no.F arguments passed to \code{fitGLS}
 #' for final GLS output
 #' @param ... additional arguments passed to \code{stats::optim()}
 #'
@@ -45,9 +45,9 @@
 #' inversion of a different matrix at each iteration, which can be
 #' substantially slower.
 #'
-#' If \code{opt_only = FALSE}, the estimated parameters are used to fit the final
+#' If \code{opt.only = FALSE}, the estimated parameters are used to fit the final
 #' maximum likelihood GLS solution with \code{fitGLS()} and arguments
-#' \code{formula0}, \code{save_xx}, \code{save_invchol}, and \code{no_F}.
+#' \code{formula0}, \code{save.xx}, \code{save.invchol}, and \code{no.F}.
 #'
 #' Some parameter combinations may not produce valid covariance matrices. During
 #' the optimization step messages about non-positive definitive V may result on
@@ -63,7 +63,7 @@
 #' series residuals; \code{\link{fitGLS}} for fitting GLS and with the option
 #' of estimating the maximum-likelihood nugget component only.
 #'
-#' @return If \code{opt_only = TRUE}, \code{optimize_GLS} returns the
+#' @return If \code{opt.only = TRUE}, \code{optimize_GLS} returns the
 #' output from \code{stats::optim()}: see it's documentation for more details.
 #'
 #' Otherwise, a list with two elements is returned:
@@ -81,7 +81,7 @@
 #' ## estimate nugget and range
 #' optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
 #'             coords = df[, c("lng", "lat")], start = c(range = .1, nugget = 0),
-#'             opt_only = TRUE)
+#'             opt.only = TRUE)
 #'
 #' ## estimate range only, fixed nugget at 0, and fit full GLS
 #' optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
@@ -93,9 +93,9 @@
 optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
                          covar_FUN = "covar_exp",
                          start = c(range = .01, nugget = 0),
-                         fixed = c(), opt_only = FALSE,
-                         formula0 = NULL, save_xx = FALSE, save_invchol = FALSE,
-                         no_F = TRUE,
+                         fixed = c(), opt.only = FALSE,
+                         formula0 = NULL, save.xx = FALSE, save.invchol = FALSE,
+                         no.F = TRUE,
                          ...){
   call = match.call()
 
@@ -116,21 +116,21 @@ optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled
     ## Calculate log-likelihood
     if(!"nugget" %in% names(op) & nug == 0){ # recycle inverse cholesky matrix if a nugget is not needed.
       V = invert_chol(V)
-      LL = fitGLS(formula = formula, data = data, invCholV = V, formula0 = NULL,
-                  save_xx = FALSE, save_invchol = FALSE, LL_only = TRUE, no_F = TRUE,
+      logLik = fitGLS(formula = formula, data = data, invCholV = V, formula0 = NULL,
+                  save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
                   nugget = 0)
     } else {
-      LL = fitGLS(formula = formula, data = data, V = V, formula0 = NULL,
-                  save_xx = FALSE, save_invchol = FALSE, LL_only = TRUE, no_F = TRUE,
+      logLik = fitGLS(formula = formula, data = data, V = V, formula0 = NULL,
+                  save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
                   nugget = nug)
     }
     ## Calculate V internally - slow
     # ## calculate log-likelihood from a GLS, using the nugget and spatial parameters
-    # LL = fitGLS(formula = formula, data = data, formula0 = NULL, save_xx = FALSE,
-    #             save_invchol = FALSE, LL_only = TRUE, no_F = TRUE,
+    # logLik = fitGLS(formula = formula, data = data, formula0 = NULL, save.xx = FALSE,
+    #             save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
     #             coords = coords, distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
-    #             nugget = nug, covar_pars = sp.pars)
-    return(-LL)
+    #             nugget = nug, covar.pars = sp.pars)
+    return(-logLik)
   }
 
   # create a list of arguments to pass to do.call
@@ -149,7 +149,7 @@ optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled
   # call optim, and pass arguments
   opt.out <- do.call(optim, args = arg.list)
 
-  if(opt_only){
+  if(opt.only){
     return(opt.out)
   } else {
     names(opt.out$par) = names(start)
@@ -158,10 +158,10 @@ optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled
                  no = ifelse(test = "nugget" %in% names(fixed), yes = fixed["nugget"],
                              no = 0))
     GLS.out = fitGLS(formula = formula, data = data, formula0 = formula0,
-                     save_xx = save_xx, save_invchol = save_invchol,
-                     LL_only = FALSE, no_F = no_F, coords = coords,
+                     save.xx = save.xx, save.invchol = save.invchol,
+                     logLik.only = FALSE, no.F = no.F, coords = coords,
                      distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
-                     nugget = nug, covar_pars = spars)
+                     nugget = nug, covar.pars = spars)
     GLS.out$call = call
     return(list(opt = opt.out, GLS = GLS.out))
   }

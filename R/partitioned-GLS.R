@@ -16,16 +16,16 @@
 #' information about requirements for this function.
 #' @param distm_FUN a function to calculate distances from a coordinate matrix
 #' @param covar_FUN a function to calculate covariances from a distance matrix
-#' @param covar_pars a named list of parameters passed to \code{covar_FUN}
+#' @param covar.pars a named list of parameters passed to \code{covar_FUN}
 #' @param nugget a numeric fixed nugget component: if NA, the nugget is estimated for
 #' each partition
 #' @param ncross an integer indicating the number of partitions used to calculate
 #' cross-partition statistics
-#' @param save_GLS logical: should full GLS output be saved for each partition?
-#' @param t_test logical: should a t-test of the GLS coefficients be conducted?
-#' @param chisqr_test logical: should a correlated chi-squared test of the model
+#' @param save.GLS logical: should full GLS output be saved for each partition?
+#' @param do.t.test logical: should a t-test of the GLS coefficients be conducted?
+#' @param do.chisqr.test logical: should a correlated chi-squared test of the model
 #' fit be conducted?
-#' @param progress_bar logical: should progress be tracked with a progress bar?
+#' @param progressbar logical: should progress be tracked with a progress bar?
 #' @param debug logical debug mode
 #' @param ... arguments passed to \code{part_FUN}
 #'
@@ -63,7 +63,7 @@
 #'
 #' Covariance matrices for each partition are calculated with \code{covar_FUN}
 #' from distances among points within the partition. Parameter values for
-#' \code{covar_FUN} are given by \code{covar_pars}.
+#' \code{covar_FUN} are given by \code{covar.pars}.
 #'
 #' The distances among points are calculated with \code{distm_FUN}.
 #' \code{distm_FUN} can be any function, modeled after \code{geosphere::distm()},
@@ -78,7 +78,7 @@
 #' It is not required to use all partitions for cross-partition calculations, nor
 #' is it recommended to do so for most large data sets.
 #'
-#' If \code{progress_bar = TRUE} a text progress bar shows the current status
+#' If \code{progressbar = TRUE} a text progress bar shows the current status
 #' of the calculations in the console.
 #'
 #' @section \code{part_FUN} details:
@@ -145,9 +145,9 @@
 #'     \item{tstats}{a numeric matrix of coefficient t-statstitics}
 #'     \item{pvals_t}{a numeric matrix of t-test pvalues}
 #'     \item{nuggets}{a numeric vector of nuggets for each partition}
-#'     \item{covar_pars}{\code{covar_pars} input vector}
+#'     \item{covar.pars}{\code{covar.pars} input vector}
 #'     \item{modstats}{a numeric matrix with rows corresponding to partitions and
-#'     columns corresponding to log-likelihoods (\code{LL}),
+#'     columns corresponding to log-likelihoods (\code{logLik}),
 #'     sum of square error (\code{SSE}), mean-squared error (\code{MSE}),
 #'     regression mean-square (\code{MSR}), F-statistics (\code{Fstat}),
 #'     and p-values from F-tests (\code{pval_F})}
@@ -175,7 +175,7 @@
 #'     \item{partdims}{dimensions of \code{partmat}}
 #'     \item{pval.chisqr}{if \code{chisqr.test = TRUE}, a p-value for the correlated
 #'     chi-squared test}
-#'     \item{t.test}{if \code{t.test = TRUE}, a table with t-test results, including
+#'     \item{t.test}{if \code{do.t.test = TRUE}, a table with t-test results, including
 #'     the coefficient estimates, standard errors, t-statistics, and p-values}
 #' }
 #' @examples
@@ -203,9 +203,9 @@
 fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                              part_FUN = "part_data",
                              distm_FUN = "distm_scaled", covar_FUN = "covar_exp",
-                             covar_pars = c(range = .1), nugget = NA, ncross = 6,
-                             save_GLS = FALSE, t_test = TRUE, chisqr_test = TRUE,
-                             progress_bar = TRUE, debug = FALSE,
+                             covar.pars = c(range = .1), nugget = NA, ncross = 6,
+                             save.GLS = FALSE, do.t.test = TRUE, do.chisqr.test = TRUE,
+                             progressbar = TRUE, debug = FALSE,
                              ...){
   # Setup
   call = match.call()
@@ -228,7 +228,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   # output setup
   partGLS = vector("list", npart)
   if(debug){crosspartGLS = vector("list", npairs)}
-  if(progress_bar){
+  if(progressbar){
     pb = txtProgressBar(min = 0, max = npart, style = 3)
   }
   for(i in 1:npart){
@@ -241,11 +241,11 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     # Calculate GLS, if not already done
     if (is.null(partGLS[[i]])){
       ## covariance of parition
-      Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar_pars)))
+      Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
       ## GLS of parition
       partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
-                             nugget = nugget, formula0 = formula0, save_xx = (i <= ncross),
-                             no_F = FALSE, save_invchol = (i <= ncross), LL_only = FALSE)
+                             nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
+                             no.F = FALSE, save.invchol = (i <= ncross), LL_only = FALSE)
       ## build some empty stat tables on first loop
       if (i == 1){
         p = ncol(partGLS[[1]]$xx)
@@ -260,14 +260,13 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         rcoefs = matrix(NA, nrow = npairs, ncol = p,
                        dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
       }
-      colmatch = match(names(partGLS[[i]]$coefficients), colnames(coefs))
       # collect some stats
-      coefs[i, colmatch] = partGLS[[i]]$coefficients
-      SEs[i, colmatch] = partGLS[[i]]$SE
-      tstats[i, colmatch] = partGLS[[i]]$tstat
-      tpvals[i, colmatch] = partGLS[[i]]$pval_t
+      coefs[i, ] = partGLS[[i]]$coefficients
+      SEs[i, ] = partGLS[[i]]$SE
+      tstats[i, ] = partGLS[[i]]$tstat
+      tpvals[i, ] = partGLS[[i]]$pval_t
       nuggets[i] = partGLS[[i]]$nugget
-      LLs[i] = partGLS[[i]]$LL
+      LLs[i] = partGLS[[i]]$logLik
       SSEs[i] = partGLS[[i]]$SSE
       MSEs[i] = partGLS[[i]]$MSE
       MSRs[i] = partGLS[[i]]$MSR
@@ -276,7 +275,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     }
     # calculate inverse cholesky it needed
     if (is.null(partGLS[[i]]$invcholV)){
-      Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar_pars)))
+      Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
       partGLS[[i]]$invcholV <- invert_chol(Vi)
     }
     if (i < ncross) for (j in (i+1):ncross) {
@@ -288,18 +287,20 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 
       # calculate GLS, if not already done
       if (is.null(partGLS[[j]])){
-        Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar_pars)))
+        Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
         partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
-                               nugget = nugget, formula0 = formula0, save_xx = TRUE,
-                               no_F = FALSE, save_invchol = TRUE, LL_only = FALSE)
-        colmatch = match(names(partGLS[[j]]$coefficients), colnames(coefs))
+                               nugget = nugget, formula0 = formula0, save.xx = TRUE,
+                               no.F = FALSE, save.invchol = TRUE, LL_only = FALSE)
+        if(length(partGLS[[j]]$coefficients) != ncol(coefs)){
+          stop("dimension mismatch: different number of coefficients between parts i and j. Filter data or try different partition matrix.")
+        }
         ## collect some stats
-        coefs[j, colmatch] = partGLS[[j]]$coefficients
-        SEs[j, colmatch] = partGLS[[j]]$SE
-        tstats[j, colmatch] = partGLS[[j]]$tstat
-        tpvals[j, colmatch] = partGLS[[j]]$pval_t
+        coefs[j, ] = partGLS[[j]]$coefficients
+        SEs[j, ] = partGLS[[j]]$SE
+        tstats[j, ] = partGLS[[j]]$tstat
+        tpvals[j, ] = partGLS[[j]]$pval_t
         nuggets[j] = partGLS[[j]]$nugget
-        LLs[j] = partGLS[[j]]$LL
+        LLs[j] = partGLS[[j]]$logLik
         SSEs[j] = partGLS[[j]]$SSE
         MSEs[j] = partGLS[[j]]$MSE
         MSRs[j] = partGLS[[j]]$MSR
@@ -311,13 +312,13 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       if (debug) {cat( "cross #", cross, "\n")}
       # calculate inverse cholesky it needed
       if (is.null(partGLS[[j]]$invcholV)){
-        Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar_pars)))
+        Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
         partGLS[[j]]$invcholV <- invert_chol(Vj)
       }
       # cross covariance
       if (debug) {cat("calulating Vij:\n")}
       Vij = do.call(covar.f, args = append(list(d = dist.f(idat$coords, jdat$coords)),
-                                           as.list(covar_pars)))
+                                           as.list(covar.pars)))
       # degrees of freedom
       dfs = calc_dfpart(partsize = partsize, p = ncol(partGLS[[j]]$xx), p0 = ncol(partGLS[[j]]$xx0))
       # calculate cross-partition stats
@@ -343,7 +344,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     # delete large matrix for i
     partGLS[[i]]$invcholV = NULL
     # update progress bar
-    if(progress_bar){
+    if(progressbar){
       setTxtProgressBar(pb, i)
     }
   }
@@ -351,10 +352,10 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   warning("I still need Tony's help to describe some of these outputs. ",
           "For example, what are 'rcoefficients'?")
   outlist = list(call = call,
-                 GLS = if(save_GLS){partGLS}else{NULL},
+                 GLS = if(save.GLS){partGLS}else{NULL},
                  part = list(coefficients = coefs, SEs = SEs, tstats = tstats,
                              pvals_t = tpvals, nuggets = nuggets,
-                             covar_pars = covar_pars,
+                             covar.pars = covar.pars,
                              modstats = cbind(LLs = LLs, SSEs = SSEs,
                                               MSEs = MSEs, MSRs = MSRs,
                                               Fstats = Fstats,
@@ -369,11 +370,11 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                 partdims = c(npart = npart, partsize = partsize)))
   if(debug){outlist$crossGLS = crosspartGLS}
   class(outlist) <- append("partGLS", class(outlist))
-  if(chisqr_test){
+  if(do.chisqr.test){
     outlist$overall$pval.chisqr = chisqr(outlist)
   }
-  if(t_test){
-    outlist$overall$t_test = t.test(outlist)
+  if(do.t.test){
+    outlist$overall$t.test = t.test(outlist)
   }
   close(pb)
   return(outlist)
@@ -462,10 +463,10 @@ calc_dfpart <- function(partsize, p, p0){
 #' V.j = covar_exp(distm_scaled(coords.j), range = .01)
 #'
 #' ## partition GLS
-#' GLS.i = fitGLS(CLS_coef ~ 0 + land, data.i, V.i, nugget = 0, save_xx = TRUE,
-#'                save_invchol = TRUE, no_F = FALSE)
-#' GLS.j = fitGLS(CLS_coef ~ 0 + land, data.j, V.j, nugget = 0, save_xx = TRUE,
-#'                save_invchol = TRUE, no_F = FALSE)
+#' GLS.i = fitGLS(CLS_coef ~ 0 + land, data.i, V.i, nugget = 0, save.xx = TRUE,
+#'                save.invchol = TRUE, no.F = FALSE)
+#' GLS.j = fitGLS(CLS_coef ~ 0 + land, data.j, V.j, nugget = 0, save.xx = TRUE,
+#'                save.invchol = TRUE, no.F = FALSE)
 #'
 #' ## cross-covariance
 #' V.ij = covar_exp(distm_scaled(coords.i, coords.j), range = .01)

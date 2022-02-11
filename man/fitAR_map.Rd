@@ -107,7 +107,7 @@ fitAR_map(X, coords, formula = y ~ t, resids.only = TRUE)
                      Z = Z), resids.only = FALSE))
 ## extract some values
 AR.map$coefficients # coefficients
-AR.map$LL # log-likelihoods
+AR.map$logLik # log-likelihoods
 
 ## Methods
 summary(AR.map)

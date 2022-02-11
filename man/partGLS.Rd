@@ -13,13 +13,13 @@ fitGLS_partition(
   part_FUN = "part_data",
   distm_FUN = "distm_scaled",
   covar_FUN = "covar_exp",
-  covar_pars = c(range = 0.1),
+  covar.pars = c(range = 0.1),
   nugget = NA,
   ncross = 6,
-  save_GLS = FALSE,
-  t_test = TRUE,
-  chisqr_test = TRUE,
-  progress_bar = TRUE,
+  save.GLS = FALSE,
+  do.t.test = TRUE,
+  do.chisqr.test = TRUE,
+  progressbar = TRUE,
   debug = FALSE,
   ...
 )
@@ -42,7 +42,7 @@ information about requirements for this function.}
 
 \item{covar_FUN}{a function to calculate covariances from a distance matrix}
 
-\item{covar_pars}{a named list of parameters passed to \code{covar_FUN}}
+\item{covar.pars}{a named list of parameters passed to \code{covar_FUN}}
 
 \item{nugget}{a numeric fixed nugget component: if NA, the nugget is estimated for
 each partition}
@@ -50,14 +50,14 @@ each partition}
 \item{ncross}{an integer indicating the number of partitions used to calculate
 cross-partition statistics}
 
-\item{save_GLS}{logical: should full GLS output be saved for each partition?}
+\item{save.GLS}{logical: should full GLS output be saved for each partition?}
 
-\item{t_test}{logical: should a t-test of the GLS coefficients be conducted?}
+\item{do.t.test}{logical: should a t-test of the GLS coefficients be conducted?}
 
-\item{chisqr_test}{logical: should a correlated chi-squared test of the model
+\item{do.chisqr.test}{logical: should a correlated chi-squared test of the model
 fit be conducted?}
 
-\item{progress_bar}{logical: should progress be tracked with a progress bar?}
+\item{progressbar}{logical: should progress be tracked with a progress bar?}
 
 \item{debug}{logical debug mode}
 
@@ -95,9 +95,9 @@ contains at least the following elements:
     \item{tstats}{a numeric matrix of coefficient t-statstitics}
     \item{pvals_t}{a numeric matrix of t-test pvalues}
     \item{nuggets}{a numeric vector of nuggets for each partition}
-    \item{covar_pars}{\code{covar_pars} input vector}
+    \item{covar.pars}{\code{covar.pars} input vector}
     \item{modstats}{a numeric matrix with rows corresponding to partitions and
-    columns corresponding to log-likelihoods (\code{LL}),
+    columns corresponding to log-likelihoods (\code{logLik}),
     sum of square error (\code{SSE}), mean-squared error (\code{MSE}),
     regression mean-square (\code{MSR}), F-statistics (\code{Fstat}),
     and p-values from F-tests (\code{pval_F})}
@@ -125,7 +125,7 @@ and \code{overall} is a sub-list containing the elements
     \item{partdims}{dimensions of \code{partmat}}
     \item{pval.chisqr}{if \code{chisqr.test = TRUE}, a p-value for the correlated
     chi-squared test}
-    \item{t.test}{if \code{t.test = TRUE}, a table with t-test results, including
+    \item{t.test}{if \code{do.t.test = TRUE}, a table with t-test results, including
     the coefficient estimates, standard errors, t-statistics, and p-values}
 }
 
@@ -174,7 +174,7 @@ individual dataset to determine at what point convergence occurs.
 
 Covariance matrices for each partition are calculated with \code{covar_FUN}
 from distances among points within the partition. Parameter values for
-\code{covar_FUN} are given by \code{covar_pars}.
+\code{covar_FUN} are given by \code{covar.pars}.
 
 The distances among points are calculated with \code{distm_FUN}.
 \code{distm_FUN} can be any function, modeled after \code{geosphere::distm()},
@@ -189,7 +189,7 @@ a fixed nugget is used for all partitions.
 It is not required to use all partitions for cross-partition calculations, nor
 is it recommended to do so for most large data sets.
 
-If \code{progress_bar = TRUE} a text progress bar shows the current status
+If \code{progressbar = TRUE} a text progress bar shows the current status
 of the calculations in the console.
 }
 \section{\code{part_FUN} details}{

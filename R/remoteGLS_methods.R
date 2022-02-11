@@ -5,18 +5,18 @@
 #'
 #' @param formula optional argument specifying the GLS formula
 #' @param formula0 optional argument specifying the null GLS formula
-#' @param no_F optional argument specifying the no_F attribute
+#' @param no.F optional argument specifying the no.F attribute
 #' @return an empty S3 object of class "remoteGLS"
 #'
 #' @examples
 #' # tmp <- remoteGLS() #empty remoteGLS object
 #'
-remoteGLS <- function(formula, formula0, no_F = FALSE){
+remoteGLS <- function(formula, formula0, no.F = FALSE){
   # create empty list
   elements = c("call", # model info
                "coefficients", "SSE", "MSE", "SE",
                "df_t", "logDetV",
-               "tstat", "pval_t", "LL", "nugget",
+               "tstat", "pval_t", "logLik", "nugget",
                "coefficients0", "SSE0", "MSE0", "SE0",
                "MSR", "df0", "LL0", "df_F",
                "Fstat","pval_F",
@@ -35,7 +35,7 @@ remoteGLS <- function(formula, formula0, no_F = FALSE){
     }
 
   class(GLS.obj) <- append("remoteGLS", class(GLS.obj))
-  attr(GLS.obj, "no_F") = no_F
+  attr(GLS.obj, "no.F") = no.F
 
   return(GLS.obj) # return the empty list
 }
@@ -58,23 +58,23 @@ print.remoteGLS <- function(x, digits = max(3L, getOption("digits") - 3L), ...){
   coefs = data.frame("Est" = x$coefficients, "t stat" = x$tstat, "pval t" = x$pval_t)
 
   ## Model stats
-  if(!attr(x, "no_F")){
+  if(!attr(x, "no.F")){
     mod.stats = data.frame("model" = c(x$formula, x$formula0),
                            "df_F" = x$df_F,
                            "SSE" = c(x$SSE, x$SSE0),
                            "MSE" = c(x$MSE, x$MSE0),
-                           "LL" = c(x$LL, x$LL0),
+                           "logLik" = c(x$logLik, x$LL0),
                            "Fstat" = c(x$Fstat, NA),
                            "pval_F" = c(x$pval_F, NA))
   } else {
     mod.stats = data.frame("SSE" = x$SSE,
                            "MSE" = x$MSE,
-                           "LL" = x$LL)
+                           "logLik" = x$logLik)
   }
   cat("t-tests:\n")
   print(coefs, digits = digits)
 
-  if(!attr(x, "no_F")){
+  if(!attr(x, "no.F")){
     cat("\nF-test:\n")
   } else {
     cat("\nModel statistics:\n")

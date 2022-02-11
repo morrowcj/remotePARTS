@@ -4,14 +4,14 @@
 \alias{remoteGLS}
 \title{remoteGLS constructor (S3)}
 \usage{
-remoteGLS(formula, formula0, no_F = FALSE)
+remoteGLS(formula, formula0, no.F = FALSE)
 }
 \arguments{
 \item{formula}{optional argument specifying the GLS formula}
 
 \item{formula0}{optional argument specifying the null GLS formula}
 
-\item{no_F}{optional argument specifying the no_F attribute}
+\item{no.F}{optional argument specifying the no.F attribute}
 }
 \value{
 an empty S3 object of class "remoteGLS"

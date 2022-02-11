@@ -375,13 +375,13 @@ is specified. Note that this type of optimization requires fitting multiple
 GLS models, which means it will be much slower than even our call to `fitGLS` 
 with a known nugget. 
 
-In addition to our original arguments, we'll also set `no_F = FALSE` so that 
+In addition to our original arguments, we'll also set `no.F = FALSE` so that 
 F-tests are calculated. This will be discussed further in the "Hypothesis testing"
 section.
 
 ```{r}
 GLS.opt = fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, nugget = NA, 
-                 no_F = FALSE)
+                 no.F = FALSE)
 (nug.opt = GLS.opt$nugget)
 coefficients(GLS.opt)
 ```
@@ -389,8 +389,8 @@ coefficients(GLS.opt)
 Let's compare our GLS from earlier with this one with optimized parameters:
 
 ```{r}
-rbind(GLS.0 = c(range = r, nugget = GLS.0$nugget, LL = GLS.0$LL, MSE = GLS.0$MSE),
-      GLS.opt = c(range = range.opt, nugget = GLS.opt$nugget, LL = GLS.opt$LL, MSE = GLS.opt$MSE))
+rbind(GLS.0 = c(range = r, nugget = GLS.0$nugget, logLik = GLS.0$logLik, MSE = GLS.0$MSE),
+      GLS.opt = c(range = range.opt, nugget = GLS.opt$nugget, logLik = GLS.opt$logLik, MSE = GLS.opt$MSE))
 ```
 
 ### Simultaneous parameter estimation
@@ -411,7 +411,7 @@ fitopt <- optimize_GLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000,
 fitopt$opt$par
 ##      range     nugget 
 ## 0.02907116 0.30272255
-fitopt$GLS$LL
+fitopt$GLS$logLik
 ## [1] 6941.524
 fitopt$GLS$MSE
 ## [1] 0.001033084
@@ -471,7 +471,7 @@ latitude", we can regress the AR coefficient on latitude in our GLS model:
 
 ```{r}
 (GLS.lat <- fitGLS(AR_coef ~ 1 + lat, data = ndvi_AK3000, V = V.opt, nugget = nug.opt,
-                   no_F = FALSE))
+                   no.F = FALSE))
 ```
 
 The t-tests show that temporal trends in NDVI did not differ with latitude, nor
@@ -552,7 +552,7 @@ The model was fit with this code:
 ```{r, eval = FALSE}
 partGLS_ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
                                    partmat = pm, covar_FUN = "covar_exp", 
-                                   covar_pars = list(range = range.opt),
+                                   covar.pars = list(range = range.opt),
                                    nugget = nug.opt)
 ```
 
@@ -571,7 +571,7 @@ Here are the t-tests, that show that land cover class does not significantly
 affect NDVI trend:
 
 ```{r}
-partGLS_ndviAK$overall$t_test
+partGLS_ndviAK$overall$t.test
 ```
 
 It is **highly** recommended that users read the full documentation 

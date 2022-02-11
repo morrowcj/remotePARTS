@@ -4,7 +4,7 @@
 \alias{test_covar_fun}
 \title{Test passing a covariance function and arguments}
 \usage{
-test_covar_fun(d, covar_FUN = "covar_exppow", covar_pars = list(range = 0.5))
+test_covar_fun(d, covar_FUN = "covar_exppow", covar.pars = list(range = 0.5))
 }
 \arguments{
 \item{d}{numeric vector or matrix of distances}
@@ -12,7 +12,7 @@ test_covar_fun(d, covar_FUN = "covar_exppow", covar_pars = list(range = 0.5))
 \item{covar_FUN}{distance-based covariance function to use,
 which must take \code{d} as its first argument}
 
-\item{covar_pars}{vector or list of parameters (other than d) passed to the
+\item{covar.pars}{vector or list of parameters (other than d) passed to the
 covar function}
 }
 \description{
@@ -22,16 +22,16 @@ Test passing a covariance function and arguments
 #  # distance vector
 #  d = seq(0, 1, length.out = 10)
 #  # named parameter list
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = list(range = .5))
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = list(range = .5, shape = .5))
+#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5))
+#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5, shape = .5))
 #  # unnamed parameter vector
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = .5)
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar_pars = c(.5, .5))
+#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = .5)
+#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = c(.5, .5))
 #  # different function
-#  test_covar_fun(d = d, covar_FUN = "covar_taper", covar_pars = list(theta = .5))
+#  test_covar_fun(d = d, covar_FUN = "covar_taper", covar.pars = list(theta = .5))
 #  # user-defined function, with no extra parameters
-#  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar_pars = NULL)
-#  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar_pars = list())
+#  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = NULL)
+#  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = list())
 #
 #  map.width = 5 # square map width
 #  coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
@@ -39,6 +39,6 @@ Test passing a covariance function and arguments
 #  # calculate distance
 #  D = geosphere::distm(coords) # distance matrix
 #
-#  test_covar_fun(D, covar_pars = list(range = .1*max(D)))
+#  test_covar_fun(D, covar.pars = list(range = .1*max(D)))
 
 }

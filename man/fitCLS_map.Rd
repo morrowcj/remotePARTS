@@ -165,7 +165,7 @@ fitCLS_map(X, coords, formula = y ~ t, resids.only = TRUE)
                        resids.only = FALSE))
 ## extract some values
 CLS.map$coefficients # coefficients
-CLS.map$LL # log-likelihoods
+CLS.map$logLik # log-likelihoods
 
 ## Methods
 summary(CLS.map)
@@ -206,7 +206,7 @@ fitCLS_map(X, coords, formula = y ~ t, resids.only = TRUE)
                        resids.only = FALSE))
 ## extract some values
 CLS.map$coefficients # coefficients
-CLS.map$LL # log-likelihoods
+CLS.map$logLik # log-likelihoods
 
 ## Methods
 summary(CLS.map)

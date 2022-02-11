@@ -52,7 +52,7 @@ contains these additional list elements:
    \item{\code{tstat}}{the t-statistics for coefficients}
    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
    \item{\code{MSE}}{the model mean squared error}
-   \item{\code{LL}}{the log-likelihood of the model fit}
+   \item{\code{logLik}}{the log-likelihood of the model fit}
 }
 
 \code{fitCLS} returns a list object of class "remoteTS", which
@@ -63,7 +63,7 @@ contains these additional list elements:
    \item{\code{tstat}}{the t-statistics for coefficients}
    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
    \item{\code{MSE}}{the model mean squared error}
-   \item{\code{LL}}{the log-likelihood of the model fit}
+   \item{\code{logLik}}{the log-likelihood of the model fit}
 }
 }
 \description{
@@ -107,7 +107,7 @@ df = data.frame(x, t, Z) # collect in data frame
 
 # extract other values
 CLS$MSE #MSE
-CLS$LL #log-likelihood
+CLS$logLik #log-likelihood
 
 # fit with no lag in independent variables (as simulated):
 (CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
@@ -146,7 +146,7 @@ df = data.frame(x, t, Z) # collect in data frame
 
 # extract other values
 CLS$MSE #MSE
-CLS$LL #log-likelihood
+CLS$logLik #log-likelihood
 
 # fit with no lag in independent variables (as simulated):
 (CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
