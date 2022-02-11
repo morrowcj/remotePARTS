@@ -4,8 +4,8 @@
 #' @rdname optimize_nugget
 #'
 #' @param X numeric (double) nxp matrix
-#' @param V numeric (double) nxn matrix
 #' @param y numeric (double) nx1 column vector
+#' @param V numeric (double) nxn matrix
 #' @param lower lower boundary for nugget search
 #' @param upper upper boundary for nugget search
 #' @param tol desired accuracy of nugget search
@@ -24,71 +24,47 @@
 #' \code{LogLikGLS()} functionality is absorbed by \code{fitGLS()}, it will
 #' be used instead.
 #'
-#' @seealso [stats::optimize()]
+#' @seealso \code{?stats::optimize()}
 #'
 #' @examples
+#' ## read data
+#' data(ndvi_AK3000)
+#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 #'
-#' @export
-optimize_nugget <- function(X, V, y, lower = 0, upper = 1, tol = 1e-5,
-                            debug = FALSE){
-  # coerce input to matrices
+#' ## format data
+#' X = stats::model.matrix(CLS_coef ~ 0 + land, data = df)
+#'
+#' ## fit covariance matrix
+#' V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)
+#'
+#' ## find the ML nugget
+#' remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
+#'
+optimize_nugget <- function(X, y, V, lower = 0, upper = 1,
+                            tol = .Machine$double.eps^.25, debug = FALSE) {
+  # # coerce input to matrices
   X = as.matrix(X)
-  V = as.matrix(V)
+  X0 = diag(1)
   y = as.matrix(y)
+  stopifnot(ncol(y) == 1)
+  V = as.matrix(V)
 
-  ## error handling
-  stopifnot(all(is.double(X), is.double(V), is.double(y)))
-  stopifnot(all.equal(nrow(X), nrow(V), nrow(y)))
-  stopifnot(all(check_posdef(V)))
+  # checks
+  ## check positive definitive
+  if (!all(check_posdef(V))) {
+    stop("V is not positive definitive")
+  }
+  ## check for correct dimensions
+  if (!all.equal(length(y), nrow(X), nrow(V), ncol(V))) {
+    stop("Input dimension mismatch")
+  }
+  ## check that all variables are numeric
+  if (!all(is.double(y), is.double(X), is.double(V))) {
+    stop("All inputs must be numeric (double precision)")
+  }
+  ## boundaries handling
   stopifnot(lower >= 0)
   stopifnot(upper <= 1)
 
-  ## execute the function
-  return(.Call(`_remotePARTS_optimize_nugget_cpp`, X, V, y, lower, upper,
-               tol, debug))
+  .Call(`_remotePARTS_optimize_nugget_cpp`, X, X0, V, y, lower, upper, tol, diag(1), FALSE, debug)
 }
-
-#' fitNugget - R version
-#' @rdname optimize_nugget
-#' @details \code{fitNugget} is the R-only version of \code{optimize_nugget()}.
-#' It uses \code{fitGLS_R()} and \code{stats::optimize()} to obtain the ML
-#' nugget.
-#'
-#' @export
-fitNugget <-  function(X, V, y, lower = 0, upper = 1, tol = .00001){
-  int = c(lower, upper)
-  N.opt <- optimize(f = function(nug){return(fitGLS_R(X, V, y, nugget = nug)$logLik)},
-                    interval = int, tol = tol, maximum = TRUE)
-  if(N.opt$maximum < tol){
-    N0.LL <- fitGLS_R(X, V, y, nugget = 0)$logLik
-    if(N0.LL > N.opt$objective){
-      N.opt$maximum <- 0
-    }
-  }
-  return(N.opt$maximum)
-}
-
-#' fitNugget_Rcpp - Rcpp version
-#' @rdname optimize_nugget
-#'
-#' @details \code{fitNugget_Rcpp} is a hybrid between \code{optimize_nugget()}
-#' and \code{fitNugget()}. It optimizes the C++ function \code{LogLikGLS()} with
-#' the R function \code{stats::optimize()}.
-#'
-#' After further testing, only the most efficeint of the 3 nugget optimizers will
-#' remain in the package.
-#'
-#' @export
-fitNugget_Rcpp <-  function(X, V, y, lower = 0, upper = 1, tol = .00001){
-  int = c(0,1)
-  N.opt <- optimize(f = function(nug){return(LogLikGLS(nugget = nug, X, V, y))},
-                    interval = int, tol = tol, maximum = TRUE)
-  if(N.opt$maximum < tol){
-    N0.LL <- LogLikGLS(nugget = 0, X, V, y)
-    if(N0.LL > N.opt$objective){
-      N.opt$maximum <- 0
-    }
-  }
-  return(N.opt$maximum)
-}
-

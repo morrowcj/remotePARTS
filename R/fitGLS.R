@@ -1,272 +1,271 @@
 
-## C++ Versions ----
-#' Fit GLS to remote sensing data
-#' @rdname fitGLS
+#' @title Fit a PARTS GLS model.
 #'
-#' @param X model matrix (double)
-#' @param V varcov matrix (double)
-#' @param y response vector (double)
-#' @param X0 null model matrix (double)
-#' @param nugget nugget added to V (double)
-#' @param save_xx logical: should xx, xx0, and invcholV be returned? This
-#' functionality is meant for use with the partitioned GLS whereby these
-#' values are used to calculate cross-partition statistics.
-#' @param threads number of threads used by Eigen for matrix algebra
+#' @details conduct generalized least-squares regression of
+#' spatiotemporal trends
 #'
-#' @return remoteGLS object see \code{?remoteGLS()} for more info.
+#' @param formula a model formula
+#' @param data an optional data frame environment in which to search for
+#' variables given by \code{formula}
+#' @param V a covariance matrix, which must be positive definitive. This argument
+#' is optional if \code{coords}, \code{distm_FUN}, \code{covar_FUN}, and
+#' \code{covar.pars} are given instead.
+#' @param nugget an optional numeric nugget, must be positive
+#' @param formula0 an optional formula for the null model to be compared with
+#' \code{formula} by an F-test
+#' @param save.xx logical: should information needed for cross-partition
+#' comparisons be returned?
+#' @param save.invchol logical: should the inverse of the Cholesky matrix be
+#' returned?
+#' @param logLik.only logical: should calculations stop after calculating parital
+#' log-likelihood?
+#' @param no.F logical: should F-test calculations be made?
+#' @param coords optional coordinate matrix for calculating \code{V} internally
+#' @param distm_FUN optional function for calculating a distance matrix from
+#' \code{coords}, when calculating \code{V} internally
+#' @param covar_FUN optional distance-based covariance function for calculating
+#' \code{V} internally
+#' @param covar.pars an optional named list of parameters passed to \code{covar_FUN}
+#' when calculating \code{V} internally
+#' @param invCholV optional pre-calculated inverse cholesky matrix to use in place
+#' of \code{V}
+#' @param ... additional arguments passed to \code{optimize_nugget}, which are
+#' only used if if \code{nugget = NA}
 #'
-#' @seealso [remoteGLS()], [part_data()], [GLS_worker()]
+#' @details \code{fitGLS} fits a GLS model, using terms specified in \code{formula}.
+#' In the PARTS method, generally the left side of \code{formula} should be
+#' pixel-level trend estimates and the right side should be spatial predictors.
+#' The errors of the GLS are correlated according to covariance matrix \code{V}.
 #'
-#' @details
+#' If \code{nugget = NA}, an ML nugget is estimated from the data using the
+#' \code{optimize_nugget()} function. Arguments additional arguments (\code{...})
+#' are passed to \code{optimize_nugget} in this case. \code{V} must be provided
+#' for nugget optimization.
 #'
-#' @export
+#' If \code{formula0} is not specified, the default is to fit an intercept-only
+#' null model.
+#'
+#' \code{save.xx} is included to allow for manually conducting a partitioned
+#' GLS analyses. Because most users will not need this feature, opting instead
+#' to use \code{fitGLS_parition()}, \code{save.xx = FALSE} by default.
+#'
+#' Similarly, \code{save.invchol} is included to allow for recycling of the
+#' inverse cholesky matrix. Often, inverting the large cholesky matrix
+#' (i.e., \code{invert_chol(V)}) is the slowest part of GLS. This argument exists
+#' to allow users to recycle this process, though no \code{remotePARTS} function
+#' currently exists that can use \code{invert_chol(V)} to fit the GLS.
+#'
+#' \code{logLik.only = TRUE} will return only the partial log-likelihood, which can
+#' minimized to obtain the maximum likelihood for a given set of data.
+#'
+#' If \code{no.F = TRUE}, then the model given by \code{formula} is not compared
+#' to the model given by \code{formula0}.
+#'
+#' If \code{V} is not provided, it can be fit internally by specifying all of
+#' \code{coords}, \code{distm_FUN}, \code{covar_FUN}, and \code{covar.pars}.
+#' The function given by \code{distm_FUN} will calculate a distance matrix from
+#' \code{coords}, which is then transformed into a distance-based covariance
+#' matrix with \code{covar_FUN} and parameters given by \code{covar.pars}.
+#'
+#' This function uses C++ code that uses the Eigen matrix library (RcppEigen
+#' package) to fit models as efficiently as possible. As such, all available
+#' CPU cores are used for matrix calculations on systems with OpenMP
+#' support.
+#'
+#' @return \code{fitGLS} returns a list object of class "remoteGLS", if
+#' \code{logLik.only = FALSE}. The list contains at least the following elements:
+#'
+#' \describe{
+#'     \item{coefficients}{coefficient estimates for predictor variables}
+#'     \item{SSE}{sum of squares error}
+#'     \item{MSE}{mean squared error}
+#'     \item{SE}{standard errors}
+#'     \item{df_t}{degrees of freedom for the t-test}
+#'     \item{logDetV}{log-determinant of V}
+#'     \item{tstat}{t-test statistic}
+#'     \item{pval_t}{p-value of the t-statistic}
+#'     \item{logLik}{the Log-likelihood of the model}
+#'     \item{nugget}{the nugget used in fitting}
+#' }
+#'
+#' If \code{no.F = FALSE}, the following elements, corresponding to the null
+#' model and F-test are also calculated:
+#'
+#' \describe{
+#'     \item{coefficients0}{coefficient estimates for the null model}
+#'     \item{SSE0}{sum of squares error for the null model}
+#'     \item{MSE0}{mean squared error for the null model}
+#'     \item{SE0}{the standard errors for null coefficients}
+#'     \item{MSR}{the regression mean square}
+#'     \item{df0}{the null model F-test degrees of freedom}
+#'     \item{LL0}{the log-likelihood of the null model}
+#'     \item{df_F}{the F-test degrees of freedom, for the main model}
+#'     \item{Fstat}{the F-statistic}
+#'     \item{pval_F}{the F-test p-value}
+#'     \item{formula}{the alternate formula used}
+#'     \item{formula0}{the null formula used}
+#' }
+#'
+#' An attribute called also set to \code{"no.F"} is set to the value of
+#' argument \code{no.F}, which signals to generic methods how to handle the output.
+#'
+#' If \code{logLik.only = TRUE}, a single numeric output containing the partial
+#' log-likelihood is returned. This value is primarily for ML estimation. In
+#' parameter space for a given dataset, the minimum partial likelihood corresponds
+#' to the maximum true likelihood.
 #'
 #' @examples
 #' ## read data
-#' data.file = system.file("extdata", "AK_ndvi_common-land.csv",
-#'                         package = "remotePARTS")
-#'
-#' df = data.table::fread(data.file, nrows = 1000) # read first 1000 rows
-#'
-#' ## format data
-#' datalist = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df,
-#'           part_mat = matrix(1:1000, ncol = 1))
+#' data(ndvi_AK3000)
+#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 #'
 #' ## fit covariance matrix
-#' V = fitV(geosphere::distm(datalist$coords), spatialcor = 2, method = "exponential")
+#' V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)
 #'
 #' ## run GLS
-#' GLS = fitGLS(X = datalist$X, y = datalist$y, X0 = datalist$X0, V = V,
-#'              nugget = 0, save_xx = TRUE)
+#' (GLS = fitGLS(CLS_coef ~ 0 + land, data = df, V = V))
 #'
-#' print(GLS)
+#' ## with F-test calculations to compare with the NULL model
+#' (GLS.F = fitGLS(CLS_coef ~ 0 + land, data = df, V = V, no.F = FALSE))
 #'
-fitGLS <- function(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1){
-
-
-  ## coerce to matrices
-  X = as.matrix(X)
-  V = as.matrix(V)
-  y = as.matrix(y)
-  X0 = as.matrix(X0)
-
-  ## error handling
-  stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
-  stopifnot(all.equal(nrow(X), nrow(V), nrow(X0), nrow(y)))
-  # stopifnot(all(check_posdef(V)))
-
-
-  ## call the c++ function
-  # return(.fitGLS_cpp) # contains additional function call
-  out <- .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, threads)
-  ## add in p values
-  out$pval.t <- 2 * pt(abs(out$tstat), df = out$dft, lower.tail = F)
-  out$pval.F <- pf(out$Fstat, df1 = out$df.F[1], df2 = out$df.F[2], lower.tail = F)
-  class(out) <- append("remoteGLS", class(out))
-  attr(out, "no_F") = FALSE
-  out$model.info$call <- match.call()
-  out$nugget = nugget
-
-  return(out)
-}
-
-
-#' Alternative fitGLS function
-#' @rdname fitGLS
+#' ## find ML nugget
+#' fitGLS(CLS_coef ~ 0 + land, data = df, V = V, no.F = FALSE, nugget = NA)
 #'
-#' @param formula formula to build the model with
-#' @param data object containing the data
-#' @param form.0 null model formula (default: "y ~ 1")
-#' @param threads
-#' @param contrasts optional linear contrasts to use
-#' @param LL_only logical: should only the log-liklihood be computed?
-#' @param no_F logical: should calculations needed for F tests be skipped?
-#' @param ... additional arguments passed to \code{\link{optimize_nugget}}
+#' ## calculate V internally
+#' coords = cbind(df$lng, df$lat)
+#' fitGLS(CLS_coef ~ 0 + land, data = df, logLik.only = FALSE, coords = coords,
+#'        distm_FUN = "distm_scaled", covar_FUN = "covar_exp", covar.pars = list(range = .01))
 #'
-#' @details
+#' ## use inverse cholesky
+#' fitGLS(CLS_coef ~ 0 + land, data = df, invCholV = invert_chol(V))
 #'
-#' \code{fitGLS2()} first creates an empty remoteGLS object
-#' (with \code{remoteGLS()}) and then fills in the elements by modifying
-#' the remoteGLS object in the C++ function.
+#' ## save inverse cholesky matrix
+#' invchol = fitGLS(CLS_coef ~ 0 + land, data = df, V = V, save.invchol = TRUE)$invcholV
 #'
-#' After further testing to determine which function is most efficient,
-#' either \code{fitGLS()} or \code{fitGLS2()} will be deprecated in favor
-#' of the other. Though, the formula notation of \code{fitGLS2()} will likely
-#' be kept in either case.
+#' ## re-use inverse cholesky instead of V
+#' fitGLS(CLS_coef ~ 0 + land, data = df, invCholV = invchol)
 #'
-#' \code{fitGLS2()} uses a slightly different C++ function from \code{fitGLS()}
-#' to achieve the different behavior.
+#' ## Log-likelihood (fast)
+#' fitGLS(CLS_coef ~ 0 + land, data = df, V = V, logLik.only = TRUE)
 #'
 #' @export
-#'
-#' @examples
-#'
-#' ## Alternative GLS syntax
-#' GLS2 = fitGLS2(formula = "cls.coef ~ 0 + land", data = df, V = V, form.0 = "cls.coef ~ 1",
-#'              nugget = 0, save_xx = TRUE)
-#'
-#' print(GLS2)
-fitGLS2 <- function(formula, data, V, nugget = 0, form.0 = NULL,save_xx = FALSE,
-                    threads = 1, contrasts = NULL, LL_only = FALSE,
-                    no_F = FALSE, ...){
+fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALSE,
+                   save.invchol = FALSE, logLik.only = FALSE, no.F = TRUE,
+                   coords, distm_FUN ,covar_FUN, covar.pars, invCholV,
+                   ...){
 
-  ## Parse formula arguments to make model matrix ----
+  # Parse formula arguments to make model matrix
   call <- match.call() # function call
-  mf <- match.call(expand.dots = FALSE) # don't expand ...
-  m <- match(c("formula", "data", "subset",
-               "weights", "na.action", "offset"),
-             names(mf), 0L) # match arguments provided by call
-  mf <- mf[c(1L, m)] #function name, plus arguments matched
-  mf$drop.unused.levels <- TRUE # show that we dropped levels
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
   mf[[1L]] <- quote(stats::model.frame) # rename the function call
-  mf <- eval(mf, parent.frame()) # evaluate the model frame with the data
-  mt <- attr(mf, "terms") # model terms
-  y <- model.response(mf, "numeric") # response (vector)
-  # w <- as.vector(model.weights(mf)) # model.weights
-  # offset <- model.offset(mf) # model offset
-  if (is.matrix(y)){stop("response is a matrix: must be a vector")}
-  ny <- length(y)
-  X <- model.matrix(mt, mf, contrasts) # create model matrix
+  mf$drop.unused.levels = TRUE
+  mf <- eval(mf, parent.frame())
+  mt <- attr(mf, "terms")
+  y <- as.double(stats::model.response(mf, "numeric"))
+  if (is.matrix(y)) {stop("response is a matrix: must be a vector")}
+  X <- stats::model.matrix(mt, mf, contrasts = NULL)
   rm(mf) # delete the large model frame from memory
 
-  ## Handle missing nugget (NULL or NA) ----
-  if (is.null(nugget) || is.na(nugget)){
-    nugget = optimize_nugget(X, V, y, ...)
-  }
-
-  ## Build null model----
-  if (is.null(form.0)){
-    form.0 = formula(y ~ 1)
+  # Use invCholV if provided
+  if (missing(invCholV) || is.null(invCholV)){
+    # print("no inverse cholesky provided")
+    invCholV = diag(1) # default matrix to pass to C++
+    use_invCholV = FALSE
   } else {
-    form.0 = formula(form.0)
+    if (is.na(nugget) & missing(V)){
+      stop("nugget cannot be optimized with pre-calculated invCholV, use V instead")
+    }
+    # print("inverse cholesky WAS provided")
+    invCholV = invCholV
+    use_invCholV = TRUE
   }
-  # conditionally assign X0
-  X0 <- if (missing(data) || is.null(data))
-    model.matrix(form.0)
-  else
-    model.matrix(form.0, data)
 
-  ## coerce to matrices ----
-  # X = as.matrix(X)
-  # V = as.matrix(V)
-  # # y = as.matrix(y)
-  # X0 = as.matrix(X0)
+  # calculate V, if needed
+  if (missing(V) & !use_invCholV) {
+    if (any(missing(coords), missing(distm_FUN), missing(covar_FUN))) {
+      stop("If V or invCholV are not provided, then coords, distm_FUN, covar_FUN, and covar.pars are needed to calculate V")
+    }
+    if (nrow(coords) != nrow(X)){
+      stop("Rows of coords do not match rows in data")
+    }
+    dist.f = match.fun(distm_FUN)
+    V <- dist.f(coords) # distance
+    pars = append(list(V), covar.pars) # pars list
+    covar.f = match.fun(covar_FUN)
+    V <- do.call(covar.f, pars) # covariance matrix
+    nv = nrow(V)
+  } else if (missing(V) & use_invCholV){
+    V = diag(1) # default matrix to pass to C++
+    nv <- nrow(invCholV)
+  } else {nv = nrow(V)}
 
-  ## error handling ----
-  stopifnot(all(is.double(X), is.double(V), is.double(y), is.double(X0)))
-  stopifnot(all.equal(nrow(X), nrow(V), nrow(X0), ny))
-  stopifnot(all(check_posdef(V)))
+  # Build null model
+  if (is.null(formula0)){ # formula
+    formula0 = update(as.formula(formula), . ~ 1)
+  } else {
+    formula0 = as.formula(formula0)
+  }
+  X0 <- if (missing(data) || is.null(data)) { # conditionally assign X0
+    model.matrix(formula0)
+  } else {
+    model.matrix(formula0, data)
+  }
 
-  GLS <- remoteGLS(form = formula)
-  GLS$model.info$call <- call
-  GLS$model.info$predictors = colnames(X)
-  GLS$nugget = nugget
+  # Checks
+  ## check positive definitive
+  if (!all(check_posdef(V))) {
+    if (logLik.only){
+      warning("V is not positive definitive")
+      return(NA) # return NA for logLik function
+    }
+    stop("V is not positive definitive")
+  }
+  # if (!all(check_posdef(invCholV))){
+  #   stop("invCholV is not positive definitive")
+  # }
+  ## check for correct dimensions
+  if (!all.equal(length(y), nrow(X), nrow(X0), nv)) {
+    stop("Input dimension mismatch")
+  }
+  ## check that all variables are numeric
+  if (!all(is.double(y), is.double(X), is.double(V), is.double(invCholV), is.double(X0))) {
+    stop("All inputs must be numeric (double precision)")
+  }
 
+  # Handle missing nugget
+  if (is.na(nugget)) {
+    nugget = optimize_nugget(X = X, y = y, V = V, ...)
+  }
 
-  ## Run GLS ----
-  .Call(`_remotePARTS_fitGLS2_cpp`, GLS, X, V, y, X0, nugget, save_xx, LL_only,
-        no_F, threads)
+  # Run GLS
+  GLS <- .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0,
+               nugget, save.xx, save.invchol, logLik.only, no.F,
+               optimize_nugget = FALSE, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
+               invCholV = invCholV,  use_invCholV = use_invCholV)
 
-  if(LL_only){
+  # return only log-likelihood, if prompted
+  if(logLik.only){
     return(unlist(GLS$logLik))
   }
 
-  # add in p values
-  GLS$pval.t <- 2 * pt(abs(GLS$tstat), df = GLS$dft, lower.tail = F)
+  # pvalues
+  GLS$pval_t <- 2 * pt(abs(GLS$tstat), df = GLS$df_t, lower.tail = F)
+  if(!no.F){GLS$pval_F <- pf(GLS$Fstat, df1 = GLS$df_F[1], df2 = GLS$df_F[2], lower.tail = F)}
 
-  names(GLS$betahat) = names(GLS$SE) = names(GLS$tstat) = names(GLS$pval.t) = colnames(X)
+  # Update list elements
+  GLS <- append(list(call = call), GLS)
+  names(GLS$coefficients) = names(GLS$SE) = names(GLS$tstat) = names(GLS$pval_t) = colnames(X)
+  # GLS$predictors = colnames(X)
+  # GLS$nugget = nugget
+  GLS$formula = deparse(as.formula(formula))
+  GLS$formula0 = deparse(as.formula(formula0))
 
-  if(!no_F){
-    attr(GLS, "no_F") = TRUE
-    GLS$pval.F <- pf(GLS$Fstat, df1 = GLS$df.F[1], df2 = GLS$df.F[2], lower.tail = F)
-
-  } else {attr(GLS, "no_F") = TRUE}
+  ## class and attributes
+  class(GLS) <- append("remoteGLS", class(GLS))
+  attr(GLS, "no.F") <- no.F
 
   ## Return ----
   return(GLS)
-}
-
-
-#' Caculate log-liklihood of GLS model
-#' @rdname fitGLS
-#'
-#' @details \code{LogLikGLS()} returns only the log-likelihood and is used to
-#' by other functions for optimization but should be deprecated and simply
-#' added as functionality to \code{fitGLS()} and/or \code{fitGLS2()} in future
-#' implementations.
-LogLikGLS <- function(nugget, X, V, y){
-  ## coerce to matrices
-  X = as.matrix(X)
-  V = as.matrix(V)
-  y = as.matrix(y)
-
-  ## error handling
-  stopifnot(all(is.double(X), is.double(V), is.double(y)))
-  stopifnot(all.equal(nrow(X), nrow(V), nrow(y)))
-  stopifnot(all(check_posdef(V)))
-
-  return(.Call(`_remotePARTS_LogLikGLS_cpp`, nugget, X, V, y))
-}
-
-## R Versions ----
-#' @rdname fitGLS
-#'
-#' @details \code{fitGLS()} is a C++ implementation of \code{fitGLS_R()}.
-#'
-#' @export
-fitGLS_R <- function(X, V, y, X0 = NULL, nugget = 0){
-  stopifnot(all.equal(nrow(X), ncol(V), nrow(V), length(y)))
-  n <- nrow(X)
-  invcholV <- invert_cholR(V, nugget)
-  xx <- invcholV %*% X
-  yy <- invcholV %*% y
-  varX <- crossprod(xx)
-  beta <- as.numeric(solve(varX, crossprod(xx, yy)))
-  SSE <- as.numeric(crossprod(yy - xx %*% beta))
-  MSE <- SSE/(n - ncol(xx))
-  varcov <- MSE * solve(varX)
-  se <- diag(varcov)^0.5
-  t <- beta/se
-  df.t <- n - ncol(xx)
-  p.t <- 2 * pt(abs(t), df = df.t, lower.tail = F) # compute in R not C++
-
-  logdetV <- -2 * sum(log(diag(invcholV)))
-  logLik <- -0.5 * (n * log(2 * pi) + n * log((n-ncol(xx))*MSE/n) + logdetV + n)
-
-  if(is.null(X0) | missing(X0)){
-    X0 <- matrix(1, nrow = n, ncol = 1)
-  }
-  xx0 <- invcholV %*% X0
-  varX0 <- crossprod(xx0)
-  betahat0 <- as.numeric(solve(varX0, crossprod(xx0, yy)))
-  SSE0 <- as.numeric(crossprod(yy - xx0 %*% betahat0))
-  df0 <- length(betahat0)
-  MSE0 <- SSE0/(n - ncol(xx))
-  MSR <- (SSE0 - SSE)/(ncol(xx) - ncol(xx0))
-  logLik0 <- -0.5 * (n * log(2 * pi) + n * log((n-df0)*MSE0/n) + logdetV + n)
-
-  varX0 <- t(xx0) %*% xx0
-  varcov0 <- MSE0 * solve(varX0)
-  se0 <- diag(varcov0)^0.5
-
-  if (ncol(xx) > 1) { # when/why would ncol(xx) == 1 ever ?
-    FF <- (n - ncol(xx))/(ncol(xx) - ncol(xx0)) * (SSE0 - SSE)/SSE
-    df1.F <- ncol(xx) - ncol(xx0)
-    df2.F <- n - ncol(xx)
-    p.F <- pf(FF, df1 = df1.F, df2 = df2.F, lower.tail = F)
-    df.F <- c(df1.F, df2.F)
-  } else {
-    FF <- (n - 1) * (SSE0 - SSE)/SSE
-    df1.F <- 1
-    df2.F <- n - 1
-    p.F <- pf(FF, df1 = df1.F, df2 = df2.F, lower.tail = F)
-    df.F <- c(df1.F, df2.F)
-  }
-
-  return(list(betahat = beta, VarX = varX, SSE = SSE, MSE = MSE, varcov = varcov,
-              SE = se, tstat = t, pval.t = p.t, dft = df.t, logDetV = logdetV,
-              logLik = logLik, betahat0 = betahat0, SE0 = se0, SSE0 = SSE0,
-              SSR = SSE0 - SSE, MSE0 = MSE0, MSR = MSR, df0 = df0,
-              logLik0 = logLik0, Fstat = FF, pval.F = p.F, df.F = df.F
-  ))
 }

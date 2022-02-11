@@ -1,195 +1,694 @@
-# pixel level CLS ----
-#' @title Pixel CLS
-#' @description Fit a CLS regression to a time series
-#' @family remoteCLS
+## fitCLS ----
+#' @title CLS for time series
 #'
-#' @param x numeric vector of length p containing time series data for one
-#' location (i.e. a pixel)
-#' @param t numeric vector of length p containing the values for time.
-#' @param Z (optional) a numeric vector/matrix with p rows and q columns. Each
-#' column contains a different covariate measured at the same site as x at the
-#' same p time points.
-#' @param save_AR.df should the auto-regression data frame be returned?
-#' default: FALSE
+#' @description \code{fitCLS} is used to fit conditional least squares regression
+#' to time series data.
 #'
-#' @return \code{remoteCLS.pixel} object. A list with the following elements:
+#' @family remoteTS
+#'
+#' @param formula a model formula, as used by \code{stats::lm()}
+#' @param data optional data environment to search for variables in \code{formula}.
+#' As used by \code{lm()}
+#' @param lag.y an integer indicating the lag (in time steps) between y and y.0
+#' @param lag.x an integer indicating the lag (in time steps) between y and the
+#' independent variables (except y.0).
+#' @param model logical, should the used model matrix be returned? As used by
+#' \code{lm()}
+#' @param y logical, should the used response variable be returned? As used by
+#' \code{lm()}
+#' @param debug logical debug mode
+#'
+#' @details
+#' This function regresses the response variable (y) at time t, conditional on the
+#' response at time t-\code{lag.y } and the specified dependent variables (X) at
+#' time t-\code{lag.x}:
+#'
+#' \deqn{y_{t} = y_{t - \text{lag.y}} + U_{t - \text{lag.x}} + \varepsilon}
+#'
+#' \code{stats::lm()} is then called, using the above equation.
+#'
+#' @return \code{fitCLS} returns a list object of class "remoteTS", which
+#' inherits from  "lm". In addition to the default "lm" components, the output
+#' contains these additional list elements:
+#'
 #' \describe{
-#'     \item{\code{$call}}{the matched call to this function}
-#'     \item{\code{$fm}}{the model object fit using \code{stats::lm()}}
-#'     \item{\code{$AR.df}}{an optionally returned AR data frame built with
-#'     \code{AR_df()}}
+#'    \item{\code{tstat}}{the t-statistics for coefficients}
+#'    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
+#'    \item{\code{MSE}}{the model mean squared error}
+#'    \item{\code{logLik}}{the log-likelihood of the model fit}
 #' }
 #'
-#' @details CLS is fit to a time series \code{x} by first building an AR
-#' data frame with \code{AR_df()}. Then, \code{x} at time j (\code{x.tj})
-#' is regressed on \code{x} at time i (\code{x.ti}) and \code{t} at time j
-#' (\code{t.j}).
-#'
-#' By default the print.remoteCLS() method does not *show* all output,
-#' even if the ret_* flags are set to TRUE. Use the S3 \code{$} operator to
-#' access elements by name or use one of the extractor functions
-#' (shown in examples below).
-#'
-#' @seealso [AR_df()] for AR data frames, [fitCLS.map()] for fitting full-map
-#' time series CLS, [fitAR()] & [fitAR.map()] for using AR REML instead of CLS.
-#'
-#' @export
+#' @seealso \code{\link{fitCLS_map}} to easily apply \code{fitCLS} to many pixels;
+#' \code{\link{fitAR}} and \code{\link{fitAR_map}} for AR time series analyses.
 #'
 #' @examples
-#' data(ndvi_AK3000)
-#' x = unlist(ndvi_AK3000[1, -c(1:6)]) # time series for first pixel only
-#' t = 1:length(x) # time points
 #'
-#' ## CLS without covariates
-#' fitCLS(x = x, t = t)
+#' # simulate dummy data
+#' t = 1:30 # times series
+#' Z = rnorm(30) # random independent variable
+#' x = .2*Z + (.05*t) # generate dependent effects
+#' x[2:30] = x[2:30] + .2*x[1:29] # add autocorrelation
+#' x = x + rnorm(30, 0, .01)
+#' df = data.frame(x, t, Z) # collect in data frame
 #'
-#' ## now with 2 covariates
-#' Z = cbind(rnorm(length(x)), rnorm(length(x)))
-#' fitCLS(x = x, t = t, Z = Z)
+#' # fit a CLS model with previous x, t, and Z as predictors
+#' ## note, this model does not follow the underlying process.
+#' ### See below for a better fit.
+#' (CLS <- fitCLS(x ~ t + Z, data = df))
 #'
-#' ## get the AR data frame with save_AR.df = TRUE
-#' fitCLS(x = x, t = t, save_AR.df = TRUE)$AR.df
+#' # extract other values
+#' CLS$MSE #MSE
+#' CLS$logLik #log-likelihood
 #'
-#' ## print a summary
-#' summary(fitCLS(x = x, t = t))
+#' # fit with no lag in independent variables (as simulated):
+#' (CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
+#' summary(CLS2)
 #'
-#' ## use get_fm() to extract $fm, which is a stats::lm() object
-#' fm = get_fm(fitCLS(x = x, t = t))
-#' ## then treat it just like lm()
-#' summary(fm)
-#' resid(fm)
-fitCLS <- function(x, t, Z = NULL, save_AR.df = FALSE) {
-  stopifnot(length(x) == length(t)) # check
-  # build AR data frame
-  AR.df <- AR_df(x, t, Z)
+#' # no lag in x
+#' fitCLS(x ~ t + Z, df, lag.y = 0)
+#'
+#' # visualize the lag
+#' ## large lag in x
+#' fitCLS(x ~ t + Z, df, lag.y = 2, lag.x = 0, debug = TRUE)$lag
+#' ## large lag in Z
+#' fitCLS(x ~ t + Z, df, lag.y = 0, lag.x = 2, debug = TRUE)$lag
+#'
+#' # # throws errors (NOT RUN)
+#' # fitCLS(x ~ t + Z, df, lag.y = 28) # longer lag than time
+#' # fitCLS(cbind(x, rnorm(30)) ~ t + Z, df) # matrix response
+#'
+#' ## Methods
+#' summary(CLS)
+#' residuals(CLS)
+#'
+#' @export
+fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
+                   model = FALSE, y = FALSE){
+  # structure data from input
+  call <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  mf$formula <- update(formula, . ~ . -1)
+  m <- match(c("formula", "data"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
+  mf[[1L]] <- quote(stats::model.frame) # rename the function call
+  mf$drop.unused.levels <- TRUE
+  mf <- eval(mf, parent.frame())
+  mt <- attr(mf, "terms")
+  resp <- stats::model.response(mf, "numeric")
+  if (is.matrix(resp)){stop("response is a matrix: must be a vector")} # throw dimension error
+  stopifnot(max(lag.x, lag.y) + 2 < length(resp)) # throw lag error
+  X <- stats::model.matrix(mt, mf, contrasts = NULL)
+
+  # variable names
+  resp.name = all.vars(update(formula, . ~ 1))
+  # temporal indices
+  current <- (max(lag.x, lag.y) + 2):length(resp)
+  previous <- current - lag.y
+  lagged <- current - lag.x
+  # shift data
+  y.i <- resp[current] # response at current time
+  y.0 <- resp[previous] # response at previous time
+  X.lag <- X[lagged, ] # dependent variables (lagged)
+  # stack shifted data into dataframe
+  tmp <- data.frame(y.i, y.0, X.lag)
+  prev.name <- paste0(resp.name, ".0")
+  names(tmp) <- c(resp.name, prev.name, colnames(X))
   # fit the model
-  fm <- if(is.null(Z)) {
-     lm(x.tj ~ x.ti + t.j, data = AR.df)
-  } else {
-     lm(x.tj ~ x.ti + t.j + z, data = AR.df)
+  update.form <- paste0(". ~ ", prev.name, " + .")
+  fm <- lm(update(formula, update.form), tmp, model = model, y = y)
+
+  smry <- suppressWarnings(summary(fm))
+  ## update the output
+  fm$call <- call # update call
+  fm$SE <- smry$coefficients[, "Std. Error"] #standard errors
+  fm$tstat <- smry$coefficients[, "t value"] #t-statistic
+  fm$pval <- smry$coefficients[, "Pr(>|t|)"] #p-value
+  fm$MSE <- suppressWarnings(anova(fm))["Residuals", "Mean Sq"]#MSE
+  fm$logLik <- logLik(fm) # include log-likelihood
+
+  class(fm) <- append("remoteTS", class(fm))
+
+  # return statement
+  if(debug) { # debug mode
+    mf.new <- stats::model.frame(update(formula, update.form), tmp)
+    return(list(mf = mf, y = y, X = X, resp.name = resp.name, lag = cbind(current, previous, lagged),
+                tmp = tmp, mf.new = mf.new, fm = fm))
+  } else { # default mode
+
+    return(fm)
   }
-  # build output list
-  out <- list(call = match.call(),
-              fm = fm)
-  # add AR.df to output list
-  if(save_AR.df){
-    out$AR.df = AR.df
-  } else {out$AR.df = NULL}
-  # set remoteCLS class
-  class(out) <- c("remoteCLS", "pixel")
+}
+
+## fitCLS_map ----
+#' @title Map-level CLS for time series
+#'
+#' @description \code{fitCLS_map} is used to fit conditional least squares
+#' regression to each spatial location (pixel) within spatiotemporal data.
+#'
+#' @family remoteTS
+#'
+#' @param Y a spatiotemporal response variable: a numeric matrix or data frame
+#' where columns correspond to time points and rows correspond to pixels.
+#' @param coords a numeric coordinate matrix or data frame, with two columns and
+#' rows corresponding to each pixel
+#' @param formula a model formula, passed to \code{fitCLS()}: the left side
+#' of the formula should always be "y" and the right hand side should refer to
+#' variables in \code{X.list}
+#' @param X.list a named list of temporal or spatiotemporal predictor variables:
+#' elements must be either numeric vectors with one element for each time point
+#' or a matrix/data frame with rows corresponding to pixels and columns
+#' corresponding to time point. These elements must be named and referred to
+#' in \code{formula}
+#' @param lag.y the lag between y and y.0, passed to \code{fitCLS()}
+#' @param lag.x the lag between y and predictor variables, passed to
+#' \code{fitCLS()}
+#' @param resids.only logical: should output beyond coordinates and residuals be
+#' withheld? Useful when passing output to \code{fitCor()}
+#'
+#' @details \code{fitCLS_map} is a wrapper function that applies
+#' \code{fitCLS()} to many pixels.
+#'
+#' The function loops through the rows of \code{Y}, matched with rows of
+#' spatiotemporal predictor matrices. Purely temporal predictors, given by
+#' vectors, are used for all pixels. These predictor variables, given by the
+#' right side of \code{formula} are sourced from named elements in \code{X.list}.
+#'
+#' @seealso \code{\link}fitCLS}} for fitting CLS on individual time series and
+#' \code{\link{fitAR}} & \code{\link{fitAR.map}} for AR REML time series analysis.
+#'
+#' @return \code{fitCLS_map} returns a list object of class "mapTS".
+#'
+#' The output will always contain at least these elements:
+#'
+#' \describe{
+#'    \item{\code{call}}{the function call}
+#'    \item{\code{coords}}{the coordinate matrix or dataframe}
+#'    \item{\code{residuals}}{time series residuals: rows correspond to pixels
+#'    (\code{coords})}
+#' }
+#'
+#' When \code{resids.only = FALSE}, the output will also contain the following
+#' components. Matrices have rows that correspond to pixels and columns that
+#' correspond to time points and vector elements correspond to pixels.
+#'
+#' \describe{
+#'    \item{\code{coefficients}}{a numeric matrix of coefficeints}
+#'    \item{\code{SEs}}{a numeric matrix of coefficient standard errors}
+#'    \item{\code{tstats}}{a numeric matrix of t-statistics for coefficients}
+#'    \item{\code{pvals}}{a numeric matrix of p-values for coefficients t-tests}
+#'    \item{\code{MSEs}}{a numeric vector of MSEs}
+#'    \item{\code{LLs}}{a numeric vector of log-likelihoods}
+#'    \item{\code{fitted.values}}{a numeric matrix of fitted values}
+#' }
+#'
+#' An attribute called "resids.only" is also set to match the value of
+#' \code{resids.only}
+#'
+#' @examples
+#'
+#' # simulate dummy data
+#' time.points = 9 # time series length
+#' map.width = 5 # square map width
+#' coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
+#' ## create empty spatiotemporal variables:
+#' X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
+#' Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
+#' # setup first time point:
+#' Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
+#' X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
+#' ## project through time:
+#' for(t in 2:time.points){
+#'   Z[, t] <- Z[, t-1] + rnorm(map.width^2)
+#'   X[, t] <- .2*X[, t-1] + .1*Z[, t] + .05*t + rnorm(nrow(coords), 0 , .25)
+#' }
+#'
+#' # # visualize dummy data (NOT RUN)
+#' # library(ggplot2);library(dplyr)
+#' # data.frame(coords, X) %>%
+#' #   reshape2::melt(id.vars = c("x", "y")) %>%
+#' #   ggplot(aes(x = x, y = y, fill = value)) +
+#' #   geom_tile() +
+#' #   facet_wrap(~variable)
+#'
+#' # fit CLS, showing all output
+#' fitCLS_map(X, coords, formula = y ~ t, resids.only = TRUE)
+#'
+#' # fit CLS with temporal and spatiotemporal predictors
+#' (CLS.map <- fitCLS_map(X, coords, formula = y ~ t + Z,
+#'                        X.list = list(t = 1:ncol(X), Z = Z),
+#'                        resids.only = FALSE))
+#' ## extract some values
+#' CLS.map$coefficients # coefficients
+#' CLS.map$logLik # log-likelihoods
+#'
+#' ## Methods
+#' summary(CLS.map)
+#' residuals(CLS.map)
+#' coefficients(CLS.map)
+#'
+#' @export
+fitCLS_map <- function(Y, coords, formula = "y ~ t",
+                       X.list = list(t = 1:ncol(Y)),
+                       lag.y = 1, lag.x = 0, resids.only = FALSE){
+  call = match.call()
+
+  ## input checks
+  if (!is.matrix(Y) & !is.data.frame(Y)) { # Y
+    stop(paste("Y must be a matrix or dataframe with ncol(Y) time points",
+               "and nrow(Y) pixels"))
+  }
+  Y = as.matrix(Y)
+  if (!is.matrix(coords) & !is.data.frame(coords) |
+      nrow(coords) != nrow(Y) | ncol(coords) != 2){
+    stop(paste("coords must be a matrix or dataframe with 2 columns",
+               "and rows equal to nrow(Y)"))
+  }
+  coords = as.matrix(coords)
+  if (is.null(names(X.list))) {
+    stop(paste("X.list must be a named list, with element names",
+               "corresponding to the right hand side of formula"))
+  }
+
+  ## data dimensions
+  n.pix = nrow(Y) # pixels
+  n.time = ncol(Y) # time points
+
+  ## setup output
+  residuals = matrix(NA, nrow = n.pix, ncol = length((max(lag.x, lag.y) + 2):n.time) )
+
+  ## apply CLS to map
+  for (i in 1:n.pix) {
+
+    ## extract one pixel of data from Y into a dataframe
+    df = data.frame(y = Y[i, ]) # times series at pixel i
+
+    ## Parse covariate list, filling in df
+    for(j in names(X.list)) {
+      if (length(X.list[[j]]) == ncol(Y)) { ## purely temporal predictor
+        df[, j] = X.list[[j]]
+
+      } else if (all(dim(X.list[[j]]) == c(nrow(Y), ncol(Y)))) { ## spatio-temporal predictor
+        df[, j] = X.list[[j]][i, ]
+
+      } else { ## dimension mismatch
+        stop(paste0("all elements j of X.list must satisfy one of the following conditions:",
+                    "\n  1) dim(X.list[[j]]) == c(nrow(Y), ncol(Y))",
+                    "\n  2) length(X.list[[j]]) == ncol(Y)",
+                    "\n  culprit: X.list[['", j,"']]"))
+      }
+    }
+
+    ## fit CLS
+    cls = fitCLS(formula = as.formula(formula), data = df, lag.y = lag.y, lag.x = lag.x,
+                 debug = FALSE, model = FALSE)
+
+    ## build output elements
+    residuals[i, ] <- cls$residuals
+    if (!resids.only){ # additional output
+      if(i == 1) {
+        ## output setup
+        coefficients <- matrix(NA, nrow = n.pix, ncol = length(cls$coefficients),
+                               dimnames = list(NULL ,names(cls$coefficients)))
+        SEs <- matrix(NA, nrow = n.pix, ncol = length(cls$SE),
+                      dimnames = list(NULL, names(cls$SE)))
+        tstats <- matrix(NA, nrow = n.pix, ncol = length(cls$tstat),
+                         dimnames = list(NULL, names(cls$tstat)))
+        pvals <- matrix(NA, nrow = n.pix, ncol = length(cls$pval),
+                        dimnames = list(NULL, names(cls$pval)))
+        MSEs <- vector("numeric", n.pix)
+        LLs <- vector("numeric", n.pix)
+        fitted.values <- matrix(NA, nrow = n.pix, ncol = length(cls$fitted.values))
+      }
+      ## add to output
+      coefficients[i, ] <- cls$coefficients
+      SEs[i, ] <- cls$SE
+      tstats[i, ] <- cls$tstat
+      pvals[i, ] <- cls$pval
+      MSEs[i] <- cls$MSE
+      LLs[i] <- cls$logLik
+      fitted.values[i, ] <- cls$fitted.values
+    }
+  }
+
+  ## conditional return
+  if(resids.only){
+    out <- list(call = call, coords = coords, residuals = residuals)
+    attr(out, "resids.only") = TRUE
+  } else {
+    out <- list(call = call, coords = coords, coefficients = coefficients, SEs = SEs, tstats = tstats,
+               pvals = pvals, MSEs = MSEs, LLs = LLs, fitted.values = fitted.values,
+               residuals = residuals)
+    attr(out, "resids.only") = FALSE
+  }
+
+  class(out) <- append("mapTS", class(out))
 
   return(out)
 }
-
-## map level CLS ----
-#' @title Map CLS
-#' @description Fit a CLS model to an entire map or map subset
+## fitCLS ----
+#' @title CLS for time series
 #'
-#' @param X \eqn{n x p} matrix of data with 1-n rows of pixels and 1-p columns of time
-#' points
-#' @param t time vector of length p
-#' @param ret_xi.coef logical: return/save coefficient table for xi?
-#' @param ret_int.coef logical: return/save coefficient table for intercept?
-#' @param ret_MSE logical: return/save model MSE?
-#' @param ret_resid logical: return/save model residuals?
+#' @description \code{fitCLS} is used to fit conditional least squares regression
+#' to time series data.
 #'
-#' @return \code{remoteCLS.map} object. A list with the following elements:
+#' @family remoteTS
+#'
+#' @param formula a model formula, as used by \code{stats::lm()}
+#' @param data optional data environment to search for variables in \code{formula}.
+#' As used by \code{lm()}
+#' @param lag.y an integer indicating the lag (in time steps) between y and y.0
+#' @param lag.x an integer indicating the lag (in time steps) between y and the
+#' independent variables (except y.0).
+#' @param model logical, should the used model matrix be returned? As used by
+#' \code{lm()}
+#' @param y logical, should the used response variable be returned? As used by
+#' \code{lm()}
+#' @param debug logical debug mode
+#'
+#' @details
+#' This function regresses the response variable (y) at time t, conditional on the
+#' response at time t-\code{lag.y } and the specified dependent variables (X) at
+#' time t-\code{lag.x}:
+#'
+#' \deqn{y_{t} = y_{t - \text{lag.y}} + U_{t - \text{lag.x}} + \varepsilon}
+#'
+#' \code{stats::lm()} is then called, using the above equation.
+#'
+#' @return \code{fitCLS} returns a list object of class "remoteTS", which
+#' inherits from  "lm". In addition to the default "lm" components, the output
+#' contains these additional list elements:
+#'
 #' \describe{
-#'    \item{\code{$call}}{the matched call to this function}
-#'    \item{\code{$time.coef}}{coefficient table for the effect of time
-#'    (1 row per pixel)}
-#'    \item{\code{$mean}}{mean of X at each pixel, averaged across time}
-#'    \item{\code{$xi.coef}}{optional coefficient table for the effect of x at
-#'    time i
-#'    on x at time j (one row per pixel)}
-#'    \item{\code{$int.coef}}{optional coefficient table for the intercept}
-#'    \item{\code{$MSE}}{model MSE for each pixel}
-#'    \item{\code{$residuals}}{matrix of model residuals (1 row per pixel)}
+#'    \item{\code{tstat}}{the t-statistics for coefficients}
+#'    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
+#'    \item{\code{MSE}}{the model mean squared error}
+#'    \item{\code{logLik}}{the log-likelihood of the model fit}
 #' }
 #'
-#' @details \code{fitCLS.map()} is a vectorized version of \code{fitCLS()},
-#' which is called internally for each row of \code{X}.
-#'
-#' By default the print.remoteCLS() method does not *show* all output,
-#' even if the ret_* flags are set to TRUE. Use the S3 \code{$} operator to
-#' access elements by name or use one of the extractor functions
-#' (shown in examples below).
-#'
-#' @seealso [fitCLS()] for fitting CLS on individual time series and [fitAR()]
-#' & [fitAR.map()] for AR REML time series analysis.
-#'
-#' @export
+#' @seealso \code{\link{fitCLS_map}} to easily apply \code{fitCLS} to many pixels;
+#' \code{\link{fitAR}} and \code{\link{fitAR_map}} for AR time series analyses.
 #'
 #' @examples
-#' data(ndvi_AK3000)
-#' X = (ndvi_AK3000[1:20, -c(1:6)]) # first 20 pixels of NDVI data
-#' t = 1:ncol(X) # time points
 #'
-#' # fit CLS (only save time coefficient)
-#' CLS <- fitCLS.map(X, t)
-#' CLS # print.remoteCLS() only prints model info and time coefficients by default
-#' coef(CLS) # coefficient table as data frame
+#' # simulate dummy data
+#' t = 1:30 # times series
+#' Z = rnorm(30) # random independent variable
+#' x = .2*Z + (.05*t) # generate dependent effects
+#' x[2:30] = x[2:30] + .2*x[1:29] # add autocorrelation
+#' x = x + rnorm(30, 0, .01)
+#' df = data.frame(x, t, Z) # collect in data frame
 #'
-#' # fit again, but save all possible output
-#' CLS.full <- fitCLS.map(X, t, ret_xi.coef = TRUE, ret_int.coef = TRUE,
-#'                        ret_MSE = TRUE, ret_resid = TRUE)
+#' # fit a CLS model with previous x, t, and Z as predictors
+#' ## note, this model does not follow the underlying process.
+#' ### See below for a better fit.
+#' (CLS <- fitCLS(x ~ t + Z, data = df))
 #'
-#' # printing CLS.full still only prints model info and time coefficients by default:
-#' CLS.full
+#' # extract other values
+#' CLS$MSE #MSE
+#' CLS$logLik #log-likelihood
 #'
-#' # But all coefficeints are still contained in the output and can be accessed:
-#' coef(CLS.full) # time coefficient table; also coef(CLS.full, "time") or CLS.full$time.coef
-#' coef(CLS.full, "xi") # extract coefficient table for xi; also CLS.full$xi.coef
-#' coef(CLS.full, "intercept") # extract the coefficient table for intercept; also CLS.full$int.coef
+#' # fit with no lag in independent variables (as simulated):
+#' (CLS2 <- fitCLS(x ~ t + Z, df, lag.x = 0))
+#' summary(CLS2)
 #'
-#' resid(CLS.full) # residual matrix; also CLS.full$residuals
+#' # no lag in x
+#' fitCLS(x ~ t + Z, df, lag.y = 0)
 #'
-#' CLS.full$MSE # vector of MSEs
+#' # visualize the lag
+#' ## large lag in x
+#' fitCLS(x ~ t + Z, df, lag.y = 2, lag.x = 0, debug = TRUE)$lag
+#' ## large lag in Z
+#' fitCLS(x ~ t + Z, df, lag.y = 0, lag.x = 2, debug = TRUE)$lag
 #'
-#' summary(CLS.full) # summaries
-fitCLS.map <- function(X, t, ret_xi.coef = FALSE, ret_int.coef = FALSE,
-                       ret_MSE = TRUE, ret_resid = TRUE){
-  stopifnot(ncol(X) == length(t))
-  n.pixels = nrow(X)
-  n.time = length(t)
+#' # # throws errors (NOT RUN)
+#' # fitCLS(x ~ t + Z, df, lag.y = 28) # longer lag than time
+#' # fitCLS(cbind(x, rnorm(30)) ~ t + Z, df) # matrix response
+#'
+#' ## Methods
+#' summary(CLS)
+#' residuals(CLS)
+#'
+#' @export
+fitCLS <- function(formula, data = NULL, lag.y = 1, lag.x = 1, debug = FALSE,
+                   model = FALSE, y = FALSE){
+  # structure data from input
+  call <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  mf$formula <- update(formula, . ~ . -1)
+  m <- match(c("formula", "data"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
+  mf[[1L]] <- quote(stats::model.frame) # rename the function call
+  mf$drop.unused.levels <- TRUE
+  mf <- eval(mf, parent.frame())
+  mt <- attr(mf, "terms")
+  resp <- stats::model.response(mf, "numeric")
+  if (is.matrix(resp)){stop("response is a matrix: must be a vector")} # throw dimension error
+  stopifnot(max(lag.x, lag.y) + 2 < length(resp)) # throw lag error
+  X <- stats::model.matrix(mt, mf, contrasts = NULL)
 
-  ## run CLS
-  cls.list <- lapply(1:n.pixels, function(x){
-    fitCLS(unlist(X[x,]), t, save_AR.df = TRUE)
-  })
+  # variable names
+  resp.name = all.vars(update(formula, . ~ 1))
+  # temporal indices
+  current <- (max(lag.x, lag.y) + 2):length(resp)
+  previous <- current - lag.y
+  lagged <- current - lag.x
+  # shift data
+  y.i <- resp[current] # response at current time
+  y.0 <- resp[previous] # response at previous time
+  X.lag <- X[lagged, ] # dependent variables (lagged)
+  # stack shifted data into dataframe
+  tmp <- data.frame(y.i, y.0, X.lag)
+  prev.name <- paste0(resp.name, ".0")
+  names(tmp) <- c(resp.name, prev.name, colnames(X))
+  # fit the model
+  update.form <- paste0(". ~ ", prev.name, " + .")
+  fm <- lm(update(formula, update.form), tmp, model = model, y = y)
 
-  ## get coefficients from cls
-  coef.list <- lapply(cls.list, function(x){
-    as.data.frame(summary(get_fm(x))$coefficient)
-  })
+  smry <- suppressWarnings(summary(fm))
+  ## update the output
+  fm$call <- call # update call
+  fm$SE <- smry$coefficients[, "Std. Error"] #standard errors
+  fm$tstat <- smry$coefficients[, "t value"] #t-statistic
+  fm$pval <- smry$coefficients[, "Pr(>|t|)"] #p-value
+  fm$MSE <- suppressWarnings(anova(fm))["Residuals", "Mean Sq"]#MSE
+  fm$logLik <- logLik(fm) # include log-likelihood
 
-  ## setup coefficient tables
-  out.list <- list(call = match.call(),
-                   time.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels)))
-  colnames(out.list$time.coef) <- c("Est", "SE", "t","p.t")
-  out.list$mean = rowMeans(X)
-  if (ret_xi.coef){
-    out.list$xi.coef <- as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
-    colnames(out.list$xi.coef) <- c("Est", "SE", "t","p.t")
+  class(fm) <- append("remoteTS", class(fm))
+
+  # return statement
+  if(debug) { # debug mode
+    mf.new <- stats::model.frame(update(formula, update.form), tmp)
+    return(list(mf = mf, y = y, X = X, resp.name = resp.name, lag = cbind(current, previous, lagged),
+                tmp = tmp, mf.new = mf.new, fm = fm))
+  } else { # default mode
+
+    return(fm)
   }
-  if (ret_int.coef){
-    out.list$int.coef <- as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
-    colnames(out.list$int.coef) <- c("Est", "SE", "t","p.t")
+}
+
+## fitCLS_map ----
+#' @title Map-level CLS for time series
+#'
+#' @description \code{fitCLS_map} is used to fit conditional least squares
+#' regression to each spatial location (pixel) within spatiotemporal data.
+#'
+#' @family remoteTS
+#'
+#' @param Y a spatiotemporal response variable: a numeric matrix or data frame
+#' where columns correspond to time points and rows correspond to pixels.
+#' @param coords a numeric coordinate matrix or data frame, with two columns and
+#' rows corresponding to each pixel
+#' @param formula a model formula, passed to \code{fitCLS()}: the left side
+#' of the formula should always be "y" and the right hand side should refer to
+#' variables in \code{X.list}
+#' @param X.list a named list of temporal or spatiotemporal predictor variables:
+#' elements must be either numeric vectors with one element for each time point
+#' or a matrix/data frame with rows corresponding to pixels and columns
+#' corresponding to time point. These elements must be named and referred to
+#' in \code{formula}
+#' @param lag.y the lag between y and y.0, passed to \code{fitCLS()}
+#' @param lag.x the lag between y and predictor variables, passed to
+#' \code{fitCLS()}
+#' @param resids.only logical: should output beyond coordinates and residuals be
+#' withheld? Useful when passing output to \code{fitCor()}
+#'
+#' @details \code{fitCLS_map} is a wrapper function that applies
+#' \code{fitCLS()} to many pixels.
+#'
+#' The function loops through the rows of \code{Y}, matched with rows of
+#' spatiotemporal predictor matrices. Purely temporal predictors, given by
+#' vectors, are used for all pixels. These predictor variables, given by the
+#' right side of \code{formula} are sourced from named elements in \code{X.list}.
+#'
+#' @seealso \code{\link}fitCLS}} for fitting CLS on individual time series and
+#' \code{\link{fitAR}} & \code{\link{fitAR.map}} for AR REML time series analysis.
+#'
+#' @return \code{fitCLS_map} returns a list object of class "mapTS".
+#'
+#' The output will always contain at least these elements:
+#'
+#' \describe{
+#'    \item{\code{call}}{the function call}
+#'    \item{\code{coords}}{the coordinate matrix or dataframe}
+#'    \item{\code{residuals}}{time series residuals: rows correspond to pixels
+#'    (\code{coords})}
+#' }
+#'
+#' When \code{resids.only = FALSE}, the output will also contain the following
+#' components. Matrices have rows that correspond to pixels and columns that
+#' correspond to time points and vector elements correspond to pixels.
+#'
+#' \describe{
+#'    \item{\code{coefficients}}{a numeric matrix of coefficeints}
+#'    \item{\code{SEs}}{a numeric matrix of coefficient standard errors}
+#'    \item{\code{tstats}}{a numeric matrix of t-statistics for coefficients}
+#'    \item{\code{pvals}}{a numeric matrix of p-values for coefficients t-tests}
+#'    \item{\code{MSEs}}{a numeric vector of MSEs}
+#'    \item{\code{LLs}}{a numeric vector of log-likelihoods}
+#'    \item{\code{fitted.values}}{a numeric matrix of fitted values}
+#' }
+#'
+#' An attribute called "resids.only" is also set to match the value of
+#' \code{resids.only}
+#'
+#' @examples
+#'
+#' # simulate dummy data
+#' time.points = 9 # time series length
+#' map.width = 5 # square map width
+#' coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
+#' ## create empty spatiotemporal variables:
+#' X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
+#' Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
+#' # setup first time point:
+#' Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
+#' X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
+#' ## project through time:
+#' for(t in 2:time.points){
+#'   Z[, t] <- Z[, t-1] + rnorm(map.width^2)
+#'   X[, t] <- .2*X[, t-1] + .1*Z[, t] + .05*t + rnorm(nrow(coords), 0 , .25)
+#' }
+#'
+#' # # visualize dummy data (NOT RUN)
+#' # library(ggplot2);library(dplyr)
+#' # data.frame(coords, X) %>%
+#' #   reshape2::melt(id.vars = c("x", "y")) %>%
+#' #   ggplot(aes(x = x, y = y, fill = value)) +
+#' #   geom_tile() +
+#' #   facet_wrap(~variable)
+#'
+#' # fit CLS, showing all output
+#' fitCLS_map(X, coords, formula = y ~ t, resids.only = TRUE)
+#'
+#' # fit CLS with temporal and spatiotemporal predictors
+#' (CLS.map <- fitCLS_map(X, coords, formula = y ~ t + Z,
+#'                        X.list = list(t = 1:ncol(X), Z = Z),
+#'                        resids.only = FALSE))
+#' ## extract some values
+#' CLS.map$coefficients # coefficients
+#' CLS.map$logLik # log-likelihoods
+#'
+#' ## Methods
+#' summary(CLS.map)
+#' residuals(CLS.map)
+#' coefficients(CLS.map)
+#'
+#' @export
+fitCLS_map <- function(Y, coords, formula = "y ~ t",
+                       X.list = list(t = 1:ncol(Y)),
+                       lag.y = 1, lag.x = 1, resids.only = FALSE){
+  call = match.call()
+
+  ## input checks
+  if (!is.matrix(Y) & !is.data.frame(Y)) { # Y
+    stop(paste("Y must be a matrix or dataframe with ncol(Y) time points",
+               "and nrow(Y) pixels"))
   }
-  if (ret_MSE) {out.list$MSE = vector("numeric", n.pixels)}
-  if (ret_resid) {out.list$residuals = matrix(NA, ncol = n.time - 1, nrow = n.pixels)}
-
-  # build the tables
-  for (i in 1:n.pixels){
-    out.list$time.coef[i, ] <- unlist(coef.list[[i]]["t.j", ])
-    if (ret_xi.coef) {out.list$xi.coef[i, ] <- unlist(coef.list[[i]]["x.ti", ])}
-    if (ret_int.coef) {out.list$int.coef[i, ] <- unlist(coef.list[[i]]["(Intercept)", ])}
-    if (ret_MSE) {out.list$MSE[i] <- sigma(get_fm(cls.list[[i]]))^2}
-    if (ret_resid) {out.list$residuals[i, ] <- residuals(get_fm(cls.list[[i]]))}
+  Y = as.matrix(Y)
+  if (!is.matrix(coords) & !is.data.frame(coords) |
+      nrow(coords) != nrow(Y) | ncol(coords) != 2){
+    stop(paste("coords must be a matrix or dataframe with 2 columns",
+               "and rows equal to nrow(Y)"))
+  }
+  coords = as.matrix(coords)
+  if (is.null(names(X.list))) {
+    stop(paste("X.list must be a named list, with element names",
+               "corresponding to the right hand side of formula"))
   }
 
+  ## data dimensions
+  n.pix = nrow(Y) # pixels
+  n.time = ncol(Y) # time points
 
-  class(out.list) <- c("remoteCLS", "map")
+  ## setup output
+  residuals = matrix(NA, nrow = n.pix, ncol = length((max(lag.x, lag.y) + 2):n.time) )
 
-  return(out.list)
+  ## apply CLS to map
+  for (i in 1:n.pix) {
+
+    ## extract one pixel of data from Y into a dataframe
+    df = data.frame(y = Y[i, ]) # times series at pixel i
+
+    ## Parse covariate list, filling in df
+    for(j in names(X.list)) {
+      if (length(X.list[[j]]) == ncol(Y)) { ## purely temporal predictor
+        df[, j] = X.list[[j]]
+
+      } else if (all(dim(X.list[[j]]) == c(nrow(Y), ncol(Y)))) { ## spatio-temporal predictor
+        df[, j] = X.list[[j]][i, ]
+
+      } else { ## dimension mismatch
+        stop(paste0("all elements j of X.list must satisfy one of the following conditions:",
+                    "\n  1) dim(X.list[[j]]) == c(nrow(Y), ncol(Y))",
+                    "\n  2) length(X.list[[j]]) == ncol(Y)",
+                    "\n  culprit: X.list[['", j,"']]"))
+      }
+    }
+
+    ## fit CLS
+    cls = fitCLS(formula = as.formula(formula), data = df, lag.y = lag.y, lag.x = lag.x,
+                 debug = FALSE, model = FALSE)
+
+    ## build output elements
+    residuals[i, ] <- cls$residuals
+    if (!resids.only){ # additional output
+      if(i == 1) {
+        ## output setup
+        coefficients <- matrix(NA, nrow = n.pix, ncol = length(cls$coefficients),
+                               dimnames = list(NULL ,names(cls$coefficients)))
+        SEs <- matrix(NA, nrow = n.pix, ncol = length(cls$SE),
+                      dimnames = list(NULL, names(cls$SE)))
+        tstats <- matrix(NA, nrow = n.pix, ncol = length(cls$tstat),
+                         dimnames = list(NULL, names(cls$tstat)))
+        pvals <- matrix(NA, nrow = n.pix, ncol = length(cls$pval),
+                        dimnames = list(NULL, names(cls$pval)))
+        MSEs <- vector("numeric", n.pix)
+        LLs <- vector("numeric", n.pix)
+        fitted.values <- matrix(NA, nrow = n.pix, ncol = length(cls$fitted.values))
+      }
+      ## add to output
+      coefficients[i, ] <- cls$coefficients
+      SEs[i, ] <- cls$SE
+      tstats[i, ] <- cls$tstat
+      pvals[i, ] <- cls$pval
+      MSEs[i] <- cls$MSE
+      LLs[i] <- cls$logLik
+      fitted.values[i, ] <- cls$fitted.values
+    }
+  }
+
+  ## conditional return
+  if(resids.only){
+    out <- list(call = call, coords = coords, residuals = residuals)
+    attr(out, "resids.only") = TRUE
+  } else {
+    out <- list(call = call, coords = coords, coefficients = coefficients, SEs = SEs, tstats = tstats,
+               pvals = pvals, MSEs = MSEs, LLs = LLs, fitted.values = fitted.values,
+               residuals = residuals)
+    attr(out, "resids.only") = FALSE
+  }
+
+  class(out) <- append("mapTS", class(out))
+
+  return(out)
 }

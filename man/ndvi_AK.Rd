@@ -7,10 +7,10 @@
 \format{
 data frame with 31486 rows corresponding to sites and 38 columns:
 \describe{
-  \item{row}{grid row of the pixel}
-  \item{col}{grid column of the pixel}
   \item{lng}{longitude of the pixel}
   \item{lat}{latitude of the pixel}
+  \item{AR_coef}{pre-calculated AR REML coefficient}
+  \item{CLS_coef}{pre-calculated CLS coefficient}
   \item{land}{dominant land class of the pixel}
   \item{land}{logical: is this land class rare?}
   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}

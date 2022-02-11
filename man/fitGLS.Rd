@@ -2,121 +2,191 @@
 % Please edit documentation in R/fitGLS.R
 \name{fitGLS}
 \alias{fitGLS}
-\alias{fitGLS2}
-\alias{LogLikGLS}
-\alias{fitGLS_R}
-\title{Fit GLS to remote sensing data}
+\title{Fit a PARTS GLS model.}
 \usage{
-fitGLS(X, V, y, X0, nugget = 0, save_xx = FALSE, threads = 1)
-
-fitGLS2(
+fitGLS(
   formula,
   data,
   V,
   nugget = 0,
-  form.0 = NULL,
-  save_xx = FALSE,
-  threads = 1,
-  contrasts = NULL,
-  LL_only = FALSE,
-  no_F = FALSE,
+  formula0 = NULL,
+  save.xx = FALSE,
+  save.invchol = FALSE,
+  logLik.only = FALSE,
+  no.F = TRUE,
+  coords,
+  distm_FUN,
+  covar_FUN,
+  covar.pars,
+  invCholV,
   ...
 )
-
-LogLikGLS(nugget, X, V, y)
-
-fitGLS_R(X, V, y, X0 = NULL, nugget = 0)
 }
 \arguments{
-\item{X}{model matrix (double)}
+\item{formula}{a model formula}
 
-\item{V}{varcov matrix (double)}
+\item{data}{an optional data frame environment in which to search for
+variables given by \code{formula}}
 
-\item{y}{response vector (double)}
+\item{V}{a covariance matrix, which must be positive definitive. This argument
+is optional if \code{coords}, \code{distm_FUN}, \code{covar_FUN}, and
+\code{covar.pars} are given instead.}
 
-\item{X0}{null model matrix (double)}
+\item{nugget}{an optional numeric nugget, must be positive}
 
-\item{nugget}{nugget added to V (double)}
+\item{formula0}{an optional formula for the null model to be compared with
+\code{formula} by an F-test}
 
-\item{save_xx}{logical: should xx, xx0, and invcholV be returned? This
-functionality is meant for use with the partitioned GLS whereby these
-values are used to calculate cross-partition statistics.}
+\item{save.xx}{logical: should information needed for cross-partition
+comparisons be returned?}
 
-\item{threads}{number of threads used by Eigen for matrix algebra}
+\item{save.invchol}{logical: should the inverse of the Cholesky matrix be
+returned?}
 
-\item{formula}{formula to build the model with}
+\item{logLik.only}{logical: should calculations stop after calculating parital
+log-likelihood?}
 
-\item{data}{object containing the data}
+\item{no.F}{logical: should F-test calculations be made?}
 
-\item{form.0}{null model formula (default: "y ~ 1")}
+\item{coords}{optional coordinate matrix for calculating \code{V} internally}
 
-\item{contrasts}{optional linear contrasts to use}
+\item{distm_FUN}{optional function for calculating a distance matrix from
+\code{coords}, when calculating \code{V} internally}
 
-\item{LL_only}{logical: should only the log-liklihood be computed?}
+\item{covar_FUN}{optional distance-based covariance function for calculating
+\code{V} internally}
 
-\item{no_F}{logical: should calculations needed for F tests be skipped?}
+\item{covar.pars}{an optional named list of parameters passed to \code{covar_FUN}
+when calculating \code{V} internally}
 
-\item{...}{additional arguments passed to \code{\link{optimize_nugget}}}
+\item{invCholV}{optional pre-calculated inverse cholesky matrix to use in place
+of \code{V}}
+
+\item{...}{additional arguments passed to \code{optimize_nugget}, which are
+only used if if \code{nugget = NA}}
 }
 \value{
-remoteGLS object see \code{?remoteGLS()} for more info.
+\code{fitGLS} returns a list object of class "remoteGLS", if
+\code{logLik.only = FALSE}. The list contains at least the following elements:
+
+\describe{
+    \item{coefficients}{coefficient estimates for predictor variables}
+    \item{SSE}{sum of squares error}
+    \item{MSE}{mean squared error}
+    \item{SE}{standard errors}
+    \item{df_t}{degrees of freedom for the t-test}
+    \item{logDetV}{log-determinant of V}
+    \item{tstat}{t-test statistic}
+    \item{pval_t}{p-value of the t-statistic}
+    \item{logLik}{the Log-likelihood of the model}
+    \item{nugget}{the nugget used in fitting}
+}
+
+If \code{no.F = FALSE}, the following elements, corresponding to the null
+model and F-test are also calculated:
+
+\describe{
+    \item{coefficients0}{coefficient estimates for the null model}
+    \item{SSE0}{sum of squares error for the null model}
+    \item{MSE0}{mean squared error for the null model}
+    \item{SE0}{the standard errors for null coefficients}
+    \item{MSR}{the regression mean square}
+    \item{df0}{the null model F-test degrees of freedom}
+    \item{LL0}{the log-likelihood of the null model}
+    \item{df_F}{the F-test degrees of freedom, for the main model}
+    \item{Fstat}{the F-statistic}
+    \item{pval_F}{the F-test p-value}
+    \item{formula}{the alternate formula used}
+    \item{formula0}{the null formula used}
+}
+
+An attribute called also set to \code{"no.F"} is set to the value of
+argument \code{no.F}, which signals to generic methods how to handle the output.
+
+If \code{logLik.only = TRUE}, a single numeric output containing the partial
+log-likelihood is returned. This value is primarily for ML estimation. In
+parameter space for a given dataset, the minimum partial likelihood corresponds
+to the maximum true likelihood.
 }
 \description{
-Fit GLS to remote sensing data
-
-Alternative fitGLS function
-
-Caculate log-liklihood of GLS model
+Fit a PARTS GLS model.
 }
 \details{
+conduct generalized least-squares regression of
+spatiotemporal trends
 
+\code{fitGLS} fits a GLS model, using terms specified in \code{formula}.
+In the PARTS method, generally the left side of \code{formula} should be
+pixel-level trend estimates and the right side should be spatial predictors.
+The errors of the GLS are correlated according to covariance matrix \code{V}.
 
-\code{fitGLS2()} first creates an empty remoteGLS object
-(with \code{remoteGLS()}) and then fills in the elements by modifying
-the remoteGLS object in the C++ function.
+If \code{nugget = NA}, an ML nugget is estimated from the data using the
+\code{optimize_nugget()} function. Arguments additional arguments (\code{...})
+are passed to \code{optimize_nugget} in this case. \code{V} must be provided
+for nugget optimization.
 
-After further testing to determine which function is most efficient,
-either \code{fitGLS()} or \code{fitGLS2()} will be deprecated in favor
-of the other. Though, the formula notation of \code{fitGLS2()} will likely
-be kept in either case.
+If \code{formula0} is not specified, the default is to fit an intercept-only
+null model.
 
-\code{fitGLS2()} uses a slightly different C++ function from \code{fitGLS()}
-to achieve the different behavior.
+\code{save.xx} is included to allow for manually conducting a partitioned
+GLS analyses. Because most users will not need this feature, opting instead
+to use \code{fitGLS_parition()}, \code{save.xx = FALSE} by default.
 
-\code{LogLikGLS()} returns only the log-likelihood and is used to
-by other functions for optimization but should be deprecated and simply
-added as functionality to \code{fitGLS()} and/or \code{fitGLS2()} in future
-implementations.
+Similarly, \code{save.invchol} is included to allow for recycling of the
+inverse cholesky matrix. Often, inverting the large cholesky matrix
+(i.e., \code{invert_chol(V)}) is the slowest part of GLS. This argument exists
+to allow users to recycle this process, though no \code{remotePARTS} function
+currently exists that can use \code{invert_chol(V)} to fit the GLS.
 
-\code{fitGLS()} is a C++ implementation of \code{fitGLS_R()}.
+\code{logLik.only = TRUE} will return only the partial log-likelihood, which can
+minimized to obtain the maximum likelihood for a given set of data.
+
+If \code{no.F = TRUE}, then the model given by \code{formula} is not compared
+to the model given by \code{formula0}.
+
+If \code{V} is not provided, it can be fit internally by specifying all of
+\code{coords}, \code{distm_FUN}, \code{covar_FUN}, and \code{covar.pars}.
+The function given by \code{distm_FUN} will calculate a distance matrix from
+\code{coords}, which is then transformed into a distance-based covariance
+matrix with \code{covar_FUN} and parameters given by \code{covar.pars}.
+
+This function uses C++ code that uses the Eigen matrix library (RcppEigen
+package) to fit models as efficiently as possible. As such, all available
+CPU cores are used for matrix calculations on systems with OpenMP
+support.
 }
 \examples{
 ## read data
-data.file = system.file("extdata", "AK_ndvi_common-land.csv",
-                        package = "remotePARTS")
-
-df = data.table::fread(data.file, nrows = 1000) # read first 1000 rows
-
-## format data
-datalist = part_data(1, part_form = cls.coef ~ 0 + land, part_df = df,
-          part_mat = matrix(1:1000, ncol = 1))
+data(ndvi_AK3000)
+df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 
 ## fit covariance matrix
-V = fitV(geosphere::distm(datalist$coords), spatialcor = 2, method = "exponential")
+V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)
 
 ## run GLS
-GLS = fitGLS(X = datalist$X, y = datalist$y, X0 = datalist$X0, V = V,
-             nugget = 0, save_xx = TRUE)
+(GLS = fitGLS(CLS_coef ~ 0 + land, data = df, V = V))
 
-print(GLS)
+## with F-test calculations to compare with the NULL model
+(GLS.F = fitGLS(CLS_coef ~ 0 + land, data = df, V = V, no.F = FALSE))
 
+## find ML nugget
+fitGLS(CLS_coef ~ 0 + land, data = df, V = V, no.F = FALSE, nugget = NA)
 
-## Alternative GLS syntax
-GLS2 = fitGLS2(formula = "cls.coef ~ 0 + land", data = df, V = V, form.0 = "cls.coef ~ 1",
-             nugget = 0, save_xx = TRUE)
+## calculate V internally
+coords = cbind(df$lng, df$lat)
+fitGLS(CLS_coef ~ 0 + land, data = df, logLik.only = FALSE, coords = coords,
+       distm_FUN = "distm_scaled", covar_FUN = "covar_exp", covar.pars = list(range = .01))
 
-print(GLS2)
-}
-\seealso{
-[remoteGLS()], [part_data()], [GLS_worker()]
+## use inverse cholesky
+fitGLS(CLS_coef ~ 0 + land, data = df, invCholV = invert_chol(V))
+
+## save inverse cholesky matrix
+invchol = fitGLS(CLS_coef ~ 0 + land, data = df, V = V, save.invchol = TRUE)$invcholV
+
+## re-use inverse cholesky instead of V
+fitGLS(CLS_coef ~ 0 + land, data = df, invCholV = invchol)
+
+## Log-likelihood (fast)
+fitGLS(CLS_coef ~ 0 + land, data = df, V = V, logLik.only = TRUE)
+
 }

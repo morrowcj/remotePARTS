@@ -67,3 +67,69 @@ if (!file.exists("data-raw/AK_ndvi_common-land.csv")) {
             to = "inst/extdata/AK_ndvi_common-land.csv",
             overwrite = TRUE)
 }
+
+## Add CLS and AR coefficients to AK data ----
+### 08-Feb-2022
+#### AK
+load("data/ndvi_AK.rda", verbose = TRUE)
+ndvi_AK <- as.data.frame(ndvi_AK)
+ndvi.cols = grep(pattern = "ndvi", x = names(ndvi_AK), value = TRUE)
+Y = as.matrix(ndvi_AK[, ndvi.cols])
+coords = as.matrix(ndvi_AK[, c("lng", "lat")])
+# CLS
+if(is.null(ndvi_AK$CLS_coef)){
+  CLS <- remotePARTS::fitCLS_map(Y = Y, coords = coords, lag.x = 0, resids.only = FALSE)
+  tmp <- cbind(CLS_coef = CLS$coefficients[, "t"], CLS$coords)
+  tmp2 <- merge(tmp, ndvi_AK, by = c("lng", "lat"))
+  stopifnot(ncol(tmp2) == (ncol(ndvi_AK) + 1))
+  stopifnot(nrow(tmp2) == nrow(ndvi_AK))
+  ndvi_AK = tmp2
+  save(ndvi_AK, file = "data/ndvi_AK.rda", compress = "xz")
+}
+# AR
+if(is.null(ndvi_AK$AR_coef)){
+  AR <- remotePARTS::fitAR_map(Y = Y, coords = coords, resids.only = FALSE)
+  tmp <- cbind(AR_coef = AR$coefficients[, "t"], AR$coords)
+  tmp2 <- merge(tmp, ndvi_AK, by = c("lng", "lat"))
+  stopifnot(ncol(tmp2) == (ncol(ndvi_AK) + 1))
+  stopifnot(nrow(tmp2) == nrow(ndvi_AK))
+  ndvi_AK = tmp2
+  save(ndvi_AK, file = "data/ndvi_AK.rda", compress = "xz")
+}
+#### AK3000
+load("data/ndvi_AK3000.rda", verbose = TRUE)
+ndvi_AK3000 <- as.data.frame(ndvi_AK3000)
+ndvi.cols = grep(pattern = "ndvi", x = names(ndvi_AK), value = TRUE)
+Y = as.matrix(ndvi_AK3000[, ndvi.cols])
+coords = as.matrix(ndvi_AK3000[, c("lng", "lat")])
+# CLS
+if(is.null(ndvi_AK3000$CLS_coef)){
+  CLS <- remotePARTS::fitCLS_map(Y = Y, coords = coords, lag.x = 0, resids.only = FALSE)
+  tmp <- cbind(CLS_coef = CLS$coefficients[, "t"], CLS$coords)
+  tmp2 <- merge(tmp, ndvi_AK3000, by = c("lng", "lat"))
+  stopifnot(ncol(tmp2) == (ncol(ndvi_AK3000) + 1))
+  stopifnot(nrow(tmp2) == nrow(ndvi_AK3000))
+  ndvi_AK3000 = tmp2
+  save(ndvi_AK3000, file = "data/ndvi_AK3000.rda", compress = "xz")
+}
+# AR
+if(is.null(ndvi_AK3000$AR_coef)){
+  AR <- remotePARTS::fitAR_map(Y = Y, coords = coords, resids.only = FALSE)
+  tmp <- cbind(AR_coef = AR$coefficients[, "t"], AR$coords)
+  tmp2 <- merge(tmp, ndvi_AK3000, by = c("lng", "lat"))
+  stopifnot(ncol(tmp2) == (ncol(ndvi_AK3000) + 1))
+  stopifnot(nrow(tmp2) == nrow(ndvi_AK3000))
+  ndvi_AK3000 = tmp2
+  save(ndvi_AK3000, file = "data/ndvi_AK3000.rda", compress = "xz")
+}
+## save CSV in inst/
+if (!file.exists("data-raw/AK3000_ndvi_common-land.csv")) {
+  library(remotePARTS)
+  load("data/ndvi_AK3000.rda")
+  AK = ndvi_AK3000[!ndvi_AK3000$rare.land, ] # remove rare land classes
+  AK$land = droplevels(AK$land) # drop unused land classes
+  write.csv(AK, "data-raw/AK3000_ndvi_common-land.csv", row.names = FALSE, quote = FALSE)
+  file.copy(from = "data-raw/AK3000_ndvi_common-land.csv",
+            to = "inst/extdata/AK3000_ndvi_common-land.csv",
+            overwrite = TRUE)
+}

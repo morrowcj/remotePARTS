@@ -10,15 +10,4 @@
 .*.so
 
 # folders
-data-raw/north_america_checked.csv
-R/arcive
 data-raw
-old-code/data-backup/
-
-# file types
-*.html
-
-# specific files
-doc
-Meta
-inst/doc

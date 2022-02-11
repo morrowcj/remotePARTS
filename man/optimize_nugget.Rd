@@ -2,22 +2,24 @@
 % Please edit documentation in R/optimize_nugget.R
 \name{optimize_nugget}
 \alias{optimize_nugget}
-\alias{fitNugget}
-\alias{fitNugget_Rcpp}
 \title{Find the maximum likelihood estimate of the nugget}
 \usage{
-optimize_nugget(X, V, y, lower = 0, upper = 1, tol = 1e-05, debug = FALSE)
-
-fitNugget(X, V, y, lower = 0, upper = 1, tol = 1e-05)
-
-fitNugget_Rcpp(X, V, y, lower = 0, upper = 1, tol = 1e-05)
+optimize_nugget(
+  X,
+  y,
+  V,
+  lower = 0,
+  upper = 1,
+  tol = .Machine$double.eps^0.25,
+  debug = FALSE
+)
 }
 \arguments{
 \item{X}{numeric (double) nxp matrix}
 
-\item{V}{numeric (double) nxn matrix}
-
 \item{y}{numeric (double) nx1 column vector}
+
+\item{V}{numeric (double) nxn matrix}
 
 \item{lower}{lower boundary for nugget search}
 
@@ -32,10 +34,6 @@ maximum likelihood nugget estimate
 }
 \description{
 Find the maximum likelihood estimate of the nugget
-
-fitNugget - R version
-
-fitNugget_Rcpp - Rcpp version
 }
 \details{
 Finds the maximum likelihood nugget estimate via mathematical
@@ -48,21 +46,22 @@ in C++. Optimization takes place via a C++ version of the \code{fmin} routine
 The function \code{LogLikGLS()} is optimized for \code{nugget}. Once the
 \code{LogLikGLS()} functionality is absorbed by \code{fitGLS()}, it will
 be used instead.
-
-\code{fitNugget} is the R-only version of \code{optimize_nugget()}.
-It uses \code{fitGLS_R()} and \code{stats::optimize()} to obtain the ML
-nugget.
-
-\code{fitNugget_Rcpp} is a hybrid between \code{optimize_nugget()}
-and \code{fitNugget()}. It optimizes the C++ function \code{LogLikGLS()} with
-the R function \code{stats::optimize()}.
-
-After further testing, only the most efficeint of the 3 nugget optimizers will
-remain in the package.
 }
 \examples{
+## read data
+data(ndvi_AK3000)
+df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+
+## format data
+X = stats::model.matrix(CLS_coef ~ 0 + land, data = df)
+
+## fit covariance matrix
+V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)
+
+## find the ML nugget
+remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
 
 }
 \seealso{
-[stats::optimize()]
+\code{?stats::optimize()}
 }

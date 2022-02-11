@@ -1,269 +1,168 @@
-# Optimize GLS
 
-## GLS function to optimize
-#' function to optimize GLS parameters r, a, and nugget
-#' @param in.pars parameters to optimize
-#' @param y response vector
-#' @param modmat predictor model matrix
-#' @param D distance matrix
-#' @param constrain do parameters need to be constrained internally?
-#' @rdname optimize_GLS
-#' @details When \code{constrain = FALSE}, it is assumed that parameter values
-#'  given by \code{in.pars} are already constrained to their desired range. When
-#'  When \code{constrain = TRUE}, parameter values are internally transformed.
+#' @title Fit a PARTS GLS model, with maximum likelihood spatial parameters
 #'
-#'  r and nugget are transformed with an inverse logit
-#'  (i.e., \code{function(x){1 / (1 + exp(-x))}}) and \code{a} is transformed
-#'  with an exponential function (i.e., exp(a)).
+#' @details Estimate spatial parameters, via maximum likelihood, from data
+#' rather than from time series residuals; Fit a GLS with these specifications.
 #'
-optim_GLS_func <- function(in.pars = c(r = 0.01, a = 1, nug = 0.1),
-                               y, modmat, D, verbose = FALSE,
-                               V.meth = "exponential-power",
-                               constrain = FALSE # should pars be constrained?
-){
-  # define inverse logit function
-  inv_logit = function(l) {1 / (1 + exp(-l))}
-
-  ## constrain parameters, if needed
-  if(constrain){
-    in.pars["r"] = inv_logit(in.pars["r"])
-    if(V.meth == "exponential-power"){in.pars["a"] = exp(in.pars["a"])}
-    in.pars["nug"] = inv_logit(in.pars["nug"])
-  }
-
-  ## Extract spatial parameters
-  if (V.meth == "exponential-power"){
-    # force values between 0,1
-    spcor = c(r = in.pars["r"], a = in.pars["a"])
-    nug = in.pars["nug"]
-  } else if (V.meth == "exponential") {
-    spcor = c(r = in.pars["r"])
-    nug = in.pars["nug"]
-  }
-
-  ## Fit V matrix
-  V = fitV(Dist = D/max(D), spatialcor = spcor, method = V.meth)
-
-  ## Check that V is valid covariance matrix
-  if(any(is.nan(V)) || !all(check_posdef(V))){
-    LL = NA # return NA if not valid
-    # LL = -9e100 ## return lowest finite LL
-  } else {
-    ## Calculate log-liklihood
-    LL = fitGLS2(y ~ 0 + modmat, V = V, nugget = nug, LL_only = TRUE)
-  }
-  ## Print the values, if asked
-  if(verbose){ print(c(r = unname(spcor[1]),
-                       a = unname(spcor[2]),
-                       nugget = unname(nug),
-                       LL = LL)) }
-
-  # if(constrain){warning("constrain = TRUE: Parameter values need to be back-transformed to be valid.")}
-
-  return(-LL)
-}
-
-#' Fit a GLS by estimating r, a, and nugget
+#' @param formula a model formula, passed to \code{fitGLS}
+#' @param data an optional data frame environment in which to search for
+#' variables given by \code{formula}; passed to \code{fitGLS}
+#' @param coords a numeric coordinate matrix or data frame, with two columns and
+#' rows corresponding to each pixel
+#' @param distm_FUN a function to calculate a distance matrix from \code{coords}
+#' @param covar_FUN a function to estimate distance-based covariances
+#' @param start a named vector of starting values for each parameter to be estimated;
+#' names must match the names of arguments in \code{covar_FUN} or "nugget"
+#' @param fixed an optional named vector of fixed parameter values; names
+#' must match the names of arguments in \code{covar_FUN} or "nugget"
+#' @param opt.only logical: if TRUE, execution will halt after estimating the parameters;
+#' a final GLS will not be fit with the estimated parameters
+#' @param formula0,save.xx,save.invchol,no.F arguments passed to \code{fitGLS}
+#' for final GLS output
+#' @param ... additional arguments passed to \code{stats::optim()}
 #'
-#' @param formula model formula
-#' @param coords 2-column matrix of x and y coordinates
-#' @param dist_f distance function to use
-#' @param V.meth covariance method for fitting V
-#' @param nugget spatial nugget. If NA, a nugget will be estimated
-#' @param spcor spatial correlation paramters either NA, a single value (r) or
-#' a named vector: c(r = ..., a = ...). if spcor = NA, these parameters will be
-#' estimated
-#' @param verbose should additional info be printed?
-#' @param data data object for which formula tries to match
-#' @param pars.start default starting values for the spcor
-#' @param save_xx save cross correlation stats?
-#' @param ret.GLS return GLS?
-#' @param algorithm method passed to optimizer (default = 'Nelder-Mead')
-#' see \code{?optim()} for available methods
-#' @param debug boolean: debug mode?
-#' @param ... additional arguments passed to \code{fitGLS2()}
+#' @details \code{optimize_GLS} fits a GLS by estimating spatial parameters from
+#' data. \code{\link{fitCor}}, combined with \code{\link{fitGLS}(nugget = NA)},
+#' gives better estimates of spatial parameters, but time-series residuals may
+#' not be available in all cases. In these cases, spatial parameters can be
+#' estimated from distances among points and a response vector. Mathematical
+#' optimization of the log likelihood of different GLS models are computed by
+#' calling \code{optim()} on \code{fitGLS}.
 #'
-#' @rdname optimize_GLS
+#' Distances are calculated with \code{distm_FUN} and a covariance matrix is
+#' calculated from these distances with \code{covar_FUN}. Arguments to to
+#' \code{covar_FUN}, except distances, are given by \code{start} and \code{fixed}.
+#' Parameters specified in \code{start} will be be estimated while those given
+#' by \code{fixed} will remain constant throughout fitting. Parameter names in
+#' \code{start} and \code{fixed} should exactly match the names of arguments in
+#' \code{covar_FUN} and should not overlap (though, \code{fixed} takes precedence).
 #'
-#' @seealso [fitGLS2()]
+#' In addition to arguments of \code{covar_FUN} a "nugget" component can
+#' also be occur in \code{start} or \code{fixed}. If "nugget" does not occur
+#' in either vector, the GLS are fit with \code{nugget = 0}. A zero nugget also
+#' allows much faster computation, through recycling the common
+#' inverse cholesky matrix in each GLS computation. A non-zero nugget requires
+#' inversion of a different matrix at each iteration, which can be
+#' substantially slower.
 #'
-#' @return a remoteGLS object
+#' If \code{opt.only = FALSE}, the estimated parameters are used to fit the final
+#' maximum likelihood GLS solution with \code{fitGLS()} and arguments
+#' \code{formula0}, \code{save.xx}, \code{save.invchol}, and \code{no.F}.
 #'
-#' @export
+#' Some parameter combinations may not produce valid covariance matrices. During
+#' the optimization step messages about non-positive definitive V may result on
+#' some iterations. These warnings are produced by \code{fitGLS} and NA
+#' log-likelihoods are returned in those cases.
+#'
+#' Note that \code{optimize_GLS} fits multiple GLS models, which requires
+#' inverting a large matrix for each one (unless a fixed 0 nugget is used).
+#' This process is very computationally intensive and may take a long time to
+#' finish depending upon your machine and the size of the data.
+#'
+#' @seealso \code{\link{fitCor}} for estimating spatial parameters from time
+#' series residuals; \code{\link{fitGLS}} for fitting GLS and with the option
+#' of estimating the maximum-likelihood nugget component only.
+#'
+#' @return If \code{opt.only = TRUE}, \code{optimize_GLS} returns the
+#' output from \code{stats::optim()}: see it's documentation for more details.
+#'
+#' Otherwise, a list with two elements is returned:
+#'
+#' \describe{
+#'     \item{opt}{output from \code{optim}, as above}
+#'     \item{GLS}{a "remoteGLS" object. See \code{\link{fitGLS}} for more details.}
+#' }
 #'
 #' @examples
-#' set.seed(916)
+#' ## read data
+#' data(ndvi_AK3000)
+#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 #'
-#' ## load Alaska 3000 data
-#' data("ndvi_AK3000")
+#' ## estimate nugget and range
+#' optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
+#'             coords = df[, c("lng", "lat")], start = c(range = .1, nugget = 0),
+#'             opt.only = TRUE)
 #'
-#' ## take a random subset of 100 pixels (to make example fast)
-#' subsamp = sample.int(n = nrow(ndvi_AK3000), size = 100)
+#' ## estimate range only, fixed nugget at 0, and fit full GLS
+#' optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
+#'              coords = df[, c("lng", "lat")],
+#'              start = c(range = .1), fixed = c("nugget" = 0),
+#'              method = "Brent", lower = 0, upper = 1)
 #'
-#' ## subset the data: we now have 100 pixels, latitude, longitude, and land class
-#' df = ndvi_AK3000[subsamp, c("lng", "lat", "land")] # subset the data
-#'
-#' ## simulate a response variable kappa
-#' df$kappa = .5*df$lat + .2*df$lng + rnorm(100) #simulate response variable
-#'
-#' ## calculate distance matrix
-#' coords = df[, c("lng", "lat")]
-#' D = geosphere::distm(coords)/1000 #distance in km
-#'
-#' ## fit the GLS, including ML spatial correlation and nugget
-#' optimize_GLS(kappa ~ 0 + land, data = df, coords = coords, verbose = FALSE)
-#'
-#' ## other examples
-#'
-#' # CG algorithm
-#' optimize_GLS(kappa ~ 0 + land, data = df, coords = coords, algorithm = "CG")
-#'
-#' # L-BFGS-B algorithm
-#' optimize_GLS(kappa ~ 0 + land, data = df, coords = coords, algorithm = "L-BFGS-B")
-#'
-#' # exponential-power covariance function
-#' optimize_GLS(kappa ~ 0 + land, data = df, coords = coords, V.meth = "exponential-power")
-#'
-#' # Exponential-power and L-BFGS-B (NOT RUN)
-#' ## Produces Error: can't use exponential-power and L-BFGS-B together
-#' if (FALSE)
-#'   optimize_GLS(kappa ~ 0 + land, data = df, coords = coords, debug = TRUE,
-#'                V.meth = "exponential-power", algorithm = "L-BFGS-B")
-#' }
-optimize_GLS <- function(formula, coords, dist_f = "dist_km",
-                         V.meth = "exponential", nugget = NA,
-                         spcor = NA, verbose = FALSE, data,
-                         pars.start = c(r = 0.1, a = 1, nug = 0.2),
-                         save_xx = FALSE, ret.GLS = FALSE,
-                         algorithm = "Nelder-Mead",
-                         debug = FALSE,
+#' @export
+optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
+                         covar_FUN = "covar_exp",
+                         start = c(range = .01, nugget = 0),
+                         fixed = c(), opt.only = FALSE,
+                         formula0 = NULL, save.xx = FALSE, save.invchol = FALSE,
+                         no.F = TRUE,
                          ...){
-  # Model Setup ----
-  ## formula handling
-  call <- match.call()
-  mf <- match.call(expand.dots = FALSE)
-  m <- match(c("formula", "data", "subset", "weights", "na.action",
-               "offset"), names(mf), 0L)
-  mf <- mf[c(1L, m)]
-  mf$drop.unused.levels <- TRUE
-  mf[[1L]] <- quote(stats::model.frame)
-  mf <- eval(mf, parent.frame())
-  mt <- attr(mf, "terms")
-  y <- model.response(mf, "numeric")
-  if (is.matrix(y)) {
-    stop("response is a matrix: must be a vector")
+  call = match.call()
+
+  # function to optimize over
+  GLS.fun <- function(op, fp){
+    ## combine the optimized and fixed parameters into one vector
+    all.pars <- if(missing(fp)){op}else{c(op, fp)}
+    ## extract the nugget
+    nug = ifelse("nugget" %in% names(all.pars), all.pars["nugget"], 0)
+    ## extract the non-nugget parameters
+    sp.pars = as.list(all.pars[!names(all.pars) %in% "nugget"])
+    ## calculate covariance
+    cov.f = match.fun(covar_FUN)
+    dist.f = match.fun(distm_FUN)
+    V = dist.f(coords) # distance
+    args = append(list(d = V), as.list(sp.pars))
+    V = do.call(cov.f, args) # replace with covariance
+    ## Calculate log-likelihood
+    if(!"nugget" %in% names(op) & nug == 0){ # recycle inverse cholesky matrix if a nugget is not needed.
+      V = invert_chol(V)
+      logLik = fitGLS(formula = formula, data = data, invCholV = V, formula0 = NULL,
+                  save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
+                  nugget = 0)
+    } else {
+      logLik = fitGLS(formula = formula, data = data, V = V, formula0 = NULL,
+                  save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
+                  nugget = nug)
+    }
+    ## Calculate V internally - slow
+    # ## calculate log-likelihood from a GLS, using the nugget and spatial parameters
+    # logLik = fitGLS(formula = formula, data = data, formula0 = NULL, save.xx = FALSE,
+    #             save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
+    #             coords = coords, distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
+    #             nugget = nug, covar.pars = sp.pars)
+    return(-logLik)
   }
-  ny <- length(y)
-  modmat <- model.matrix(mt, mf)
-  rm(mf)
 
-  # initial error handling ----
-  ## unsupported method
-  if (!V.meth %in% c("exponential", "exponential-power")){
-    stop("Unsupported V.meth: must be 'exponential' or 'exponential-power'")
-  }
-  ## incompatible methods
-  if (V.meth == "exponential-power" & algorithm == "L-BFGS-B"){
-    stop("Cannot use algorithm 'L-BFGS-B' with V.meth 'exponential-power'")
+  # create a list of arguments to pass to do.call
+  arg.list <- list(par = start[! names(start) %in% names(fixed)], #parameters to optimze
+                   fn = GLS.fun
+  )
+
+  # append fixed parameters, if they exist
+  if(length(fixed) > 0){
+    arg.list <- append(arg.list, list(fp = fixed))
   }
 
-  # paramter setup ----
-  pars.fixed = pars.start
-  pars.fixed["r"] = spcor[1]
-  pars.fixed["nug"] = nugget
-  if (V.meth == "exponential-power") {
-    pars.fixed["a"] = spcor[2]
-  }
-  pars.full = pars.start
-  pars.full[!is.na(pars.fixed)] = pars.fixed[!is.na(pars.fixed)]
-  pars = pars.full[is.na(pars.fixed)]
+  # append arguments given by ... to the argument list
+  arg.list = append(arg.list, list(...)) # add additional arguments to arg list
 
-  # Calculate distance ----
-  D_func <- match.fun(dist_f)
-  D = D_func(coords)
+  # call optim, and pass arguments
+  opt.out <- do.call(optim, args = arg.list)
 
-  # Algorithm-specific optimization ----
-  if (algorithm == "L-BFGS-B"){
-    constrain = FALSE
-    opt.out <- tryCatch(
-      ## try running optim()
-      expr = {optim(par = pars, fn = optim_GLS_func, y = y,
-                    V.meth = V.meth,
-                    modmat = modmat, D = D, verbose = verbose,
-                    constrain = constrain, method = "L-BFGS-B",
-                    lower = c(r = 1e-100, nug = 1e-100),
-                    upper = c(r = 1, nug = 1))},
-      ## catch any errors
-      error = function(e){return(list(failed = TRUE, error = e))}
-    )
-
+  if(opt.only){
+    return(opt.out)
   } else {
-    logit = function(p) {log(p / (1 - p))}
-    inv_logit = function(l) {1 / (1 + exp(-l))}
-
-    ## prepare paramters for constraint
-    pars["r"] = logit(pars["r"])
-    if (V.meth == "exponential-power") {
-      pars["a"] = log(pars["a"])
-    }
-    pars["nug"] = logit(pars["nug"])
-
-    opt.out <- tryCatch(
-      ## try running optim()
-      expr = {optim(par = pars, fn = optim_GLS_func, y = y,
-                    V.meth = V.meth,
-                    modmat = modmat, D = D, verbose = verbose,
-                    constrain = TRUE, method = algorithm)},
-      ## catch any errors
-      error = function(e){return(list(failed = TRUE, error = e))})
-
-    ## back-transform results
-    opt.out$par["r"] = inv_logit(opt.out$par["r"])
-    opt.out$par["nug"] = inv_logit(opt.out$par["nug"])
-    if (V.meth == "exponential-power"){
-      opt.out$par["a"] = exp(opt.out$par["a"])
-    }
+    names(opt.out$par) = names(start)
+    spars = opt.out$par[!names(opt.out$par) %in% "nugget"]
+    nug = ifelse(test = "nugget" %in% names(opt.out$par), yes = opt.out$par["nugget"],
+                 no = ifelse(test = "nugget" %in% names(fixed), yes = fixed["nugget"],
+                             no = 0))
+    GLS.out = fitGLS(formula = formula, data = data, formula0 = formula0,
+                     save.xx = save.xx, save.invchol = save.invchol,
+                     logLik.only = FALSE, no.F = no.F, coords = coords,
+                     distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
+                     nugget = nug, covar.pars = spars)
+    GLS.out$call = call
+    return(list(opt = opt.out, GLS = GLS.out))
   }
-
-  # Error handling (optim) ----
-  if (!is.null(opt.out$failed)){
-    message("Optimization was not able to complete successfully.")
-    message("Here's the original error message from optim():")
-    message(opt.out$error)
-    if (V.meth == "exponential-power"){
-      message("If problems persist, try using V.meth = 'exponential' instead.")
-      message("'exponential-power' often fails to create a valid covariance matrix.")
-    }
-    stop("Failed to optimize parameters")
-  }
-
-  # collect results ----
-  return.list <- list()
-
-  spcor.ml = c(r = unname(opt.out$par["r"]))
-  if (V.meth == "exponential-power"){
-    spcor.ml["a"] = unname(opt.out$par["a"])
-  }
-  nug.ml = unname(opt.out$par["nug"])
-
-
-  if (debug) {
-    return.list$in.pars = pars
-    return.list$optim.out = opt.out
-    return.list$spcor.ml = spcor.ml
-    return.list$nug.ml = nug.ml
-  }
-
-  if (ret.GLS) {
-    V = fitV(Dist = D/max(D), spatialcor = spcor.ml, method = V.meth)
-    GLS.out = fitGLS2(formula = y ~ 0 + modmat, V = V, nugget = nug.ml,
-                      save_xx = save_xx, ...)
-    GLS.out$model.info$call = call
-    return.list$GLS = GLS.out
-  }
-
-  return.list$pars = c(spcor.ml, nug = nug.ml)
-  return.list$scaled.range = unname(spcor.ml["r"] * max(D))
-
-  return(return.list)
 }

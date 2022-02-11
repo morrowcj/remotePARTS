@@ -19,22 +19,21 @@
 //' @param xxj numeric matrix xx from  partition j
 //' @param xxi0 numeric matrix xx0 from  partition i
 //' @param xxj0 numeric matrix xx0 from  partition j
-//' @param tUinv_i numeric matrix invcholV from  partition i
-//' @param tUinv_j numeric matrix invcholV from  partition j
+//' @param invCholV_i numeric matrix invcholV from  partition i
+//' @param invCholV_j numeric matrix invcholV from  partition j
 //' @param Vsub numeric variance matrix for Xij (upper block)
 //' @param nug_i nugget from partition i
 //' @param nug_j nugget from partition j
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
 //'
-//' @examples #TBA
 // [[Rcpp::export(.crosspart_worker_cpp)]]
 List crosspart_worker_cpp(const MapMatd& xxi,
                           const MapMatd& xxj,
                           const MapMatd& xxi0,
                           const MapMatd& xxj0,
-                          const MapMatd& tUinv_i,
-                          const MapMatd& tUinv_j,
+                          const MapMatd& invCholV_i,
+                          const MapMatd& invCholV_j,
                           const MapMatd& Vsub,
                           double nug_i,
                           double nug_j,
@@ -66,8 +65,8 @@ List crosspart_worker_cpp(const MapMatd& xxi,
   Vij = sqrt((1 - nug_i)*(1 - nug_j)) * Vsub.array();
 
   // Caclulate some satistics
-  MatrixXd B = Vij * tUinv_j.adjoint(); //tcrossprod(Vij, tUinv_j)
-  MatrixXd Rij = tUinv_i * B;
+  MatrixXd B = Vij * invCholV_j.adjoint(); //tcrossprod(Vij, invCholV_j)
+  MatrixXd Rij = invCholV_i * B;
 
   MatrixXd Wi = solve_ident_cpp(xxi.adjoint() * xxi);
   MatrixXd Wj = solve_ident_cpp(xxj.adjoint() * xxj);
