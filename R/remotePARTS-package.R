@@ -1,5 +1,3 @@
-#' @section remotePARTS functions:
-#' \code{\link{fitGLS}}
 
 #' @keywords internal
 "_PACKAGE"
