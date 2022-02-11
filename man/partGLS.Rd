@@ -103,12 +103,17 @@ contains at least the following elements:
     and p-values from F-tests (\code{pval_F})}
 }
 
-\code{cross} is a sub-list containing the elements
+\code{cross} is a sub-list containing the following elements, which are use
+to calculate the combined (across partitions) standard errors of the coefficient
+estimates and statistical tests. See Ives et al. (2022).
 
 \describe{
-    \item{rceofs}{a numeric matrix of cross-partition coefficient estimates}
-    \item{rSSRs}{a numeric vector of cross-partition regression sum of squares}
-    \item{rSSEs}{a numeric vector of cross-partition sum of squared errors}
+    \item{rcoefs}{a numeric matrix of cross-partition correlations in the
+    estimates of the coefficients}
+    \item{rSSRs}{a numeric vector of cross-partition correlations in the
+    regression sum of squares}
+    \item{rSSEs}{a numeric vector of cross-partition correlations in the
+    sum of squared errors}
 }
 
 and \code{overall} is a sub-list containing the elements
@@ -116,11 +121,13 @@ and \code{overall} is a sub-list containing the elements
 \describe{
     \item{coefficients}{a numeric vector of the average coefficient estimates
     across all partitions}
-    \item{rcoefficients}{a numeric vector of the average cross-partition coefficient
-    from across all crosses}
-    \item{rSSR}{the average cross-partition regression sum of squares}
-    \item{rSSE}{the average cross-partition sum of squared errors}
-    \item{Fstat}{the average f-statistic}
+    \item{rcoefficients}{a numeric vector of the average cross-partition
+    coefficient from across all crosses}
+    \item{rSSR}{the average cross-partition correlation in the regression
+    sum of squares}
+    \item{rSSE}{the average cross-partition correlation in the sum of
+    squared errors}
+    \item{Fstat}{the average f-statistic across partitions}
     \item{dfs}{degrees of freedom to be used with partitioned GLS f-test}
     \item{partdims}{dimensions of \code{partmat}}
     \item{pval.chisqr}{if \code{chisqr.test = TRUE}, a p-value for the correlated
@@ -237,6 +244,7 @@ copies of data.
 }
 
 \examples{
+\donttest{
 ## read data
 data(ndvi_AK3000)
 df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
@@ -252,18 +260,37 @@ partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 chisqr(partGLS) # explanatory power of model
 t.test(partGLS) # significance of predictors
 
-# ## un-comment to fit ML nugget for each partition (slow)
-# (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#                                 data = ndvi_AK3000, nugget = NA))
-# partGLS.opt$part$nuggets # ML nuggets
+## fit ML nugget for each partition (slow)
+(partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
+                                data = ndvi_AK3000, nugget = NA))
+partGLS.opt$part$nuggets # ML nuggets
+}
 
+## part_data examples
+part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK3000)
 
-part_data(1:20, CLS_coef ~ 0 + land, df)
+\dontrun{
+## part_csv examples
+## CAUTION: this example for part_csv() requires file manipulation:
+# first, create a .csv file from ndviAK
+data(ndvi_AK3000)
+file.path = "ndviAK3000-remotePARTS.csv"
+write.csv(ndvi_AK, file = file.path)
 
+# build a partition from the first 30 pixels in the file
+part_csv(1:20, formula = CLS_coef ~ 0 + land, file = file.path)
 
-data.file = system.file("extdata", "AK3000_ndvi_common-land.csv", package = "remotePARTS")
-part_csv(1:20, CLS_coef ~ 0 + land, data.file)
+# now with a random 20 pixels
+part_csv(sample(3000, 20), formula = CLS_coef ~ 0 + land, file = file.path)
 
+# remove the example csv file from disk
+file.remove(file.path)
+}
+}
+\references{
+Ives, A. R., L. Zhu, F. Wang, J. Zhu, C. J. Morrow, and V. C. Radeloff. in review.
+    Statistical tests for non-independent partitions of large autocorrelated datasets.
+    MethodsX.
 }
 \seealso{
 Other partitionedGLS: 

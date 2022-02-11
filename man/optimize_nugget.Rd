@@ -48,9 +48,10 @@ The function \code{LogLikGLS()} is optimized for \code{nugget}. Once the
 be used instead.
 }
 \examples{
+\dontrun{
 ## read data
 data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+df = ndvi_AK3000[seq_len(500), ] # first 1000 rows
 
 ## format data
 X = stats::model.matrix(CLS_coef ~ 0 + land, data = df)
@@ -60,7 +61,7 @@ V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)
 
 ## find the ML nugget
 remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
-
+}
 }
 \seealso{
 \code{?stats::optimize()}

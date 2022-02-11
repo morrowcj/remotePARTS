@@ -9,6 +9,8 @@ part_chisqr(Fmean, rSSR, df1, npart)
 \arguments{
 \item{Fmean}{mean value of F-statistic from correlated F-tests}
 
+\item{rSSR}{correlation among partition regression sum of squares}
+
 \item{df1}{first degree of freedom for F-tests}
 
 \item{npart}{number of partitions}

@@ -11,6 +11,8 @@ part_ttest(coefs, part.SEs, rcoef, df2, npart)
 
 \item{part.SEs}{matrix of partition SEs for each coefficient (columns)}
 
+\item{rcoef}{correlation among partition regression coefficients}
+
 \item{df2}{second degree of freedom from partitioned GLS}
 
 \item{npart}{number of partitions}

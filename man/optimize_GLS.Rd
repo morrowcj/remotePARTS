@@ -104,21 +104,22 @@ This process is very computationally intensive and may take a long time to
 finish depending upon your machine and the size of the data.
 }
 \examples{
+\donttest{
 ## read data
 data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+df = ndvi_AK3000[seq_len(500), ] # first 500 rows
 
-## estimate nugget and range
+## estimate nugget and range (very slow)
 optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
             coords = df[, c("lng", "lat")], start = c(range = .1, nugget = 0),
             opt.only = TRUE)
 
-## estimate range only, fixed nugget at 0, and fit full GLS
+## estimate range only, fixed nugget at 0, and fit full GLS (slow)
 optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
              coords = df[, c("lng", "lat")],
              start = c(range = .1), fixed = c("nugget" = 0),
              method = "Brent", lower = 0, upper = 1)
-
+}
 }
 \seealso{
 \code{\link{fitCor}} for estimating spatial parameters from time

@@ -18,14 +18,20 @@ sample_partitions(npix, npart = 10, partsize = NA, pixels = NA, verbose = TRUE)
 \item{verbose}{logical: TRUE prints additional info}
 }
 \value{
-
+\code{sample_partitions} returns a matrix with \code{partsize}
+rows and \code{npart} columns. Columns contain random, non-overlapping samples
+from \code{1:npix}
 }
 \description{
 Create a matrix whose columns contain indices of non-overlapping
 random samples.
 }
 \details{
-
+If both \code{npart} and \code{partsize} is specified, a partition matrix with
+these dimensions is returned. If only \code{npart}, is specified,
+\code{partsize} is selected as the largest integer possible  that creates
+equal sized partitions. Similarly, if only \code{npart = NA}, then \code{npart}
+is selected to obtain as many partitions as possible.
 }
 \examples{
 # dummy data with 100 pixels and 20 time points

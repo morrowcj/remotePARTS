@@ -11,39 +11,52 @@
 #' As used by \code{lm()}
 #'
 #' @details
-#' This function finds the restricted maximum likelihood (REML) solution to the
-#' AR(1) model
+#' This function finds the restricted maximum likelihood (REML) to estimate
+#' parameters for the regression model with AR(1) random error terms
 #'
-#' \deqn{y_{t} = \rho y_{t-1}  X \beta + \varepsilon_{t}}
+#' \deqn{y(t) =  X(t) \beta + \varepsilon(t)}{y(t) = X(t)*beta + e(t)}
+#' \deqn{\varepsilon(t) =  \rho \varepsilon(t-1) + \delta(t)}{e(t) = rho*e(t-1) + delta(t)}
 #'
-#' where \eqn{y_t} is the response at time \eqn{t};
-#' \eqn{\rho} is the AR parameter, determined via REML;
-#' \eqn{X} is a model matrix containing covariates;
-#' \eqn{\beta} is a vector of effects of \eqn{X};
-#' and \eqn{\varepsilon \sim N(0, \sigma)} is the random innovation at time
-#' \eqn{t}
+#' where \eqn{y(t)} is the response at time \eqn{t};
 #'
-#' \code{fitAR} finds the REML AR parameter via mathematical optimization for
-#' over the log-likelihood calculation of the workhorse function
+#' \eqn{X(t)} is a model matrix containing covariates;
+#'
+#' \eqn{\beta}{beta} is a vector of effects of \eqn{X(t)};
+#' \eqn{\varepsilon(t)}{e(t)} is the autocorrelated random error;
+#'
+#' \eqn{\delta \sim N(0, \sigma)}{delta ~ N(0, sigma)} is a temporally independent
+#' Gaussian random variable with mean zero and standard deviation
+#' \eqn{\sigma}{sigma};
+#'
+#' and \eqn{\rho}{rho} is the AR(1) autoregression parameter
+#'
+#' \code{fitAR} estimates the parameter via mathematical optimization
+#' of the restricted log-likelihood function calculated by the workhorse function
 #' \code{remotePARTS:::AR_fun()}.
+#'
+#' @references
+#'
+#' Ives, A. R., K. C. Abbott, and N. L. Ziebarth. 2010. Analysis of ecological
+#'
+#'     time series with ARMA(p,q) models. Ecology 91:858-871.
 #'
 #' @return \code{fitAR} returns a list object of class "remoteTS", which contains
 #' the following elements.
 #'
 #' \describe{
-#'     \item{\code{call}}{the function call}
-#'     \item{\code{coefficients}}{a named vector of coefficients}
-#'     \item{\code{SE}}{the standard errors of parameter estimates}
-#'     \item{\code{tstat}}{the t-statistics for coefficients}
-#'     \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
-#'     \item{\code{MSE}}{the model mean squared error}
-#'     \item{\code{logLik}}{the log-likelihood of the model fit}
-#'     \item{\code{residuals}}{the residuals: response minus fitted values}
-#'     \item{\code{fitted.values}}{the fitted mean values}
-#'     \item{\code{rho}}{The AR parameter, determined via REML}
-#'     \item{\code{rank}}{the numeric rank of the fitted model}
-#'     \item{\code{df.residual}}{the residual degrees of freedom}
-#'     \item{\code{terms}}{the \code{stats::terms} object used}
+#'     \item{call}{the function call}
+#'     \item{coefficients}{a named vector of coefficients}
+#'     \item{SE}{the standard errors of parameter estimates}
+#'     \item{tstat}{the t-statistics for coefficients}
+#'     \item{pval}{the p-values corresponding to t-tests of coefficients}
+#'     \item{MSE}{the model mean squared error}
+#'     \item{logLik}{the log-likelihood of the model fit}
+#'     \item{residuals}{the residuals: response minus fitted values}
+#'     \item{fitted.values}{the fitted mean values}
+#'     \item{rho}{The AR parameter, determined via REML}
+#'     \item{rank}{the numeric rank of the fitted model}
+#'     \item{df.residual}{the residual degrees of freedom}
+#'     \item{terms}{the \code{stats::terms} object used}
 #' }
 #'
 #' Output is structured similarly to an "lm" object.
@@ -128,8 +141,15 @@ fitAR <- function(formula, data = NULL){
 #' @param X model matrix (predictors)
 #' @param logLik.only logical: should only the partial log-likelihood be computed
 #'
-#' @details \code{AR_fun} fits a linear model to data and a given AR parameter.
-#' This function is the work horse behind \code{fitAR}, it calculates
+#' @details \code{AR_fun} is the work horse behind \code{fitAR} that is called
+#' by \code{optim} to estimate the autoregression parameter \eqn{\rho}{rho}.
+# ' \code{AR_fun} calculates the restricted log likelihood function.
+#'
+#' @return
+#' When \code{logLik.only == F}, \code{AR_fun} returns the output described in
+#' \code{?fitAR}. When \code{logLik.only == T}, it returns a quantity that is
+#' linearly and negatively related to the restricted log likelihood
+#' (i.e., partial log-likelihood).
 #'
 #' @examples
 #'
@@ -267,9 +287,9 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
 #' The output will always contain at least these elements:
 #'
 #' \describe{
-#'    \item{\code{call}}{the function call}
-#'    \item{\code{coords}}{the coordinate matrix or dataframe}
-#'    \item{\code{residuals}}{time series residuals: rows correspond to pixels
+#'    \item{call}{the function call}
+#'    \item{coords}{the coordinate matrix or dataframe}
+#'    \item{residuals}{time series residuals: rows correspond to pixels
 #'    (\code{coords})}
 #' }
 #'
@@ -278,13 +298,13 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
 #' correspond to time points and vector elements correspond to pixels.
 #'
 #' \describe{
-#'    \item{\code{coefficients}}{a numeric matrix of coefficeints}
-#'    \item{\code{SEs}}{a numeric matrix of coefficient standard errors}
-#'    \item{\code{tstats}}{a numeric matrix of t-statistics for coefficients}
-#'    \item{\code{pvals}}{a numeric matrix of p-values for coefficients t-tests}
-#'    \item{\code{MSEs}}{a numeric vector of MSEs}
-#'    \item{\code{LLs}}{a numeric vector of log-likelihoods}
-#'    \item{\code{fitted.values}}{a numeric matrix of fitted values}
+#'    \item{coefficients}{a numeric matrix of coefficeints}
+#'    \item{SEs}{a numeric matrix of coefficient standard errors}
+#'    \item{tstats}{a numeric matrix of t-statistics for coefficients}
+#'    \item{pvals}{a numeric matrix of p-values for coefficients t-tests}
+#'    \item{MSEs}{a numeric vector of MSEs}
+#'    \item{logLiks}{a numeric vector of log-likelihoods}
+#'    \item{fitted.values}{a numeric matrix of fitted values}
 #' }
 #'
 #' An attribute called "resids.only" is also set to match the value of
@@ -397,7 +417,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
         pvals <- matrix(NA, nrow = n.pix, ncol = length(ar$pval),
                         dimnames = list(NULL, names(ar$pval)))
         MSEs <- vector("numeric", n.pix)
-        LLs <- vector("numeric", n.pix)
+        logLiks <- vector("numeric", n.pix)
         fitted.values <- matrix(NA, nrow = n.pix, ncol = length(ar$fitted.values))
       }
       ## add to output
@@ -406,7 +426,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
       tstats[i, ] <- ar$tstat
       pvals[i, ] <- ar$pval
       MSEs[i] <- ar$MSE
-      LLs[i] <- ar$logLik
+      logLiks[i] <- ar$logLik
       fitted.values[i, ] <- ar$fitted.values
     }
   }
@@ -417,7 +437,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
     attr(out, "resids.only") = TRUE
   } else {
     out <- list(call = call, coords = coords, coefficients = coefficients, SEs = SEs, tstats = tstats,
-                pvals = pvals, MSEs = MSEs, LLs = LLs, fitted.values = fitted.values,
+                pvals = pvals, MSEs = MSEs, logLiks = logLiks, fitted.values = fitted.values,
                 residuals = residuals)
     attr(out, "resids.only") = FALSE
   }

@@ -27,9 +27,10 @@
 #' @seealso \code{?stats::optimize()}
 #'
 #' @examples
+#' \dontrun{
 #' ## read data
 #' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+#' df = ndvi_AK3000[seq_len(500), ] # first 1000 rows
 #'
 #' ## format data
 #' X = stats::model.matrix(CLS_coef ~ 0 + land, data = df)
@@ -39,7 +40,7 @@
 #'
 #' ## find the ML nugget
 #' remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
-#'
+#' }
 optimize_nugget <- function(X, y, V, lower = 0, upper = 1,
                             tol = .Machine$double.eps^.25, debug = FALSE) {
   # # coerce input to matrices
@@ -66,5 +67,6 @@ optimize_nugget <- function(X, y, V, lower = 0, upper = 1,
   stopifnot(lower >= 0)
   stopifnot(upper <= 1)
 
-  .Call(`_remotePARTS_optimize_nugget_cpp`, X, X0, V, y, lower, upper, tol, diag(1), FALSE, debug)
+  .Call(`_remotePARTS_optimize_nugget_cpp`, X, X0, V, y, lower, upper, tol,
+        diag(1), FALSE, debug)
 }

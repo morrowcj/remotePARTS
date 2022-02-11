@@ -28,46 +28,58 @@ As used by \code{lm()}}
 the following elements.
 
 \describe{
-    \item{\code{call}}{the function call}
-    \item{\code{coefficients}}{a named vector of coefficients}
-    \item{\code{SE}}{the standard errors of parameter estimates}
-    \item{\code{tstat}}{the t-statistics for coefficients}
-    \item{\code{pval}}{the p-values corresponding to t-tests of coefficients}
-    \item{\code{MSE}}{the model mean squared error}
-    \item{\code{logLik}}{the log-likelihood of the model fit}
-    \item{\code{residuals}}{the residuals: response minus fitted values}
-    \item{\code{fitted.values}}{the fitted mean values}
-    \item{\code{rho}}{The AR parameter, determined via REML}
-    \item{\code{rank}}{the numeric rank of the fitted model}
-    \item{\code{df.residual}}{the residual degrees of freedom}
-    \item{\code{terms}}{the \code{stats::terms} object used}
+    \item{call}{the function call}
+    \item{coefficients}{a named vector of coefficients}
+    \item{SE}{the standard errors of parameter estimates}
+    \item{tstat}{the t-statistics for coefficients}
+    \item{pval}{the p-values corresponding to t-tests of coefficients}
+    \item{MSE}{the model mean squared error}
+    \item{logLik}{the log-likelihood of the model fit}
+    \item{residuals}{the residuals: response minus fitted values}
+    \item{fitted.values}{the fitted mean values}
+    \item{rho}{The AR parameter, determined via REML}
+    \item{rank}{the numeric rank of the fitted model}
+    \item{df.residual}{the residual degrees of freedom}
+    \item{terms}{the \code{stats::terms} object used}
 }
 
 Output is structured similarly to an "lm" object.
+
+When \code{logLik.only == F}, \code{AR_fun} returns the output described in
+\code{?fitAR}. When \code{logLik.only == T}, it returns a quantity that is
+linearly and negatively related to the restricted log likelihood
+(i.e., partial log-likelihood).
 }
 \description{
 \code{fitAR} is used to fit AR(1) time series regression
 analysis using restricted maximum likelihood
 }
 \details{
-This function finds the restricted maximum likelihood (REML) solution to the
-AR(1) model
+This function finds the restricted maximum likelihood (REML) to estimate
+parameters for the regression model with AR(1) random error terms
 
-\deqn{y_{t} = \rho y_{t-1}  X \beta + \varepsilon_{t}}
+\deqn{y(t) =  X(t) \beta + \varepsilon(t)}{y(t) = X(t)*beta + e(t)}
+\deqn{\varepsilon(t) =  \rho \varepsilon(t-1) + \delta(t)}{e(t) = rho*e(t-1) + delta(t)}
 
-where \eqn{y_t} is the response at time \eqn{t};
-\eqn{\rho} is the AR parameter, determined via REML;
-\eqn{X} is a model matrix containing covariates;
-\eqn{\beta} is a vector of effects of \eqn{X};
-and \eqn{\varepsilon \sim N(0, \sigma)} is the random innovation at time
-\eqn{t}
+where \eqn{y(t)} is the response at time \eqn{t};
 
-\code{fitAR} finds the REML AR parameter via mathematical optimization for
-over the log-likelihood calculation of the workhorse function
+\eqn{X(t)} is a model matrix containing covariates;
+
+\eqn{\beta}{beta} is a vector of effects of \eqn{X(t)};
+\eqn{\varepsilon(t)}{e(t)} is the autocorrelated random error;
+
+\eqn{\delta \sim N(0, \sigma)}{delta ~ N(0, sigma)} is a temporally independent
+Gaussian random variable with mean zero and standard deviation
+\eqn{\sigma}{sigma};
+
+and \eqn{\rho}{rho} is the AR(1) autoregression parameter
+
+\code{fitAR} estimates the parameter via mathematical optimization
+of the restricted log-likelihood function calculated by the workhorse function
 \code{remotePARTS:::AR_fun()}.
 
-\code{AR_fun} fits a linear model to data and a given AR parameter.
-This function is the work horse behind \code{fitAR}, it calculates
+\code{AR_fun} is the work horse behind \code{fitAR} that is called
+by \code{optim} to estimate the autoregression parameter \eqn{\rho}{rho}.
 }
 \examples{
 
@@ -122,6 +134,11 @@ coefficients(AR)
 #                                                   logLik.only = FALSE)$logLik
 # }
 # plot(x = out.mat[, "partialLL"], y = out.mat[, "logLik"])
+}
+\references{
+Ives, A. R., K. C. Abbott, and N. L. Ziebarth. 2010. Analysis of ecological
+
+    time series with ARMA(p,q) models. Ecology 91:858-871.
 }
 \seealso{
 \code{\link{fitAR_map}} to easily apply \code{fit_AR} to many pixels;

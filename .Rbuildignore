@@ -16,3 +16,5 @@ data-raw/
 ^.github$
 ^doc$
 ^Meta$
+
+LICENSE\.md

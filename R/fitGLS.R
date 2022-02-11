@@ -88,6 +88,7 @@
 #'     \item{nugget}{the nugget used in fitting}
 #' }
 #'
+#'
 #' If \code{no.F = FALSE}, the following elements, corresponding to the null
 #' model and F-test are also calculated:
 #'
@@ -109,12 +110,30 @@
 #' An attribute called also set to \code{"no.F"} is set to the value of
 #' argument \code{no.F}, which signals to generic methods how to handle the output.
 #'
-#' If \code{logLik.only = TRUE}, a single numeric output containing the partial
-#' log-likelihood is returned. This value is primarily for ML estimation. In
-#' parameter space for a given dataset, the minimum partial likelihood corresponds
-#' to the maximum true likelihood.
+#' If \code{save.invchol = TRUE}, output also includes
+#'
+#' \describe{
+#'     \item{invcholV}{the inverse of the Cholesky decomposition of the covariance
+#'     matrix obtained with \code{invert_chol(V, nugget)} }
+#' }
+#'
+#' If \code{save.xx = TRUE}, output also includes the following elements
+#'
+#' \describe{
+#'     \item{xx}{the predictor variables \code{X}, from the right side of \code{formula},
+#'     transformed by the inverse cholesky matrix: xx = \code{invcholV \%*\% X} }
+#'     \item{xx0}{the predictor variables \code{X0}, from the right side of \code{formula0},
+#'     transformed by the inverse cholesky matrix: xx0 = \code{invcholV \%*\% X0} }
+#' }
+#'
+#' The primary use of \code{xx} and \code{xx0} is for use with \code{fitGLS_partition()}.
+#'
+#' If \code{logLik.only = TRUE}, a single numeric output containing the
+#' log-likelihood is returned.
 #'
 #' @examples
+#'
+#' \donttest{
 #' ## read data
 #' data(ndvi_AK3000)
 #' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
@@ -147,7 +166,7 @@
 #'
 #' ## Log-likelihood (fast)
 #' fitGLS(CLS_coef ~ 0 + land, data = df, V = V, logLik.only = TRUE)
-#'
+#' }
 #' @export
 fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALSE,
                    save.invchol = FALSE, logLik.only = FALSE, no.F = TRUE,

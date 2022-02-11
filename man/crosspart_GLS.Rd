@@ -69,10 +69,8 @@ If \code{small = FALSE}, the list only contains the necessary elements
 \description{
 Calculate cross-partition statistics between two GLS partitions
 }
-\details{
-
-}
 \examples{
+\dontrun{
 ## read data
 data(ndvi_AK3000)
 df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
@@ -116,7 +114,7 @@ dfs = remotePARTS:::calc_dfpart(partsize = nrow(pm), p = ncol(GLS.i$xx),
                                        nug_i = GLS.i$nugget,
                                        nug_j = GLS.j$nugget,
                                        df1 = dfs[1], df2 = dfs[2]))
-
+}
 }
 \seealso{
 Other partitionedGLS: 

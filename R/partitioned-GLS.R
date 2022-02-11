@@ -153,12 +153,17 @@
 #'     and p-values from F-tests (\code{pval_F})}
 #' }
 #'
-#' \code{cross} is a sub-list containing the elements
+#' \code{cross} is a sub-list containing the following elements, which are use
+#' to calculate the combined (across partitions) standard errors of the coefficient
+#' estimates and statistical tests. See Ives et al. (2022).
 #'
 #' \describe{
-#'     \item{rceofs}{a numeric matrix of cross-partition coefficient estimates}
-#'     \item{rSSRs}{a numeric vector of cross-partition regression sum of squares}
-#'     \item{rSSEs}{a numeric vector of cross-partition sum of squared errors}
+#'     \item{rcoefs}{a numeric matrix of cross-partition correlations in the
+#'     estimates of the coefficients}
+#'     \item{rSSRs}{a numeric vector of cross-partition correlations in the
+#'     regression sum of squares}
+#'     \item{rSSEs}{a numeric vector of cross-partition correlations in the
+#'     sum of squared errors}
 #' }
 #'
 #' and \code{overall} is a sub-list containing the elements
@@ -166,11 +171,13 @@
 #' \describe{
 #'     \item{coefficients}{a numeric vector of the average coefficient estimates
 #'     across all partitions}
-#'     \item{rcoefficients}{a numeric vector of the average cross-partition coefficient
-#'     from across all crosses}
-#'     \item{rSSR}{the average cross-partition regression sum of squares}
-#'     \item{rSSE}{the average cross-partition sum of squared errors}
-#'     \item{Fstat}{the average f-statistic}
+#'     \item{rcoefficients}{a numeric vector of the average cross-partition
+#'     coefficient from across all crosses}
+#'     \item{rSSR}{the average cross-partition correlation in the regression
+#'     sum of squares}
+#'     \item{rSSE}{the average cross-partition correlation in the sum of
+#'     squared errors}
+#'     \item{Fstat}{the average f-statistic across partitions}
 #'     \item{dfs}{degrees of freedom to be used with partitioned GLS f-test}
 #'     \item{partdims}{dimensions of \code{partmat}}
 #'     \item{pval.chisqr}{if \code{chisqr.test = TRUE}, a p-value for the correlated
@@ -178,7 +185,14 @@
 #'     \item{t.test}{if \code{do.t.test = TRUE}, a table with t-test results, including
 #'     the coefficient estimates, standard errors, t-statistics, and p-values}
 #' }
+#'
+#' @references
+#' Ives, A. R., L. Zhu, F. Wang, J. Zhu, C. J. Morrow, and V. C. Radeloff. in review.
+#'     Statistical tests for non-independent partitions of large autocorrelated datasets.
+#'     MethodsX.
+#'
 #' @examples
+#' \donttest{
 #' ## read data
 #' data(ndvi_AK3000)
 #' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
@@ -194,11 +208,11 @@
 #' chisqr(partGLS) # explanatory power of model
 #' t.test(partGLS) # significance of predictors
 #'
-#' # ## un-comment to fit ML nugget for each partition (slow)
-#' # (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#' #                                 data = ndvi_AK3000, nugget = NA))
-#' # partGLS.opt$part$nuggets # ML nuggets
-#'
+#' ## fit ML nugget for each partition (slow)
+#' (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
+#'                                 data = ndvi_AK3000, nugget = NA))
+#' partGLS.opt$part$nuggets # ML nuggets
+#' }
 #' @export
 fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                              part_FUN = "part_data",
@@ -245,7 +259,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       ## GLS of parition
       partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
                              nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
-                             no.F = FALSE, save.invchol = (i <= ncross), LL_only = FALSE)
+                             no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE)
       ## build some empty stat tables on first loop
       if (i == 1){
         p = ncol(partGLS[[1]]$xx)
@@ -290,7 +304,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
         partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
                                nugget = nugget, formula0 = formula0, save.xx = TRUE,
-                               no.F = FALSE, save.invchol = TRUE, LL_only = FALSE)
+                               no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE)
         if(length(partGLS[[j]]$coefficients) != ncol(coefs)){
           stop("dimension mismatch: different number of coefficients between parts i and j. Filter data or try different partition matrix.")
         }
@@ -349,8 +363,6 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     }
   }
   # collect and format output
-  warning("I still need Tony's help to describe some of these outputs. ",
-          "For example, what are 'rcoefficients'?")
   outlist = list(call = call,
                  GLS = if(save.GLS){partGLS}else{NULL},
                  part = list(coefficients = coefs, SEs = SEs, tstats = tstats,
@@ -440,9 +452,8 @@ calc_dfpart <- function(partsize, p, p0){
 #' If \code{small = FALSE}, the list only contains the necessary elements
 #' \code{rcoefij}, \code{rSSRij}, and \code{rSSEij}.
 #'
-#' @details
-#'
 #' @examples
+#' \dontrun{
 #' ## read data
 #' data(ndvi_AK3000)
 #' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
@@ -486,7 +497,7 @@ calc_dfpart <- function(partsize, p, p0){
 #'                                        nug_i = GLS.i$nugget,
 #'                                        nug_j = GLS.j$nugget,
 #'                                        df1 = dfs[1], df2 = dfs[2]))
-#'
+#'}
 crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
                           nug_i, nug_j, df1, df2, small = TRUE){
   # coerce input to matrices
@@ -541,7 +552,8 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
 #'
 #' @examples
 #'
-#' part_data(1:20, CLS_coef ~ 0 + land, df)
+#' ## part_data examples
+#' part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK3000)
 #'
 part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("lng", "lat")){
   stopifnot(is.data.frame(data) | (is.matrix(data) & is.numeric(data)))
@@ -568,10 +580,23 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' ## part_csv examples
+#' ## CAUTION: this example for part_csv() requires file manipulation:
+#' # first, create a .csv file from ndviAK
+#' data(ndvi_AK3000)
+#' file.path = "ndviAK3000-remotePARTS.csv"
+#' write.csv(ndvi_AK, file = file.path)
 #'
-#' data.file = system.file("extdata", "AK3000_ndvi_common-land.csv", package = "remotePARTS")
-#' part_csv(1:20, CLS_coef ~ 0 + land, data.file)
+#' # build a partition from the first 30 pixels in the file
+#' part_csv(1:20, formula = CLS_coef ~ 0 + land, file = file.path)
 #'
+#' # now with a random 20 pixels
+#' part_csv(sample(3000, 20), formula = CLS_coef ~ 0 + land, file = file.path)
+#'
+#' # remove the example csv file from disk
+#' file.remove(file.path)
+#' }
 part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng", "lat")){
 
   if(is.null(formula0)){
@@ -608,7 +633,15 @@ part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng
 #'
 #' @details
 #'
-#' @return
+#' If both \code{npart} and \code{partsize} is specified, a partition matrix with
+#' these dimensions is returned. If only \code{npart}, is specified,
+#' \code{partsize} is selected as the largest integer possible  that creates
+#' equal sized partitions. Similarly, if only \code{npart = NA}, then \code{npart}
+#' is selected to obtain as many partitions as possible.
+#'
+#' @return \code{sample_partitions} returns a matrix with \code{partsize}
+#' rows and \code{npart} columns. Columns contain random, non-overlapping samples
+#' from \code{1:npix}
 #'
 #' @examples
 #' # dummy data with 100 pixels and 20 time points
@@ -642,7 +675,7 @@ sample_partitions <- function(npix, npart = 10, partsize = NA,
 
   ## check which npart of partsize was given
   no.partsize <- (missing(partsize) || is.na(partsize) | is.null(partsize))
-  no.npart <- (missing(npart) || is.na(npart) | is.null(npart))
+  no.npart <- (is.na(npart) | is.null(npart))
 
   ## caclulate partition size
   if(no.partsize){

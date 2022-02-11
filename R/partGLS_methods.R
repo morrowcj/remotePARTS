@@ -21,7 +21,7 @@ print.partGLS <- function(x, ...){
 #' @title Chisqr test for partitioned GLS
 #'
 #' @param Fmean mean value of F-statistic from correlated F-tests
-#' @param rSSR
+#' @param rSSR correlation among partition regression sum of squares
 #' @param df1 first degree of freedom for F-tests
 #' @param npart number of partitions
 #'
@@ -82,7 +82,7 @@ chisqr.partGLS <- function(x, ...){
 #' @title Correlated t-test for paritioned GLS
 #' @param coefs vector average GLS coefficients
 #' @param part.SEs matrix of partition SEs for each coefficient (columns)
-#' @param rcoef
+#' @param rcoef correlation among partition regression coefficients
 #' @param df2 second degree of freedom from partitioned GLS
 #' @param npart number of partitions
 #'

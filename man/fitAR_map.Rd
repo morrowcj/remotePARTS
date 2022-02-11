@@ -38,9 +38,9 @@ withheld? Useful when passing output to \code{fitCor()}}
 The output will always contain at least these elements:
 
 \describe{
-   \item{\code{call}}{the function call}
-   \item{\code{coords}}{the coordinate matrix or dataframe}
-   \item{\code{residuals}}{time series residuals: rows correspond to pixels
+   \item{call}{the function call}
+   \item{coords}{the coordinate matrix or dataframe}
+   \item{residuals}{time series residuals: rows correspond to pixels
    (\code{coords})}
 }
 
@@ -49,13 +49,13 @@ components. Matrices have rows that correspond to pixels and columns that
 correspond to time points and vector elements correspond to pixels.
 
 \describe{
-   \item{\code{coefficients}}{a numeric matrix of coefficeints}
-   \item{\code{SEs}}{a numeric matrix of coefficient standard errors}
-   \item{\code{tstats}}{a numeric matrix of t-statistics for coefficients}
-   \item{\code{pvals}}{a numeric matrix of p-values for coefficients t-tests}
-   \item{\code{MSEs}}{a numeric vector of MSEs}
-   \item{\code{LLs}}{a numeric vector of log-likelihoods}
-   \item{\code{fitted.values}}{a numeric matrix of fitted values}
+   \item{coefficients}{a numeric matrix of coefficeints}
+   \item{SEs}{a numeric matrix of coefficient standard errors}
+   \item{tstats}{a numeric matrix of t-statistics for coefficients}
+   \item{pvals}{a numeric matrix of p-values for coefficients t-tests}
+   \item{MSEs}{a numeric vector of MSEs}
+   \item{logLiks}{a numeric vector of log-likelihoods}
+   \item{fitted.values}{a numeric matrix of fitted values}
 }
 
 An attribute called "resids.only" is also set to match the value of
