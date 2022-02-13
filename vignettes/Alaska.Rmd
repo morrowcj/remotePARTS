@@ -80,14 +80,14 @@ str(ndvi_AK)
 ```
 
 Both `ndvi_AK` and `ndvi_AK3000` have no missing data. `remotePARTS` can **not**
-handle any missing data. It is essential that **all** missing data is removed 
+handle any missing data. It is essential that **all** missing data are removed 
 prior to conducting any analyses. 
 
-We are interested in asking these question of these data, "Is NDVI in Alaska 
-increasing over time?" and "Are Alaska's NDVI trends associated with land cover
-classes?", and "Do Alaska's NDVI trends differ with latitude?"
+We are interested in asking these question of these data: "Is NDVI in Alaska 
+increasing over time?"; "Are Alaska's NDVI time trends associated with land-cover
+classes?"; and "Do Alaska's NDVI time trends differ with latitude?"
 
-The below figure shows a temporal cross-section of these data: 1982, 1998, and 2013. 
+The figure below shows a temporal cross-section of these data: 1982, 1998, and 2013. 
 
 ```{r, fig.width = 5, fig.asp = .4}
 reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>% 
@@ -99,7 +99,7 @@ reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>%
   labs(x = "Longitude", y = "Latitude")
 ```
 
-And this figure shows how Alaska's three primary land cover classes are distributed:
+The following figure shows how Alaska's three primary land-cover classes are distributed.
 
 ```{r fig.width = 3, fig.asp = .9}
 ndvi_AK %>% filter(rare.land == FALSE) %>% 
@@ -112,16 +112,16 @@ ggplot(aes(x = lng, y = lat, fill = land, col = land)) +
 
 # Model
 
-When using `remotePARTS`, generally the data are assumed to follow from some 
+When using `remotePARTS`, the data are assumed to follow the general stochastic 
 process 
 
-$$Y(t) = \alpha X + \varepsilon(t)$$ where
+$$Y(t) = \alpha X(t) + \varepsilon(t)$$ where
 
 * $Y(t)$ is a response variable of interest at time $t$,
 
-* $\alpha$ is a vector of effects of the predictor variables $X$ on $Y$,
+* $\alpha$ is a vector of effects of the predictor variables $X(t)$ on $Y(t)$,
 
-* $\varepsilon$ is an temporally auto-regressive process: $\varepsilon(t) = \rho_i (\varepsilon(t - i)) + \delta(t)$,
+* $\varepsilon(t)$ is an temporal autoregressive process: $\varepsilon(t) = \rho_i (\varepsilon(t - i)) + \delta(t)$,
 
 * and pixels are spatially autocorrelated according to spatial covariance structure $\Sigma$: $\delta(t) \sim N(0, \Sigma)$.
 
