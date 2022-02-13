@@ -113,36 +113,39 @@ ggplot(aes(x = lng, y = lat, fill = land, col = land)) +
 # Model
 
 When using `remotePARTS`, the data are assumed to follow the general stochastic 
-process 
+process of the form
 
-$$Y(t) = \alpha X(t) + \varepsilon(t)$$ where
+$$y(t) = X(t)\beta + \varepsilon(t)$$ where
 
-* $Y(t)$ is a response variable of interest at time $t$,
+* $y(t)$ is a response variable of interest at time $t$,
 
-* $\alpha$ is a vector of effects of the predictor variables $X(t)$ on $Y(t)$,
+* $\beta$ is a vector of effects of the predictor variables $X(t)$ on $y(t)$,
 
-* $\varepsilon(t)$ is an temporal autoregressive process: $\varepsilon(t) = \rho_i (\varepsilon(t - i)) + \delta(t)$,
+* $\varepsilon(t)$ is an temporal autoregressive process: $\varepsilon(t) = \rho (\varepsilon(t - 1)) + \delta(t)$,
 
-* and pixels are spatially autocorrelated according to spatial covariance structure $\Sigma$: $\delta(t) \sim N(0, \Sigma)$.
+* at any time step, $\delta(t)$ is spatially autocorrelated according to covariance matrix $\Sigma$: $\delta(t) \sim N(0, \Sigma)$.
 
-# Time series analysis
+* there is no temporal dependence in $\delta(t)$ (i.e., $\delta(t_1)$ is independent of $\delta(t_2)$ except when $t_1$ = $t_2$).
 
-The first step in a typical `remotePARTS` workflow is to obtain pixel-level trend
-estimates. In this case, we are interested in estimating the time trends in NDVI
-for each pixel, represented by $\beta_1$ from the regression model
+# Time-series analysis
+
+The first step in a typical `remotePARTS` workflow is to obtain pixel-level
+estimates of time-series coefficients. In our example, we are interested in 
+estimating the time trends in NDVI for each pixel, represented by $\beta_1$ 
+in the regression model
 
 $$ y(t) = \beta_0 + \beta_1 t + \varepsilon(t)$$
 
-where the innovations $\varepsilon(t)$ follow an AR(1) process: 
-$\varepsilon(t) = b\varepsilon(t - 1) + \delta(t)$; and random normal 
-$\delta(t) \sim N(0 , \sigma)$
+where the random errors $\varepsilon(t)$ follow an AR(1) process: 
+
+$$\varepsilon(t) = b\varepsilon(t - 1) + \delta(t)$
+$$\delta(t) \sim N(0 , \sigma)$
 
 We will use `fitAR_map()` to estimate $\beta_1$, which fits pixel-level AR(1) 
-models to a map of pixels and estimates parameters using restricted maximum 
-likelihood (REML). 
-
-To do so, we must extract only our NDVI columns as the matrix `Y`. We'll do this
-by matching all column names containing "ndvi" and slicing the data frame:
+models to a map of pixels and estimates coefficients using restricted maximum 
+likelihood (REML). To do so, we must extract only our NDVI columns as the matrix `Y`. 
+We'll do this by matching all column names containing "ndvi" and slicing the
+data.frame:
 
 ```{r}
 ndvi.cols = grep("ndvi", names(ndvi_AK3000), value = TRUE)
@@ -162,7 +165,8 @@ ARfit = fitAR_map(Y = Y, coords = coords)
 ```
 
 Coefficient estimates can be obtained from `ARfit` with `coefficients()`. The 
-first column is $\hat{\beta_0}$ and the second is $\hat{\beta_1}$.
+first column is the estimate of $\beta_0$, $\hat{\beta_0}$, and the second is
+$\hat{\beta_1}$.
 
 ```{r}
 head(coefficients(ARfit))
@@ -170,8 +174,8 @@ ndvi_AK3000$AR_coef = coefficients(ARfit)[, "t"] # save time trend coefficient
 ```
 
 Below is an image of the estimated coefficients (pre-calculated) for the full 
-`ndvi_AK`. From this, we can see that the general pattern is for northern 
-latitudes to be greening faster (slightly) than more southern latitudes.
+`ndvi_AK`. From this, it appears that northern latitudes may be greening faster
+than more southern latitudes.
 
 ```{r fig.width = 3, fig.asp = .9}
 ndvi_AK %>% filter(rare.land == FALSE) %>% 
@@ -183,9 +187,9 @@ ndvi_AK %>% filter(rare.land == FALSE) %>%
   labs(y = "Latitude", x = "Longitude", col = expression(beta[1]))
 ```
 
-`fitAR_map` and it's conditional least squares counterpart `fitCLS_map` are
-simply wrappers for `fitAR` and `fitCLS` which conduct individual time series 
-analysis. Both AR REML and CLS method account for temporal autocorrelation in
+`fitAR_map` and its conditional least-squares counterpart, `fitCLS_map`, are
+wrappers for `fitAR` and `fitCLS` which conduct individual time series 
+analysis. Both AR REML and CLS methods account for temporal autocorrelation in
 the time series. See function documentation for more details (i.e., `?fitAR_map()`).
 
 # Spatial relationships
