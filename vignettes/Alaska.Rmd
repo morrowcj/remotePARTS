@@ -150,20 +150,20 @@ We'll do this by matching all column names containing "ndvi" and slicing the
 data.frame:
 
 ```{r}
-ndvi.cols = grep("ndvi", names(ndvi_AK3000), value = TRUE)
-Y = as.matrix(ndvi_AK3000[, ndvi.cols])
+ndvi.cols <- grep("ndvi", names(ndvi_AK3000), value = TRUE)
+Y <- as.matrix(ndvi_AK3000[, ndvi.cols])
 ```
 
 We also need a 2-column coordinate matrix `coords`:
 
 ```{r}
-coords = as.matrix(ndvi_AK3000[, c("lng", "lat")])
+coords <- as.matrix(ndvi_AK3000[, c("lng", "lat")])
 ```
 
 `Y` and `coords` are then passed `fitAR_map()` with default settings:
 
 ```{r}
-ARfit = fitAR_map(Y = Y, coords = coords)
+ARfit <- fitAR_map(Y = Y, coords = coords)
 ```
 
 Coefficient estimates can be obtained from `ARfit` with `coefficients()`. The 
@@ -172,7 +172,7 @@ $\hat{\beta_1}$.
 
 ```{r}
 head(coefficients(ARfit))
-ndvi_AK3000$AR_coef = coefficients(ARfit)[, "t"] # save time trend coefficient
+ndvi_AK3000$AR_coef <- coefficients(ARfit)[, "t"] # save time trend coefficient
 ```
 
 Below is an image of the estimated coefficients (pre-calculated) for the full 
@@ -207,7 +207,7 @@ The first step is to calculate the distances among pixels as a distance matrix
 coordinate matrix.
 
 ```{r}
-D = distm_scaled(coords)
+D <- distm_scaled(coords)
 ```
 
 `distm_scaled()` scales distances across the spatial domain so that the
@@ -239,7 +239,7 @@ structure among pixels is given by $\Sigma = \eta **I** + (1-\eta)**V**$ where *
 identity matrix.
 
 ```{r, fig.asp = 1, fig.width = 3, include = FALSE}
-nugget = .3
+nugget <- .3
 curve(covar_exp(x, r = .1), xlab = "distance", ylab = "covar_exp(d, r)")
 curve((1-nugget)*covar_exp(x, r = .1), add = TRUE, col = "red")
 legend("topright", legend = c(0, .2), title = expression(eta), 
@@ -249,8 +249,8 @@ legend("topright", legend = c(0, .2), title = expression(eta),
 If we know the range parameter $r$, we can calculate **V**, from **D** with `covar_exp()`:
 
 ```{r}
-r = 0.1
-V = covar_exp(D, r)
+r <- 0.1
+V <- covar_exp(D, r)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
@@ -260,9 +260,9 @@ image(V)
 And we could add a known nugget to `V` to obtain `Sigma`:
 
 ```{r}
-nugget = 0.2 
-I = diag(nrow(V)) # identity matrix
-Sigma = nugget*I + (1-nugget)*V
+nugget <- 0.2 
+I <- diag(nrow(V)) # identity matrix
+Sigma <- nugget*I + (1-nugget)*V
 ```
 
 See `?covar_exp()` for a description of the covariance functions provided 
@@ -344,7 +344,7 @@ optimal range parameter at 0.1. For this example, we will also specify
 parameters. 
 
 ```{r}
-corfit = fitCor(resids = residuals(ARfit), coords = coords, 
+corfit <- fitCor(resids = residuals(ARfit), coords = coords, 
                 covar_FUN = "covar_exp", start = list(range = 0.1), 
                 fit.n = 3000)
 (range.opt = corfit$spcor)
@@ -360,7 +360,7 @@ map:
 
 ```{r, eval = FALSE}
 max.dist <- max(distm_km(coords))
-corfit.km = fitCor(resids = residuals(ARfit), coords = coords, 
+corfit.km <- fitCor(resids = residuals(ARfit), coords = coords, 
                    covar_FUN = "covar_exp", start = list(range = max.dist*0.1),
                    distm_FUN = "distm_km", fit.n = 3000)
 ```
@@ -374,7 +374,7 @@ After we've obtained our range parameter estimate, we can use it to re-calculate
 the `V` matrix:
 
 ```{r}
-V.opt = covar_exp(D, range.opt)
+V.opt <- covar_exp(D, range.opt)
 ```
 
 ### Nugget
@@ -391,7 +391,7 @@ F-tests are calculated. This will be discussed further in the "Hypothesis testin
 section.
 
 ```{r}
-GLS.opt = fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, nugget = NA, 
+GLS.opt <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, nugget = NA, 
                  no.F = FALSE)
 (nug.opt = GLS.opt$nugget)
 coefficients(GLS.opt)
