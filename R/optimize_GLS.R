@@ -85,13 +85,13 @@
 #'             opt.only = TRUE)
 #'
 #' ## estimate range only, fixed nugget at 0, and fit full GLS (slow)
-#' optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
+#' fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,
 #'              coords = df[, c("lng", "lat")],
 #'              start = c(range = .1), fixed = c("nugget" = 0),
 #'              method = "Brent", lower = 0, upper = 1)
 #' }
 #' @export
-optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
+fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
                          covar_FUN = "covar_exp",
                          start = c(range = .01, nugget = 0),
                          fixed = c(), opt.only = FALSE,
@@ -100,8 +100,43 @@ optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled
                          ...){
   call = match.call()
 
-  # function to optimize over
-  GLS.fun <- function(op, fp){
+  
+  # create a list of arguments to pass to do.call
+  arg.list <- list(par = start[! names(start) %in% names(fixed)], #parameters to optimze
+                   fn = fitGLS_opt_FUN
+  )
+
+  # append fixed parameters, if they exist
+  if(length(fixed) > 0){
+    arg.list <- append(arg.list, list(fp = fixed))
+  }
+
+  # append arguments given by ... to the argument list
+  arg.list = append(arg.list, list(...)) # add additional arguments to arg list
+
+  # call optim, and pass arguments
+  opt.out <- do.call(optim, args = arg.list)
+
+  if(opt.only){
+    return(opt.out)
+  } else {
+    names(opt.out$par) = names(start)
+    spars = opt.out$par[!names(opt.out$par) %in% "nugget"]
+    nug = ifelse(test = "nugget" %in% names(opt.out$par), yes = opt.out$par["nugget"],
+                 no = ifelse(test = "nugget" %in% names(fixed), yes = fixed["nugget"],
+                             no = 0))
+    GLS.out = fitGLS(formula = formula, data = data, formula0 = formula0,
+                     save.xx = save.xx, save.invchol = save.invchol,
+                     logLik.only = FALSE, no.F = no.F, coords = coords,
+                     distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
+                     nugget = nug, covar.pars = spars)
+    GLS.out$call = call
+    return(list(opt = opt.out, GLS = GLS.out))
+  }
+}
+
+# function to optimize over
+  fitGLS_opt_FUN <- function(op, fp){
     ## combine the optimized and fixed parameters into one vector
     all.pars <- if(missing(fp)){op}else{c(op, fp)}
     ## extract the nugget
@@ -134,36 +169,3 @@ optimize_GLS <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled
     return(-logLik)
   }
 
-  # create a list of arguments to pass to do.call
-  arg.list <- list(par = start[! names(start) %in% names(fixed)], #parameters to optimze
-                   fn = GLS.fun
-  )
-
-  # append fixed parameters, if they exist
-  if(length(fixed) > 0){
-    arg.list <- append(arg.list, list(fp = fixed))
-  }
-
-  # append arguments given by ... to the argument list
-  arg.list = append(arg.list, list(...)) # add additional arguments to arg list
-
-  # call optim, and pass arguments
-  opt.out <- do.call(optim, args = arg.list)
-
-  if(opt.only){
-    return(opt.out)
-  } else {
-    names(opt.out$par) = names(start)
-    spars = opt.out$par[!names(opt.out$par) %in% "nugget"]
-    nug = ifelse(test = "nugget" %in% names(opt.out$par), yes = opt.out$par["nugget"],
-                 no = ifelse(test = "nugget" %in% names(fixed), yes = fixed["nugget"],
-                             no = 0))
-    GLS.out = fitGLS(formula = formula, data = data, formula0 = formula0,
-                     save.xx = save.xx, save.invchol = save.invchol,
-                     logLik.only = FALSE, no.F = no.F, coords = coords,
-                     distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
-                     nugget = nug, covar.pars = spars)
-    GLS.out$call = call
-    return(list(opt = opt.out, GLS = GLS.out))
-  }
-}
