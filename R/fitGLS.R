@@ -169,7 +169,7 @@
 #' }
 #' @export
 fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALSE,
-                   save.invchol = FALSE, logLik.only = FALSE, no.F = TRUE,
+                   save.invchol = FALSE, logLik.only = FALSE, no.F = FALSE,
                    coords, distm_FUN ,covar_FUN, covar.pars, invCholV,
                    ...){
 
