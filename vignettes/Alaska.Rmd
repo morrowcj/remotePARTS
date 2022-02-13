@@ -53,11 +53,11 @@ theme_set(theme(panel.grid = element_blank(),
 
 # Alaska datasets
 
-`remotePARTS` ships with two data objects Both objects contain NDVI values, derived 
-from NASA's MODIS satellite, for the US State of Alaska. The first object, `ndvi_AK`, 
-contains pxels for the full map (n = 31,486) and `ndvi_AK3000` is a representative 
+`remotePARTS` ships with two data objects. Both objects contain NDVI values derived 
+from NASA's MODIS satellite for the US State of Alaska. The first object, `ndvi_AK`, 
+contains pxels for the full map (n = 31,486), and `ndvi_AK3000` is a representative 
 subset of 3,000 of those pixels. `ndvi_AK3000` exists as a smaller data set that 
-can be processed much faster than `ndvi_AK` but both sets contain all the same 
+can be processed much faster than `ndvi_AK`, but both sets contain all the same 
 variables and can be analyzed similarly. These data can be loaded with 
 `data("ndvi_AK")` and `data("ndvi_AK3000")`.
 
@@ -68,11 +68,12 @@ data("ndvi_AK3000")
 
 `ndvi_AK` is a `data.frame` with 38 columns. `lng` and `lat` are longitude and
 latitude, respectively. `AR_coef` and `CLS_coef` are pre-calculated coefficient
-estimates from pixel-level time series analyses via AR REML and conditional least
-squares, respectively. `land` is a factor representing land cover classes and 
-`rare.land` is a logical filtering variable that indicates if a pixel's land cover
-class occurs in less than 2% of the map. The remaining 32 columns, of the form 
-`ndviYYYY` contain the NDVI values from 1982 to 2013.
+estimates of the time trends in ndvi from pixel-level time series analyses
+via AR REML and conditional least squares, respectively. `land` is a factor 
+representing land cover classes, and `rare.land` is a logical filtering 
+variable that indicates if a pixel's land-cover class occurs in less than 2% 
+of the map. The remaining 32 columns, of the form `ndviYYYY`, contain the 
+NDVI values from 1982 to 2013.
 
 ```{r}
 str(ndvi_AK)
