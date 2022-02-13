@@ -21,7 +21,7 @@
 #' for final GLS output
 #' @param ... additional arguments passed to \code{stats::optim()}
 #'
-#' @details \code{optimize_GLS} fits a GLS by estimating spatial parameters from
+#' @details \code{fitGLS_opt} fits a GLS by estimating spatial parameters from
 #' data. \code{\link{fitCor}}, combined with \code{\link{fitGLS}(nugget = NA)},
 #' gives better estimates of spatial parameters, but time-series residuals may
 #' not be available in all cases. In these cases, spatial parameters can be
@@ -54,7 +54,7 @@
 #' some iterations. These warnings are produced by \code{fitGLS} and NA
 #' log-likelihoods are returned in those cases.
 #'
-#' Note that \code{optimize_GLS} fits multiple GLS models, which requires
+#' Note that \code{fitGLS_opt} fits multiple GLS models, which requires
 #' inverting a large matrix for each one (unless a fixed 0 nugget is used).
 #' This process is very computationally intensive and may take a long time to
 #' finish depending upon your machine and the size of the data.
@@ -63,7 +63,7 @@
 #' series residuals; \code{\link{fitGLS}} for fitting GLS and with the option
 #' of estimating the maximum-likelihood nugget component only.
 #'
-#' @return If \code{opt.only = TRUE}, \code{optimize_GLS} returns the
+#' @return If \code{opt.only = TRUE}, \code{fitGLS_opt} returns the
 #' output from \code{stats::optim()}: see it's documentation for more details.
 #'
 #' Otherwise, a list with two elements is returned:
@@ -80,7 +80,7 @@
 #' df = ndvi_AK3000[seq_len(500), ] # first 500 rows
 #'
 #' ## estimate nugget and range (very slow)
-#' optimize_GLS(formula = CLS_coef ~ 0 + land, data = df,
+#' fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,
 #'             coords = df[, c("lng", "lat")], start = c(range = .1, nugget = 0),
 #'             opt.only = TRUE)
 #'
