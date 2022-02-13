@@ -172,8 +172,22 @@ $\hat{\beta_1}$.
 
 ```{r}
 head(coefficients(ARfit))
+```
+
+These time-series analyses calculate the time trend in the raw NDVI data. In most situations
+it makes sense to ask if there are time trends in the relative NDVI values, that is,
+changes in NDVI relative to the mean value of NDVI in a pixel. Scaling the trend in NDVI
+relative to the mean gives assessments of the $proportional$ change in NDVI. These trends in the 
+proportional NDVI are calculated be dividing by the mean. The values of the trend coefficients 
+are contained in `ARfit$coefficients`, and since the coefficients for the trend are the column of the
+coefficients matrix names `t`, the scaling is performed as
+
+```{r}
+ARfit$coefficients[, "t"] <- ARfit$coefficients[,2]/rowMeans(ndvi_AK3000[, ndvi.cols])
 ndvi_AK3000$AR_coef <- coefficients(ARfit)[, "t"] # save time trend coefficient
 ```
+
+These scaled values of the time trend are then stored in the `ndvi_AK3000` data.frame.
 
 Below is an image of the estimated coefficients (pre-calculated) for the full 
 `ndvi_AK`. From this, it appears that northern latitudes may be greening faster
@@ -300,7 +314,7 @@ even with only the 3000-pixel subset, it will take a few minutes to finish the
 computations on most computers. 
 
 ```{r}
-GLS.0 <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget = nugget)
+GLS.0 <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget = nugget, no.F = FALSE)
 ```
 
 Note also that `fitGLS` adds the nugget to `V` internally. If we wanted to do this
@@ -316,6 +330,17 @@ The estimates for our land class effects can be extracted with `coefficients()`.
 ```{r}
 coefficients(GLS.0)
 ```
+
+The full model fit is given by
+
+```{r}
+GLS.0
+```
+
+Note that, although none of the three land-cover classes shows a statistically significant time trend
+in (proportional) NDVI, the F-test shows that there is a statistically significant difference among
+land-cover classes, bacause the model including land-cover classes gives a statistically significantly 
+better fit to the data than the intercept-only model.
 
 ## Parameter estimation
 
