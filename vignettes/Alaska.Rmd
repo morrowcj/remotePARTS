@@ -594,27 +594,27 @@ without having to execute the function.
 The model was fit with this code:
 
 ```{r, eval = FALSE}
-partGLS.ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
+partGLS_ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
                                    partmat = pm, covar_FUN = "covar_exp", 
                                    covar.pars = list(range = range.opt),
                                    nugget = nug.opt)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(partGLS.ndviAK, file = "data/partGLS.ndviAK.rda", compress = "xz")
+save(partGLS_ndviAK, file = "data/partGLS_ndviAK.rda", compress = "xz")
 ```
 
 and can be loaded with 
 
 ```{r}
-data(partGLS.ndviAK)
+data(partGLS_ndviAK)
 ```
 
 Here are the t-tests, that show that land cover class does not significantly
 affect NDVI trend:
 
 ```{r}
-partGLS.ndviAK$overall$t.test
+partGLS_ndviAK$overall$t.test
 ```
 
 It is **highly** recommended that users read the full documentation 
@@ -626,7 +626,7 @@ Here is the p-value for the chisqr test of the partitioned GLS
 <!-- it seems very wrong: -->
 
 ```{r}
-partGLS.ndviAK$overall$pval.chisqr
+partGLS_ndviAK$overall$pval.chisqr
 ```
 
 This again, indicates that the model which includes land cover classes better
@@ -649,7 +649,7 @@ changing the formula arguments.
 <!-- Here's a manual test: -->
 
 <!-- ```{r} -->
-<!-- (stats = with(partGLS.ndviAK$overall, c(Fmean = Fstat, rSSR = rSSR, dfs[1], partdims["npart"]))) -->
+<!-- (stats = with(partGLS_ndviAK$overall, c(Fmean = Fstat, rSSR = rSSR, dfs[1], partdims["npart"]))) -->
 
 <!-- ## use function -->
 <!-- remotePARTS:::part_chisqr(stats["Fmean"], stats["rSSR"], stats["df1"], stats["npart"]) -->
