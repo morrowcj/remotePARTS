@@ -532,41 +532,43 @@ land-coveer classes or latitude.
 # GLS: Full dataset
 
 Until now, we have limited our analyses to the 3000-pixel subset of Alaska, 
-`ndvi_AK3000`. Calls to `fitGLS()` involve inverting `V` and the computational 
-complexity is not linear but, rather, $N^3$ where $N$ is the number of pixels in
-the map. So, one reason to use `ndvi_AK3000` until this point is compute time
-efficiency. 3000 pixels means dealing with distance and covariance matrices that
+`ndvi_AK3000`. Calls to `fitGLS()` involve inverting `V`, and the computational 
+complexity scales with $N^3$ where $N$ is the number of pixels in
+the map. We have used the data set `ndvi_AK3000` up to now because the computation time
+for the analyses is reasonable. However, 3000 pixels means dealing with distance and covariance matrices that
 each contain $3,000 \times 3,000 = 9,000,000$ elements. This is approaching the
 upper size limit for obtaining relatively fast results.
 
-By contrast, the covariance matrix for the full `ndvi_AK` data set would have 
-$31,486 \times 31,486 = 991,368,196$ elements which is totally unfeasible for a 
-normal computer to invert and would take an very long time to do so anyhow.
+In contrast, the covariance matrix for the full `ndvi_AK` data set would have 
+$31,486 \times 31,486 = 991,368,196$ elements which creates a computationally infeasible problem for a
+normal computer.
 
-For these reasons, `fitGLS_paritition()` may be the most useful function in the
+For these reasons, `fitGLS_paritition` may be the most useful function in the
 `remotePARTS` package. This function can perform the GLS analysis on the full 
 `ndvi_AK` data set. In fact, `ndvi_AK` is quite small in comparison to many remote
 sensing data sets that could be analyzed with `fitGLS_partition()`.
 
 ## Partitioned GLS
 
-`fitGLS_parition()` conducts a partitioned GLS. This process 1) breaks the data
-into smaller and more manageable pieces (partitions), 2) conducts GLS on each
-partition, 3) calculates cross-partition statistics from pairs of partitions, 
-and 4) summarizes the results with statistical tests that account for correlations
-among partitions. We will use the full `ndvi_AK` datasheet to demonstrate this 
-functionality.
+`fitGLS_parition()` conducts GLS analyses on partitions of the data and then
+combines the results from the partitions to give overall statistical results. 
+Specifically, this process (1) breaks the data
+into smaller and more manageable pieces (partitions), (2) conducts GLS on each
+partition, (3) calculates cross-partition statistics from pairs of partitions, 
+and (4) summarizes the results with statistical tests that account for correlations
+among partitions. We will use the full `ndvi_AK` data set to demonstrate `fitGLS_parition()`.
 
-The first step, in this case, is to filter the data set by removing rare 
-land cover classes. Each partition needs to have the same coefficients.
+We have already performed the time-series analyses on the full data set so you don't have to. These are in the coef_AR
+column of ndvi_AK. However, we used a complete data set, so you will need to remove rare 
+land-cover classes. 
 
 ```{r}
 df = ndvi_AK[!ndvi_AK$rare.land, ]
 ```
 
-The next step is to divide pixels up into their parititons. The function 
-`sample_parition()` can do this for us. Passing `sample_partitions` the number
-of pixels in our map and the argument `partsize = 1500` will result in a partition
+Step (1) is to divide pixels up into partitions, which is done with the function 
+`sample_parition()`. Passing `sample_partitions`, the number
+of pixels in our map, and the argument `partsize = 1500` to `sample_parition()` will result in a partition
 matrix with 1,500 rows and 20 columns. Columns of the resulting partition matrix 
 `pm` each contain a random sample of 1,500 pixels. Each of these 20 samples 
 (partitions) are non-overlapping, containing no repeats. 
@@ -576,44 +578,42 @@ pm <- sample_partitions(npix = nrow(df), partsize = 1500)
 dim(pm)
 ```
 
-
-
-Once we have our partition matrix and our filtered data, we can run the analysis 
-by passing  `fitGLS_parititon`. The input is similar to `fitGLS`. For this example, we 
-specify 1) a formula, 2) the data `df`, 3) the partmat `pm`, 4) the 
-covariance function, 5) a list of spatial parameters including our optimized 
-range parameter, and 6) our optimized nugget. 
+Once we have our partition matrix, `fitGLS_parititon()` performs steps (2)-(4) of the 
+analyses. The input is similar to `fitGLS`. For this example, we 
+specify a formula, the data as a data.frame (`df`), the partition matrix (partmat `pm`), the 
+covariance function (`covar_FUN`), a list of spatial parameters including our optimized 
+range parameter and our optimized nugget. 
 
 Note that, though the compute time
-is much faster than if we needed to invert the full covariance matrix, this example
-still takes a very long time to fit. For that reason, we have saved the output of 
-this code as an R object `partGLS_ndviAK`, so that you can look at its output 
+is much faster than if we needed to invert the full covariance matrix `V`, this example
+still takes a long time to fit. Therefore, we have saved the output of 
+this code as an R object `partGLS.ndviAK` so that you can look at its output 
 without having to execute the function. 
 
 The model was fit with this code:
 
 ```{r, eval = FALSE}
-partGLS_ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
+partGLS.ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
                                    partmat = pm, covar_FUN = "covar_exp", 
                                    covar.pars = list(range = range.opt),
                                    nugget = nug.opt)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(partGLS_ndviAK, file = "data/partGLS_ndviAK.rda", compress = "xz")
+save(partGLS.ndviAK, file = "data/partGLS.ndviAK.rda", compress = "xz")
 ```
 
 and can be loaded with 
 
 ```{r}
-data(partGLS_ndviAK)
+data(partGLS.ndviAK)
 ```
 
 Here are the t-tests, that show that land cover class does not significantly
 affect NDVI trend:
 
 ```{r}
-partGLS_ndviAK$overall$t.test
+partGLS.ndviAK$overall$t.test
 ```
 
 It is **highly** recommended that users read the full documentation 
@@ -625,7 +625,7 @@ Here is the p-value for the chisqr test of the partitioned GLS
 <!-- it seems very wrong: -->
 
 ```{r}
-partGLS_ndviAK$overall$pval.chisqr
+partGLS.ndviAK$overall$pval.chisqr
 ```
 
 This again, indicates that the model which includes land cover classes better
@@ -642,13 +642,13 @@ Our parititoned GLS has returned the same conclusions as or standard GLS analysi
 No map-level trend in NDVI was found within any of the land cover classes. 
 
 This was only one of our three hypotheses tested earlier. The remaining two 
-can easily be tested with `fitGLS_partition`, as they were with `fitGLS`, by 
+can easily be tested with `fitGLS_partition()`, as they were with `fitGLS`, by 
 changing the formula arguments. 
 
 <!-- Here's a manual test: -->
 
 <!-- ```{r} -->
-<!-- (stats = with(partGLS_ndviAK$overall, c(Fmean = Fstat, rSSR = rSSR, dfs[1], partdims["npart"]))) -->
+<!-- (stats = with(partGLS.ndviAK$overall, c(Fmean = Fstat, rSSR = rSSR, dfs[1], partdims["npart"]))) -->
 
 <!-- ## use function -->
 <!-- remotePARTS:::part_chisqr(stats["Fmean"], stats["rSSR"], stats["df1"], stats["npart"]) -->
