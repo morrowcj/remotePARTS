@@ -446,7 +446,7 @@ This task is computationally slower than optimizing `nugget` alone with
 `fitGLS` and therefore will take some time to run.
 
 ```{r, eval = FALSE}
-fitopt <- optimize_GLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, 
+fitopt <- fitGLS_opt(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, 
                        coords = ndvi_AK3000[, c("lng", "lat")], 
                        covar_FUN = "covar_exp", 
                        start = c(range = .1, nugget = .2))
@@ -459,15 +459,15 @@ fitopt$GLS$MSE
 ## [1] 0.001033084
 ```
 
-Note that, because `optimize_GLS()` does not require time series residuals, 
-it is possible to use `optimize_GLS()` for statistical problems involving 
+Note that, because `fitGLS_opt` does not require time series residuals, 
+it is possible to use `fitGLS_opt` for statistical problems involving 
 only spatial variables. In other words, rather than $\theta$ being a limited 
 to a time trend, it can be a purely spatial variable as well.
 
 When time-series residuals are available, we recommend that you estimate
 spatial parameters with `fitCor` and `fitGLS`, rather than `optimize_GLS`. 
 In simulation studies, using `fitCor` with figGLS has better statistical 
-performance than using `optimize_GLS`. See `?optimize_GLS()` for more 
+performance than using `fitGLS_opt`. See `?fitGLS_opt` for more 
 information about this function and its use.
 
 # Hypothesis testing
