@@ -115,11 +115,11 @@ ggplot(aes(x = lng, y = lat, fill = land, col = land)) +
 When using `remotePARTS`, the data are assumed to follow the general stochastic 
 process of the form
 
-$$y(t) = X(t)\beta + \varepsilon(t)$$ where
+$$y(t) = **X**(t)\beta + \varepsilon(t)$$ where
 
 * $y(t)$ is a response variable of interest at time $t$,
 
-* $\beta$ is a vector of effects of the predictor variables $X(t)$ on $y(t)$,
+* $\beta$ is a vector of effects of the predictor variables $**X**(t)$ on $y(t)$,
 
 * $\varepsilon(t)$ is an temporal autoregressive process: $\varepsilon(t) = \rho (\varepsilon(t - 1)) + \delta(t)$,
 
@@ -131,15 +131,15 @@ $$y(t) = X(t)\beta + \varepsilon(t)$$ where
 
 The first step in a typical `remotePARTS` workflow is to obtain pixel-level
 estimates of time-series coefficients. In our example, we are interested in 
-estimating the time trends in NDVI for each pixel, represented by $\beta_1$ 
+estimating the time trends in NDVI for each pixel $i$, represented by $\beta_1$ 
 in the regression model
 
-$$ y(t) = \beta_0 + \beta_1 t + \varepsilon(t)$$
+$$ y_i(t) = \beta_0 + \beta_1 t + \varepsilon_i(t)$$
 
-where the random errors $\varepsilon(t)$ follow an AR(1) process: 
+where the random errors $\varepsilon_i(t)$ follow an AR(1) process: 
 
-$$\varepsilon(t) = b\varepsilon(t - 1) + \delta(t)$
-$$\delta(t) \sim N(0 , \sigma)$
+$$\varepsilon_i(t) = b\varepsilon_i(t - 1) + \delta_i(t)$
+$$\delta_i(t) \sim N(0 , \sigma)$
 
 We will use `fitAR_map()` to estimate $\beta_1$, which fits pixel-level AR(1) 
 models to a map of pixels and estimates coefficients using restricted maximum 
@@ -194,27 +194,32 @@ the time series. See function documentation for more details (i.e., `?fitAR_map(
 
 # Spatial relationships
 
-Now that we've reduced the temporal component to one dimension 
-(i.e., estimates of $\beta_1$) and accounted for temporal autocorrelation, we 
+Now that we've reduced the temporal component of each time series to a single value 
+(i.e., estimates of $\beta_1$) while accounting for temporal autocorrelation, we 
 can focus on the spatial component of our problem. 
 
 ## Distance
 
 The first step is to calculate the distances among pixels as a distance matrix 
-`D`. Here, we'll calculate relative distances with `distm_scaled()` from our 
+**D**. Here, we'll calculate relative distances with `distm_scaled()` from our 
 coordinate matrix.
 
 ```{r}
 D = distm_scaled(coords)
 ```
 
+`distm_scaled()` scales distances across the spatial domain so that the
+greatest distance between two pixels is 1. Note, however, that because `distm_scaled()`
+uses `geosphere::distm()`, it treats coordinates as degrees longitude and latitude
+on a sphere and calculates distances accordingly.
+
 ## Covariance
 
-Next, we need to estimate the correlation among points, based on their distances.
-
+Next, we need to estimate the expected correlation between the random errors
+of our spatial response variable (estimates of $\beta_1$) based on their distances.
 To do so, we need a spatial covariance function. In this example, we will use an 
 exponential covariance function to estimate correlations: 
-$V = \exp\big(\frac{-D}{r}\big)$ where $r$ is a parameter that dictates
+$**V** = \exp\big(\frac{-D}{r}\big)$ where $r$ is a parameter that dictates
 the range of spatial autocorrelation. The function `covar_exp()` corresponds to 
 this covariance function. 
 
@@ -225,10 +230,10 @@ legend("topright", legend = c("0.1", "0.2"), title = "r",
        col = c("black", "red"), lty = 1)
 ```
 
-$V$ represents the correlation among points if all variation is accounted for.
-However, in most cases, some additional source of unexplained and unmeasured 
-variance (a nugget $\eta$) occurs. To account for this, we assume that covariance
-structure among pixels is given by $\Sigma = \eta I + (1-\eta)V$ where $I$ is an 
+`V` represents the correlation among points if all variation is accounted for.
+However, it is safest to assume that there is some additional source of unexplained
+and unmeasured variance (a nugget $\eta$). Therefore, we assume that the covariance
+structure among pixels is given by $\Sigma = \eta **I** + (1-\eta)**V**$ where **I** is the 
 identity matrix.
 
 ```{r, fig.asp = 1, fig.width = 3, include = FALSE}
@@ -239,7 +244,7 @@ legend("topright", legend = c(0, .2), title = expression(eta),
        col = c("black", "red"), lty = 1)
 ```
 
-If we know the range parameter, we can calculate `V`, from `D` with `covar_exp()`:
+If we know the range parameter $r$, we can calculate **V**, from **D** with `covar_exp()`:
 
 ```{r}
 r = 0.1
@@ -258,21 +263,21 @@ I = diag(nrow(V)) # identity matrix
 Sigma = nugget*I + (1-nugget)*V
 ```
 
-See `?covar_exp()` to see the covariance functions provided by `remotePARTS` and
-for more information regarding their usage.
+See `?covar_exp()` for a description of the covariance functions provided 
+by `remotePARTS` and for more information regarding their use.
 
 # GLS: 3000-pixel subset
 
-To test spatial hypotheses with `remotePARTS` a generalized least squares
-regression model (GLS) is fit The GLS follows  
+To test spatial hypotheses with `remotePARTS`, we use a generalized 
+least-squares regression model (GLS):  
 
-$$\theta = \alpha_{gls}X + \varepsilon $$ where
+$$\theta = **X**\alpha_{gls} + \vargamma $$ where
 
-* $\theta$ is a response vector of values that are spatially autocorrelated
+* $\theta$ is a vector of response values
 
-* $\alpha_{gls}$ is a vector of the effects of predictor variables $X$ on $\theta$
+* $\alpha_{gls}$ is a vector of the effects of predictor variables **X** on $\theta$
 
-* and the error term is spatially autocorrelated according to $\Sigma$: $\varepsilon \sim N(0, \Sigma)$
+* the error term $\vargamma$ is spatially autocorrelated according to $\Sigma$: $\vargamma \sim N(0, \Sigma_vargamma)$
 
 $\theta$ will usually be a regression parameter. For example, if we're interested
 in understanding trends in NDVI over time, we would use the pixel-level regression
@@ -280,12 +285,12 @@ coefficient for the effect of time on NDVI (i.e., $\theta = \hat\beta$)
 
 ## Known parameters
 
-If the parameters are known a GLS can easily be fit with `fitGLS()`. Here,
-we will fit the GLS by providing 1) a model formula, 2) a data source, 3) our 
-`V` matrix, which was pre-calculated with our spatial parameter $r = 0.1$, and 
-4) our nugget ($\eta = 0.2$). 
+If the parameters that govern the spatial autocorrelation $\Sigma_vargamma$ are known,
+a GLS can be fit with `fitGLS()`. Here, we will fit the GLS by providing (i) a model 
+formula, (ii) a data source, (iii) our `V` matrix, which was pre-calculated with a 
+spatial parameter $r = 0.1$ and (iv) a nugget of $\eta = 0.2$. 
 
-In this example, we will estimate the effect of land cover class on our time trend.
+In this example, we will estimate the effect of land-cover class on our time trend.
 Because `land` is a factor, we'll also specify a no-intercept model. 
 
 Note that the GLS fitting process requires an inversion of `V`. This means that 
@@ -297,8 +302,8 @@ GLS.0 <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget 
 ```
 
 Note also that `fitGLS` adds the nugget to `V` internally. If we wanted to do this
-ourselves, we could pass the covariance matrix `Sigma`, which already contains a
-nugget component, and then set the `nugget` argument of `fitGLS` to 0:
+ourselves, we could pass the covariance matrix `Sigma` which already contains a
+nugget component and then set the `nugget` argument of `fitGLS` to 0:
 
 ```{r, eval = FALSE}
 fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = Sigma, nugget = 0) # equivalent
@@ -312,7 +317,8 @@ coefficients(GLS.0)
 
 ## Parameter estimation
 
-In practice, we rarely know the spatial parameters or the nugget in advance. So,
+In practice, we rarely know the values of the parameters that govern 
+spatial autocorrelation (e.g., the range and nugget) in advance. Therefore,
 these parameters will need to be estimated for most data.
 
 ### Spatial parameters
