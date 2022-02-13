@@ -581,10 +581,11 @@ dim(pm)
 Once we have our partition matrix, `fitGLS_parititon()` performs steps (2)-(4) of the 
 analyses. The input is similar to `fitGLS`. For this example, we 
 specify a formula, the data as a data.frame (`df`), the partition matrix (partmat `pm`), the 
-covariance function (`covar_FUN`), a list of spatial parameters including our optimized 
-range parameter and our optimized nugget. 
+covariance function (`covar_FUN`), a list of spatial parameters `covar.pars` including our optimized 
+range parameter, and `nugget`. If `nugget` is specified, this value is used for the calculations, while
+if `nigget` = `NA` (the default) it is estimated for each partition separately.
 
-Note that, though the compute time
+Note that, although the compute time
 is much faster than if we needed to invert the full covariance matrix `V`, this example
 still takes a long time to fit. Therefore, we have saved the output of 
 this code as an R object `partGLS.ndviAK` so that you can look at its output 
