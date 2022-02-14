@@ -13,7 +13,7 @@ fitGLS(
   save.xx = FALSE,
   save.invchol = FALSE,
   logLik.only = FALSE,
-  no.F = TRUE,
+  no.F = FALSE,
   coords,
   distm_FUN,
   covar_FUN,

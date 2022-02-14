@@ -92,18 +92,20 @@
 #' }
 #' @export
 fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
-                         covar_FUN = "covar_exp",
-                         start = c(range = .01, nugget = 0),
-                         fixed = c(), opt.only = FALSE,
-                         formula0 = NULL, save.xx = FALSE, save.invchol = FALSE,
-                         no.F = TRUE,
-                         ...){
+                       covar_FUN = "covar_exp",
+                       start = c(range = .01, nugget = 0),
+                       fixed = c(), opt.only = FALSE,
+                       formula0 = NULL, save.xx = FALSE, save.invchol = FALSE,
+                       no.F = TRUE,
+                       ...){
   call = match.call()
 
-  
+
   # create a list of arguments to pass to do.call
   arg.list <- list(par = start[! names(start) %in% names(fixed)], #parameters to optimze
-                   fn = fitGLS_opt_FUN
+                   fn = fitGLS_opt_FUN, formula = formula, data = data,
+                   coords = coords, covar_FUN = covar_FUN,
+                   distm_FUN = distm_FUN
   )
 
   # append fixed parameters, if they exist
@@ -135,37 +137,48 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
   }
 }
 
-# function to optimize over
-  fitGLS_opt_FUN <- function(op, fp){
-    ## combine the optimized and fixed parameters into one vector
-    all.pars <- if(missing(fp)){op}else{c(op, fp)}
-    ## extract the nugget
-    nug = ifelse("nugget" %in% names(all.pars), all.pars["nugget"], 0)
-    ## extract the non-nugget parameters
-    sp.pars = as.list(all.pars[!names(all.pars) %in% "nugget"])
-    ## calculate covariance
-    cov.f = match.fun(covar_FUN)
-    dist.f = match.fun(distm_FUN)
-    V = dist.f(coords) # distance
-    args = append(list(d = V), as.list(sp.pars))
-    V = do.call(cov.f, args) # replace with covariance
-    ## Calculate log-likelihood
-    if(!"nugget" %in% names(op) & nug == 0){ # recycle inverse cholesky matrix if a nugget is not needed.
-      V = invert_chol(V)
-      logLik = fitGLS(formula = formula, data = data, invCholV = V, formula0 = NULL,
-                  save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
-                  nugget = 0)
-    } else {
-      logLik = fitGLS(formula = formula, data = data, V = V, formula0 = NULL,
+#' Function that fitGLS_opt optimizes over
+#'
+#' @param op a named vector of parameters to be optimized
+#' @param fp a named vector of fixed parameters
+#' @param coords a coordinate matrix
+#' @param covar_FUN a covariance function
+#' @param distm_FUN a distm function
+#' @param formula GLS model formula
+#' @param data data source
+#'
+#' @return \code{fitGLS_opt_FUN} returns the negative log likelihood of a GLS,
+#' given the parameters in \code{op} and \code{fp}
+#'
+#' @examples
+#' \dontrun{
+#' data(ndvi_AK3000)
+#' df = ndvi_AK3000[seq_len(500), ] # first 500 rows
+#' coords = df[, c("lng", "lat")]
+#' remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = .2),
+#'                              formula = CLS_coef ~ 0 + land, data = df,
+#'                              coords = coords)
+#' remotePARTS:::fitGLS_opt_FUN(op = c(range = .1), fp = c(nugget = 0),
+#'                              formula = CLS_coef ~ 0 + land, data = df,
+#'                              coords = coords)
+#' }
+fitGLS_opt_FUN <- function(op, fp, formula, data = NULL, coords, covar_FUN = "covar_exp", distm_FUN = "distm_scaled"){
+  ## combine the optimized and fixed parameters into one vector
+  all.pars <- if(missing(fp)){op}else{c(op, fp)}
+  ## extract the nugget
+  nug = ifelse("nugget" %in% names(all.pars), all.pars["nugget"], 0)
+  ## extract the non-nugget parameters
+  sp.pars = as.list(all.pars[!names(all.pars) %in% "nugget"])
+  ## calculate covariance
+  cov.f = match.fun(covar_FUN)
+  dist.f = match.fun(distm_FUN)
+  V = dist.f(coords) # distance
+  args = append(list(d = V), as.list(sp.pars))
+  V = do.call(cov.f, args) # replace with covariance
+  ## Calculate log-likelihood
+  logLik = fitGLS(formula = formula, data = data, V = V, formula0 = NULL,
                   save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
                   nugget = nug)
-    }
-    ## Calculate V internally - slow
-    # ## calculate log-likelihood from a GLS, using the nugget and spatial parameters
-    # logLik = fitGLS(formula = formula, data = data, formula0 = NULL, save.xx = FALSE,
-    #             save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
-    #             coords = coords, distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
-    #             nugget = nug, covar.pars = sp.pars)
-    return(-logLik)
-  }
+  return(-logLik)
+}
 
