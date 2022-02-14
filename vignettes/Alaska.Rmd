@@ -31,13 +31,13 @@ remotes::install_github("morrowcj/remotePARTS")
 
 Then, ensure that the package is loaded into your library:
 
-```{r public_library}
+```{r}
 library(remotePARTS)
 ```
 
 This vignette will use `dplyr` and `ggplot2` for visualizing the data:
 
-```{r private_library}
+```{r}
 library(dplyr)
 library(ggplot2)
 ```
@@ -71,11 +71,12 @@ data("ndvi_AK3000")
 `ndvi_AK` is a `data.frame` with 38 columns. `lng` and `lat` are longitude and
 latitude, respectively. `AR_coef` and `CLS_coef` are pre-calculated coefficient
 estimates of the time trends in ndvi from pixel-level time series analyses
-via AR REML and conditional least squares, respectively. `land` is a factor 
-representing land cover classes, and `rare.land` is a logical filtering 
-variable that indicates if a pixel's land-cover class occurs in less than 2% 
-of the map. The remaining 32 columns, of the form `ndviYYYY`, contain the 
-NDVI values from 1982 to 2013.
+via AR REML and conditional least squares, respectively. These coefficient
+estimates have been standardized by the average ndvi value of the pixel over that
+time period. `land` is a factor representing land cover classes, and `rare.land` 
+is a logical filtering variable that indicates if a pixel's land-cover class occurs 
+in less than 2% of the map. The remaining 32 columns, of the form `ndviYYYY`, 
+contain the NDVI values from 1982 to 2013.
 
 ```{r}
 str(ndvi_AK)
@@ -91,7 +92,7 @@ classes?"; and "Do Alaska's NDVI time trends differ with latitude?"
 
 The figure below shows a temporal cross-section of these data: 1982, 1998, and 2013. 
 
-```{r, fig.width = 5, fig.asp = .4}
+```{r, fig.width = 6.5, fig.asp = .4}
 reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>% 
   ggplot(aes(x = lng, y = lat, col = value )) + 
   geom_tile() +
@@ -103,7 +104,7 @@ reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>%
 
 The following figure shows how Alaska's three primary land-cover classes are distributed.
 
-```{r fig.width = 3, fig.asp = .9}
+```{r fig.width = 4.5, fig.asp = .8}
 ndvi_AK %>% filter(rare.land == FALSE) %>% 
 ggplot(aes(x = lng, y = lat, fill = land, col = land)) + 
   geom_tile() + 
@@ -111,6 +112,9 @@ ggplot(aes(x = lng, y = lat, fill = land, col = land)) +
   scale_color_viridis_d(direction = -1, end = .9) +
   labs(y = "Latitude", x = "Longitude", col = "Land cover", fill = "Land cover")
 ```
+
+Use `help("ndvi_AK)` and `help("ndvi_AK3000")` to see documentation of these 
+datasets.
 
 # Model
 
@@ -123,11 +127,14 @@ $$y(t) = **X**(t)\beta + \varepsilon(t)$$ where
 
 * $\beta$ is a vector of effects of the predictor variables $**X**(t)$ on $y(t)$,
 
-* $\varepsilon(t)$ is an temporal autoregressive process: $\varepsilon(t) = \rho (\varepsilon(t - 1)) + \delta(t)$,
+* $\varepsilon(t)$ is an temporal autoregressive process: 
+$\varepsilon(t) = \rho (\varepsilon(t - 1)) + \delta(t)$,
 
-* at any time step, $\delta(t)$ is spatially autocorrelated according to covariance matrix $\Sigma$: $\delta(t) \sim N(0, \Sigma)$.
+* at any time step, $\delta(t)$ is spatially autocorrelated according to covariance 
+matrix $\Sigma$: $\delta(t) \sim N(0, \Sigma)$.
 
-* there is no temporal dependence in $\delta(t)$ (i.e., $\delta(t_1)$ is independent of $\delta(t_2)$ except when $t_1$ = $t_2$).
+* there is no temporal dependence in $\delta(t)$ (i.e., $\delta(t_1)$ is 
+independent of $\delta(t_2)$ except when $t_1$ = $t_2$).
 
 # Time-series analysis
 
@@ -140,13 +147,13 @@ $$ y_i(t) = \beta_0 + \beta_1 t + \varepsilon_i(t)$$
 
 where the random errors $\varepsilon_i(t)$ follow an AR(1) process: 
 
-$$\varepsilon_i(t) = b\varepsilon_i(t - 1) + \delta_i(t)$
-$$\delta_i(t) \sim N(0 , \sigma)$
+$$\varepsilon_i(t) = b\varepsilon_i(t - 1) + \delta_i(t)$$
+$$\delta_i(t) \sim N(0 , \sigma)$$
 
 We will use `fitAR_map()` to estimate $\beta_1$, which fits pixel-level AR(1) 
 models to a map of pixels and estimates coefficients using restricted maximum 
-likelihood (REML). To do so, we must extract only our NDVI columns as the matrix `Y`. 
-We'll do this by matching all column names containing "ndvi" and slicing the
+likelihood (REML). To do so, we must extract only our NDVI columns as the matrix 
+`Y`. We'll do this by matching all column names containing "ndvi" and slicing the
 data.frame:
 
 ```{r}
@@ -160,7 +167,7 @@ We also need a 2-column coordinate matrix `coords`:
 coords <- as.matrix(ndvi_AK3000[, c("lng", "lat")])
 ```
 
-`Y` and `coords` are then passed `fitAR_map()` with default settings:
+`Y` and `coords` are then passed to `fitAR_map()` with default settings:
 
 ```{r}
 ARfit <- fitAR_map(Y = Y, coords = coords)
@@ -193,7 +200,7 @@ Below is an image of the estimated coefficients (pre-calculated) for the full
 `ndvi_AK`. From this, it appears that northern latitudes may be greening faster
 than more southern latitudes.
 
-```{r fig.width = 3, fig.asp = .9}
+```{r fig.width = 4.5, fig.asp = .8}
 ndvi_AK %>% filter(rare.land == FALSE) %>% 
   ggplot(aes(x = lng, y = lat, fill = AR_coef, col = AR_coef)) + 
   geom_tile() + 
@@ -239,7 +246,7 @@ $**V** = \exp\big(\frac{-D}{r}\big)$ where $r$ is a parameter that dictates
 the range of spatial autocorrelation. The function `covar_exp()` corresponds to 
 this covariance function. 
 
-```{r, fig.asp = 1, fig.width = 3, include = FALSE}
+```{r, fig.asp = 1, fig.width = 4.5, include = FALSE}
 curve(covar_exp(x, r = .1), xlab = "distance", ylab = "covar_exp(d, r)")
 curve(covar_exp(x, r = .2), add = TRUE, col = "red")
 legend("topright", legend = c("0.1", "0.2"), title = "r", 
@@ -252,7 +259,7 @@ and unmeasured variance (a nugget $\eta$). Therefore, we assume that the covaria
 structure among pixels is given by $\Sigma = \eta **I** + (1-\eta)**V**$ where **I** is the 
 identity matrix.
 
-```{r, fig.asp = 1, fig.width = 3, include = FALSE}
+```{r, fig.asp = 1, fig.width = 4.5, include = FALSE}
 nugget <- .3
 curve(covar_exp(x, r = .1), xlab = "distance", ylab = "covar_exp(d, r)")
 curve((1-nugget)*covar_exp(x, r = .1), add = TRUE, col = "red")
@@ -287,13 +294,13 @@ by `remotePARTS` and for more information regarding their use.
 To test spatial hypotheses with `remotePARTS`, we use a generalized 
 least-squares regression model (GLS):  
 
-$$\theta = **X**\alpha_{gls} + \vargamma $$ where
+$$\theta = **X**\alpha_{gls} + \gamma $$ where
 
 * $\theta$ is a vector of response values
 
 * $\alpha_{gls}$ is a vector of the effects of predictor variables **X** on $\theta$
 
-* the error term $\vargamma$ is spatially autocorrelated according to $\Sigma$: $\vargamma \sim N(0, \Sigma_vargamma)$
+* the error term $\gamma$ is spatially autocorrelated according to $\Sigma$: $\gamma \sim N(0, \Sigma_gamma)$
 
 $\theta$ will usually be a regression parameter. For example, if we're interested
 in understanding trends in NDVI over time, we would use the pixel-level regression
@@ -301,7 +308,7 @@ coefficient for the effect of time on NDVI (i.e., $\theta = \hat\beta$)
 
 ## Known parameters
 
-If the parameters that govern the spatial autocorrelation $\Sigma_vargamma$ are known,
+If the parameters that govern the spatial autocorrelation $\Sigma_gamma$ are known,
 a GLS can be fit with `fitGLS()`. Here, we will fit the GLS by providing (i) a model 
 formula, (ii) a data source, (iii) our `V` matrix, which was pre-calculated with a 
 spatial parameter $r = 0.1$ and (iv) a nugget of $\eta = 0.2$. 
@@ -355,8 +362,8 @@ estimated from residuals of pixel-level time-series models. Although we conducte
 the time-series analyses as though each pixel was independent (with `fitAR_map`),
 they are, in fact, dependent. Specifically, the correlation of the residuals from
 the pixel-level analyses is roughly proportional to the spatial autocorrelation 
-of the residuals of the spatial model, $\vargamma$, if all of the variation in
-$\vargamma$ is due to the spatiotemporal variation produced by $\varepsilon_i(t)$. 
+of the residuals of the spatial model, $\gamma$, if all of the variation in
+$\gamma$ is due to the spatiotemporal variation produced by $\varepsilon_i(t)$. 
 Therefore, we can estimate the range parameter for **V** as 
 $**V_ij** \approx \text{cor}\big(\varepsilon_i(t), \varepsilon_j(t)\big)$ 
 
@@ -452,11 +459,11 @@ fitopt <- fitGLS_opt(formula = AR_coef ~ 0 + land, data = ndvi_AK3000,
                        start = c(range = .1, nugget = .2))
 fitopt$opt$par
 ##      range     nugget 
-## 0.02907116 0.30272255
+## 0.03660171 0.26859993 
 fitopt$GLS$logLik
-## [1] 6941.524
+## [1] 13276.15
 fitopt$GLS$MSE
-## [1] 0.001033084
+## [1] 1.720775e-05
 ```
 
 Note that, because `fitGLS_opt` does not require time series residuals, 
@@ -483,7 +490,7 @@ from 1982-2013", we can regress the AR coefficient on an intercept-only GLS
 model:
 
 ```{r}
-(GLS.int <- fitGLS(AR_coef ~ 1, data = ndvi_AK3000, V = V.opt, nugget = nug.opt))
+(GLS.int <- fitGLS(AR_coef ~ 1, data = ndvi_AK3000, V = V.opt, nugget = nug.opt, no.F = TRUE))
 ```
 
 We can see from the t-test that the intercept is not statistically different
@@ -614,7 +621,7 @@ Here are the t-tests, that show that land cover class does not significantly
 affect NDVI trend:
 
 ```{r}
-partGLS_ndviAK$overall$t.test
+partGLS_ndviAK$overall$t_test
 ```
 
 It is **highly** recommended that users read the full documentation 
