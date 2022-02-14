@@ -18,7 +18,7 @@ remoteGLS <- function(formula, formula0, no.F = FALSE){
                "df_t", "logDetV",
                "tstat", "pval_t", "logLik", "nugget",
                "coefficients0", "SSE0", "MSE0", "SE0",
-               "MSR", "df0", "LL0", "df_F",
+               "MSR", "df0", "logLik0", "df_F",
                "Fstat","pval_F",
                "xx", "xx0", "invcholV", "formula", "formula0")
   GLS.obj = vector("list", length(elements))
@@ -63,7 +63,7 @@ print.remoteGLS <- function(x, digits = max(3L, getOption("digits") - 3L), ...){
                            "df_F" = x$df_F,
                            "SSE" = c(x$SSE, x$SSE0),
                            "MSE" = c(x$MSE, x$MSE0),
-                           "logLik" = c(x$logLik, x$LL0),
+                           "logLik" = c(x$logLik, x$logLik0),
                            "Fstat" = c(x$Fstat, NA),
                            "pval_F" = c(x$pval_F, NA))
   } else {

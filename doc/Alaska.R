@@ -64,7 +64,9 @@ ndvi_AK3000$AR_coef <- coefficients(ARfit)[, "t"] # save time trend coefficient
 ndvi_AK %>% filter(rare.land == FALSE) %>% 
   ggplot(aes(x = lng, y = lat, fill = AR_coef, col = AR_coef)) + 
   geom_tile() + 
-  scale_color_gradient2(high = "forestgreen", low = "darkorchid", 
+  scale_color_gradient2(high = "red", low = "blue", 
+                        mid = "grey90", midpoint = 0) + 
+  scale_fill_gradient2(high = "red", low = "blue", 
                         mid = "grey90", midpoint = 0) +
   guides(fill = "none") + 
   labs(y = "Latitude", x = "Longitude", col = expression(beta[1]))
@@ -98,7 +100,7 @@ I <- diag(nrow(V)) # identity matrix
 Sigma <- nugget*I + (1-nugget)*V
 
 ## -----------------------------------------------------------------------------
-GLS.0 <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget = nugget, no.F = FALSE)
+GLS.0 <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget = nugget)
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = Sigma, nugget = 0) # equivalent

@@ -231,7 +231,7 @@ List fitGLS_cpp(const MapMatd& X,
                                Named("SE0") = se0,
                                Named("MSR") = MSR,
                                Named("df0") = df0,
-                               Named("LL0") = logLik0,
+                               Named("logLik0") = logLik0,
                                Named("df_F") = dfF,
                                Named("Fstat") = FF,
                                Named("pval_F") = NA_REAL);
