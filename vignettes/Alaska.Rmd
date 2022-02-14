@@ -587,10 +587,11 @@ of pixels in our map, and the argument `partsize = 1500`
 will result in a partition matrix with 1,500 rows and 20 columns. 
 Columns of the resulting partition matrix `pm` each contain a random sample 
 of 1,500 pixels. Each of these 20 samples (partitions) are non-overlapping, 
-containing no repeats. 
+containing no repeats. Setting `npart = NA` will automatically give the maximum
+number of partitions possible (i.e., 20).
 
 ```{r}
-pm <- sample_partitions(npix = nrow(df), partsize = 1500)
+pm <- sample_partitions(npix = nrow(df), partsize = 1500, npart = NA)
 dim(pm)
 ```
 
