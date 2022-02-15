@@ -8,8 +8,8 @@ optimize_nugget(
   X,
   y,
   V,
-  lower = 0,
-  upper = 1,
+  lower = 0.001,
+  upper = 0.999,
   tol = .Machine$double.eps^0.25,
   debug = FALSE,
   ncores = NA

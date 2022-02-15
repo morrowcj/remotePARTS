@@ -43,7 +43,7 @@
 #' ## find the ML nugget
 #' remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
 #' }
-optimize_nugget <- function(X, y, V, lower = 0, upper = 1,
+optimize_nugget <- function(X, y, V, lower = 0.001, upper = 0.999,
                             tol = .Machine$double.eps^.25, debug = FALSE,
                             ncores = NA) {
   if(is.na(ncores)){
