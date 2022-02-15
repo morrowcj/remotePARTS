@@ -10,6 +10,8 @@
 #' @param upper upper boundary for nugget search
 #' @param tol desired accuracy of nugget search
 #' @param debug logical: debug mode?
+#' @param ncores an optional integer indicating how many CPU threads to use for
+#' matrix calculations.
 #'
 #' @return maximum likelihood nugget estimate
 #'
@@ -42,7 +44,14 @@
 #' remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
 #' }
 optimize_nugget <- function(X, y, V, lower = 0, upper = 1,
-                            tol = .Machine$double.eps^.25, debug = FALSE) {
+                            tol = .Machine$double.eps^.25, debug = FALSE,
+                            ncores = NA) {
+  if(is.na(ncores)){
+    ncores = 0L
+  } else {
+    ncores = as.integer(ncores)
+  }
+
   # # coerce input to matrices
   X = as.matrix(X)
   X0 = diag(1)
@@ -68,5 +77,5 @@ optimize_nugget <- function(X, y, V, lower = 0, upper = 1,
   stopifnot(upper <= 1)
 
   .Call(`_remotePARTS_optimize_nugget_cpp`, X, X0, V, y, lower, upper, tol,
-        diag(1), FALSE, debug)
+        diag(1), FALSE, debug, ncores)
 }

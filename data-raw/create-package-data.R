@@ -74,6 +74,7 @@ if (!file.exists("data-raw/AK_ndvi_common-land.csv")) {
 load("data/ndvi_AK.rda", verbose = TRUE)
 ndvi_AK <- as.data.frame(ndvi_AK)
 ndvi.cols = grep(pattern = "ndvi", x = names(ndvi_AK), value = TRUE)
+pixel.means = rowMeans(ndvi_AK[, ndvi.cols]) # added 13-Feb-2022
 Y = as.matrix(ndvi_AK[, ndvi.cols])
 coords = as.matrix(ndvi_AK[, c("lng", "lat")])
 # CLS
@@ -84,6 +85,7 @@ if(is.null(ndvi_AK$CLS_coef)){
   stopifnot(ncol(tmp2) == (ncol(ndvi_AK) + 1))
   stopifnot(nrow(tmp2) == nrow(ndvi_AK))
   ndvi_AK = tmp2
+  ndvi_AK$CLS_coef <- ndvi_AK$CLS_coef/pixel.means # added 13-Feb-2022
   save(ndvi_AK, file = "data/ndvi_AK.rda", compress = "xz")
 }
 # AR
@@ -94,12 +96,14 @@ if(is.null(ndvi_AK$AR_coef)){
   stopifnot(ncol(tmp2) == (ncol(ndvi_AK) + 1))
   stopifnot(nrow(tmp2) == nrow(ndvi_AK))
   ndvi_AK = tmp2
+  ndvi_AK$AR_coef <- ndvi_AK$AR_coef/pixel.means # added 13-Feb-2022
   save(ndvi_AK, file = "data/ndvi_AK.rda", compress = "xz")
 }
 #### AK3000
 load("data/ndvi_AK3000.rda", verbose = TRUE)
 ndvi_AK3000 <- as.data.frame(ndvi_AK3000)
 ndvi.cols = grep(pattern = "ndvi", x = names(ndvi_AK), value = TRUE)
+pixel.means = rowMeans(ndvi_AK3000[, ndvi.cols]) # added 13-Feb-2022
 Y = as.matrix(ndvi_AK3000[, ndvi.cols])
 coords = as.matrix(ndvi_AK3000[, c("lng", "lat")])
 # CLS
@@ -110,6 +114,7 @@ if(is.null(ndvi_AK3000$CLS_coef)){
   stopifnot(ncol(tmp2) == (ncol(ndvi_AK3000) + 1))
   stopifnot(nrow(tmp2) == nrow(ndvi_AK3000))
   ndvi_AK3000 = tmp2
+  ndvi_AK3000$CLS_coef <- ndvi_AK3000$CLS_coef/pixel.means # added 13-Feb-2022
   save(ndvi_AK3000, file = "data/ndvi_AK3000.rda", compress = "xz")
 }
 # AR
@@ -120,6 +125,7 @@ if(is.null(ndvi_AK3000$AR_coef)){
   stopifnot(ncol(tmp2) == (ncol(ndvi_AK3000) + 1))
   stopifnot(nrow(tmp2) == nrow(ndvi_AK3000))
   ndvi_AK3000 = tmp2
+  ndvi_AK3000$AR_coef <- ndvi_AK3000$AR_coef/pixel.means # added 13-Feb-2022
   save(ndvi_AK3000, file = "data/ndvi_AK3000.rda", compress = "xz")
 }
 ## save CSV in inst/

@@ -13,8 +13,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // crosspart_worker_cpp
-List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& invCholV_i, const MapMatd& invCholV_j, const MapMatd& Vsub, double nug_i, double nug_j, int df1, int df2);
-RcppExport SEXP _remotePARTS_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP invCholV_iSEXP, SEXP invCholV_jSEXP, SEXP VsubSEXP, SEXP nug_iSEXP, SEXP nug_jSEXP, SEXP df1SEXP, SEXP df2SEXP) {
+List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& invCholV_i, const MapMatd& invCholV_j, const MapMatd& Vsub, double nug_i, double nug_j, int df1, int df2, int ncores);
+RcppExport SEXP _remotePARTS_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP invCholV_iSEXP, SEXP invCholV_jSEXP, SEXP VsubSEXP, SEXP nug_iSEXP, SEXP nug_jSEXP, SEXP df1SEXP, SEXP df2SEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -29,13 +29,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type nug_j(nug_jSEXP);
     Rcpp::traits::input_parameter< int >::type df1(df1SEXP);
     Rcpp::traits::input_parameter< int >::type df2(df2SEXP);
-    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2));
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, ncores));
     return rcpp_result_gen;
 END_RCPP
 }
 // fitGLS_cpp
-List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, bool save_invchol, bool LL_only, bool no_F, bool optimize_nugget, double nug_l, double nug_u, double nug_tol, const MapMatd& invCholV, bool use_invCholV);
-RcppExport SEXP _remotePARTS_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP save_invcholSEXP, SEXP LL_onlySEXP, SEXP no_FSEXP, SEXP optimize_nuggetSEXP, SEXP nug_lSEXP, SEXP nug_uSEXP, SEXP nug_tolSEXP, SEXP invCholVSEXP, SEXP use_invCholVSEXP) {
+List fitGLS_cpp(const MapMatd& X, const MapMatd& V, const MapMatd& y, const MapMatd& X0, double nugget, bool save_xx, bool save_invchol, bool LL_only, bool no_F, bool optimize_nugget, double nug_l, double nug_u, double nug_tol, const MapMatd& invCholV, bool use_invCholV, int ncores);
+RcppExport SEXP _remotePARTS_fitGLS_cpp(SEXP XSEXP, SEXP VSEXP, SEXP ySEXP, SEXP X0SEXP, SEXP nuggetSEXP, SEXP save_xxSEXP, SEXP save_invcholSEXP, SEXP LL_onlySEXP, SEXP no_FSEXP, SEXP optimize_nuggetSEXP, SEXP nug_lSEXP, SEXP nug_uSEXP, SEXP nug_tolSEXP, SEXP invCholVSEXP, SEXP use_invCholVSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,7 +55,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type nug_tol(nug_tolSEXP);
     Rcpp::traits::input_parameter< const MapMatd& >::type invCholV(invCholVSEXP);
     Rcpp::traits::input_parameter< bool >::type use_invCholV(use_invCholVSEXP);
-    rcpp_result_gen = Rcpp::wrap(fitGLS_cpp(X, V, y, X0, nugget, save_xx, save_invchol, LL_only, no_F, optimize_nugget, nug_l, nug_u, nug_tol, invCholV, use_invCholV));
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(fitGLS_cpp(X, V, y, X0, nugget, save_xx, save_invchol, LL_only, no_F, optimize_nugget, nug_l, nug_u, nug_tol, invCholV, use_invCholV, ncores));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -71,8 +73,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // optimize_nugget_cpp
-double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V, const MapMatd& y, double lower, double upper, double tol, const MapMatd& invchol, bool use_invchol, bool debug);
-RcppExport SEXP _remotePARTS_optimize_nugget_cpp(SEXP XSEXP, SEXP X0SEXP, SEXP VSEXP, SEXP ySEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP tolSEXP, SEXP invcholSEXP, SEXP use_invcholSEXP, SEXP debugSEXP) {
+double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V, const MapMatd& y, double lower, double upper, double tol, const MapMatd& invchol, bool use_invchol, bool debug, int ncores);
+RcppExport SEXP _remotePARTS_optimize_nugget_cpp(SEXP XSEXP, SEXP X0SEXP, SEXP VSEXP, SEXP ySEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP tolSEXP, SEXP invcholSEXP, SEXP use_invcholSEXP, SEXP debugSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -86,16 +88,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const MapMatd& >::type invchol(invcholSEXP);
     Rcpp::traits::input_parameter< bool >::type use_invchol(use_invcholSEXP);
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
-    rcpp_result_gen = Rcpp::wrap(optimize_nugget_cpp(X, X0, V, y, lower, upper, tol, invchol, use_invchol, debug));
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(optimize_nugget_cpp(X, X0, V, y, lower, upper, tol, invchol, use_invchol, debug, ncores));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 11},
-    {"_remotePARTS_fitGLS_cpp", (DL_FUNC) &_remotePARTS_fitGLS_cpp, 15},
+    {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 12},
+    {"_remotePARTS_fitGLS_cpp", (DL_FUNC) &_remotePARTS_fitGLS_cpp, 16},
     {"_remotePARTS_invchol_cpp", (DL_FUNC) &_remotePARTS_invchol_cpp, 2},
-    {"_remotePARTS_optimize_nugget_cpp", (DL_FUNC) &_remotePARTS_optimize_nugget_cpp, 10},
+    {"_remotePARTS_optimize_nugget_cpp", (DL_FUNC) &_remotePARTS_optimize_nugget_cpp, 11},
     {NULL, NULL, 0}
 };
 

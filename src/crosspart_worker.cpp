@@ -26,6 +26,7 @@
 //' @param nug_j nugget from partition j
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
+//' @param ncores integer indicating nubmer of cores to use
 //'
 // [[Rcpp::export(.crosspart_worker_cpp)]]
 List crosspart_worker_cpp(const MapMatd& xxi,
@@ -38,7 +39,10 @@ List crosspart_worker_cpp(const MapMatd& xxi,
                           double nug_i,
                           double nug_j,
                           int df1,
-                          int df2){
+                          int df2,
+                          int ncores){
+  Eigen::setNbThreads(ncores);
+
   // int N = Vsub.cols(); // total rows
   // int np = N/2; // rows per partition
   int np = xxi.rows();

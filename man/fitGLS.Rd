@@ -13,12 +13,13 @@ fitGLS(
   save.xx = FALSE,
   save.invchol = FALSE,
   logLik.only = FALSE,
-  no.F = TRUE,
+  no.F = FALSE,
   coords,
   distm_FUN,
   covar_FUN,
   covar.pars,
   invCholV,
+  ncores = NA,
   ...
 )
 }
@@ -61,6 +62,9 @@ when calculating \code{V} internally}
 
 \item{invCholV}{optional pre-calculated inverse cholesky matrix to use in place
 of \code{V}}
+
+\item{ncores}{an optional integer indicating how many CPU threads to use for
+matrix calculations.}
 
 \item{...}{additional arguments passed to \code{optimize_nugget}, which are
 only used if if \code{nugget = NA}}
@@ -171,6 +175,10 @@ This function uses C++ code that uses the Eigen matrix library (RcppEigen
 package) to fit models as efficiently as possible. As such, all available
 CPU cores are used for matrix calculations on systems with OpenMP
 support.
+
+\code{ncores} is passed to the C++ code Eigen::setNpThreads() which sets
+the number of cores used for compatible Eigen matrix operations (when OpenMP
+is used).
 }
 \examples{
 

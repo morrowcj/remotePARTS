@@ -22,8 +22,10 @@
 #' \describe{
 #'   \item{lng}{longitude of the pixel}
 #'   \item{lat}{latitude of the pixel}
-#'   \item{AR_coef}{pre-calculated AR REML coefficient}
-#'   \item{CLS_coef}{pre-calculated CLS coefficient}
+#'   \item{AR_coef}{pre-calculated AR REML coefficient standardized by mean ndvi
+#'   values for each pixel}
+#'   \item{CLS_coef}{pre-calculated CLS coefficient standardized by mean ndvi
+#'   values for each pixel}
 #'   \item{land}{dominant land class of the pixel}
 #'   \item{land}{logical: is this land class rare?}
 #'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
@@ -40,8 +42,10 @@
 #' \describe{
 #'   \item{lng}{longitude of the pixel}
 #'   \item{lat}{latitude of the pixel}
-#'   \item{AR_coef}{pre-calculated AR REML coefficient}
-#'   \item{CLS_coef}{pre-calculated CLS coefficient}
+#'   \item{AR_coef}{pre-calculated AR REML coefficient standardized by mean ndvi
+#'   values for each pixel}
+#'   \item{CLS_coef}{pre-calculated CLS coefficient standardized by mean ndvi
+#'   values for each pixel}
 #'   \item{land}{dominant land class of the pixel}
 #'   \item{land}{logical: is this land class rare?}
 #'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}

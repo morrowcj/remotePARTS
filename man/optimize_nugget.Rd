@@ -11,7 +11,8 @@ optimize_nugget(
   lower = 0,
   upper = 1,
   tol = .Machine$double.eps^0.25,
-  debug = FALSE
+  debug = FALSE,
+  ncores = NA
 )
 }
 \arguments{

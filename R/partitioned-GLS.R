@@ -27,6 +27,8 @@
 #' fit be conducted?
 #' @param progressbar logical: should progress be tracked with a progress bar?
 #' @param debug logical debug mode
+#' @param ncores an optional integer indicating how many CPU threads to use for
+#' matrix calculations, passed to fitGLS.
 #' @param ... arguments passed to \code{part_FUN}
 #'
 #' @details
@@ -198,11 +200,16 @@
 #' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 #'
 #' ## create partition matrix
-#' pm = sample_partitions(nrow(ndvi_AK3000), partsize = 500, npart = 5)
+#' pm = sample_partitions(nrow(df), npart = 3)
 #'
 #' ## fit GLS with fixed nugget
 #' partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#'                            data = ndvi_AK3000, nugget = 0)
+#'                            data = df, nugget = 0)
+#'
+#' ## now with a numeric predictor
+#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
+#' ## 0 intercept (produces NAs)
+#' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 #'
 #' ## hypothesis tests
 #' chisqr(partGLS) # explanatory power of model
@@ -219,8 +226,14 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                              distm_FUN = "distm_scaled", covar_FUN = "covar_exp",
                              covar.pars = c(range = .1), nugget = NA, ncross = 6,
                              save.GLS = FALSE, do.t.test = TRUE, do.chisqr.test = TRUE,
-                             progressbar = TRUE, debug = FALSE,
+                             progressbar = TRUE, debug = FALSE, ncores = NA,
                              ...){
+  if(is.na(ncores)){
+    ncores = 0L
+  } else {
+    ncores = as.integer(ncores)
+  }
+
   # Setup
   call = match.call()
   ## partmat dimensions
@@ -259,7 +272,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       ## GLS of parition
       partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
                              nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
-                             no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE)
+                             no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
+                             ncores = ncores)
       ## build some empty stat tables on first loop
       if (i == 1){
         p = ncol(partGLS[[1]]$xx)
@@ -304,7 +318,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
         partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
                                nugget = nugget, formula0 = formula0, save.xx = TRUE,
-                               no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE)
+                               no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE,
+                               ncores = ncores)
         if(length(partGLS[[j]]$coefficients) != ncol(coefs)){
           stop("dimension mismatch: different number of coefficients between parts i and j. Filter data or try different partition matrix.")
         }
@@ -346,13 +361,16 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                             Vsub = Vij,
                             nug_i = partGLS[[i]]$nugget,
                             nug_j = partGLS[[j]]$nugget,
-                            df1 = dfs[1], df2 = dfs[2])
+                            df1 = dfs[1], df2 = dfs[2],
+                            ncores = ncores)
       # delete large matrix for j
       partGLS[[j]]$invcholV = NULL
       if(debug){crosspartGLS[[cross]] = rGLS}
       # collect stats
       rcoefs[cross, ] <- rGLS$rcoefij
-      rSSRs[cross] <- rGLS$rSSRij
+      rSSRs[cross] <- ifelse(is.na(rGLS$rSSRij) | is.infinite(rGLS$rSSRij),
+                             NA,
+                             rGLS$rSSRij)
       rSSEs[cross] <- rGLS$rSSEij
     }
     # delete large matrix for i
@@ -373,8 +391,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                               Fstats = Fstats,
                                               pvals_F = Fpvals)),
                  cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
-                 overall = list(coefficients = colMeans(coefs),
-                                rcoefficients = colMeans(rcoefs),
+                 overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
+                                rcoefficients = colMeans(rcoefs, na.rm = TRUE),
                                 rSSR = mean(rSSRs, na.rm = TRUE),
                                 rSSE = mean(rSSEs, na.rm = TRUE),
                                 Fstat = mean(Fstats, na.rm = TRUE),
@@ -383,10 +401,14 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   if(debug){outlist$crossGLS = crosspartGLS}
   class(outlist) <- append("partGLS", class(outlist))
   if(do.chisqr.test){
-    outlist$overall$pval.chisqr = chisqr(outlist)
+    outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
+                                           error = function(e){warning("error in chisqr()")},
+                                           warning = function(w){warning("warning in chisqr()")})
   }
   if(do.t.test){
-    outlist$overall$t.test = t.test(outlist)
+    outlist$overall$t.test = tryCatch(t.test(outlist),
+                                      error = function(e){warning("error in t.test()")},
+                                      warning = function(w){warning("warning in t.test()")})
   }
   close(pb)
   return(outlist)
@@ -430,6 +452,8 @@ calc_dfpart <- function(partsize, p, p0){
 #' @param df2 second degree of freedom
 #' @param small logical: if \code{TRUE}, only return \code{rcoefij}, \code{rSSRij},
 #' and \code{rSSEij}
+#' @param ncores an optional integer indicating how many CPU threads to use for
+#' matrix calculations.
 #'
 #' @return
 #' \code{crosspart_GLS} returns a list of cross-partition statistics.
@@ -456,7 +480,7 @@ calc_dfpart <- function(partsize, p, p0){
 #' \dontrun{
 #' ## read data
 #' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+#' df = ndvi_AK3000[1:1000, ] # first 1000 rows
 #'
 #' # partition matrix
 #' pm = sample_partitions(nrow(df), npart = 2, partsize = 500)
@@ -499,7 +523,12 @@ calc_dfpart <- function(partsize, p, p0){
 #'                                        df1 = dfs[1], df2 = dfs[2]))
 #'}
 crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
-                          nug_i, nug_j, df1, df2, small = TRUE){
+                          nug_i, nug_j, df1, df2, small = TRUE, ncores = NA){
+  if(is.na(ncores)){
+    ncores = 0L
+  } else {
+    ncores = as.integer(ncores)
+  }
   # coerce input to matrices
   xxi = as.matrix(xxi)
   xxj = as.matrix(xxj)
@@ -520,7 +549,7 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
   # stopifnot(all(check_posdef(V)))
 
   outlist <- .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
-                   invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2)
+                   invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2, ncores)
   if(small){
     return(list(rcoefij = outlist$rcoefij,
                 rSSRij = outlist$rSSRij,
