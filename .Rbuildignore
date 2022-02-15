@@ -15,6 +15,7 @@ data-raw/
 ## github folder
 ^.github$
 ^doc$
+^docs$
 ^Meta$
 
 LICENSE\.md
