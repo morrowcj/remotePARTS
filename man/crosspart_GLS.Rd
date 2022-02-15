@@ -45,6 +45,9 @@ crosspart_GLS(
 
 \item{small}{logical: if \code{TRUE}, only return \code{rcoefij}, \code{rSSRij},
 and \code{rSSEij}}
+
+\item{ncores}{an optional integer indicating how many CPU threads to use for
+matrix calculations.}
 }
 \value{
 \code{crosspart_GLS} returns a list of cross-partition statistics.

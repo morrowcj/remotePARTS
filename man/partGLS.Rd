@@ -62,6 +62,9 @@ fit be conducted?}
 
 \item{debug}{logical debug mode}
 
+\item{ncores}{an optional integer indicating how many CPU threads to use for
+matrix calculations, passed to fitGLS.}
+
 \item{...}{arguments passed to \code{part_FUN}}
 
 \item{index}{a vector of pixels with which to subset the data}

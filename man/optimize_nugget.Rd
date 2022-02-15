@@ -29,6 +29,9 @@ optimize_nugget(
 \item{tol}{desired accuracy of nugget search}
 
 \item{debug}{logical: debug mode?}
+
+\item{ncores}{an optional integer indicating how many CPU threads to use for
+matrix calculations.}
 }
 \value{
 maximum likelihood nugget estimate
