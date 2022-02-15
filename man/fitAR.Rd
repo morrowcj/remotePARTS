@@ -2,79 +2,157 @@
 % Please edit documentation in R/AR_reml.R
 \name{fitAR}
 \alias{fitAR}
-\alias{AR_funct}
-\title{Pixel AR REML}
+\alias{AR_fun}
+\title{AR regressions by REML}
 \usage{
-fitAR(formula, data)
+fitAR(formula, data = NULL)
 
-AR_funct(par, x, U, LL.only = TRUE)
+AR_fun(par, y, X, logLik.only = TRUE)
 }
 \arguments{
-\item{formula}{model formula}
+\item{formula}{a model formula, as used by \code{stats::lm()}}
 
-\item{data}{object in which the model will first look for data}
+\item{data}{optional data environment to search for variables in \code{formula}.
+As used by \code{lm()}}
 
 \item{par}{AR parameter value}
 
-\item{x}{vector of time series (response)}
+\item{y}{vector of time series (response)}
 
-\item{U}{model matrix (predictors)}
+\item{X}{model matrix (predictors)}
 
-\item{LL.only}{logical: should only the log-liklihood be computed}
+\item{logLik.only}{logical: should only the partial log-likelihood be computed}
 }
 \value{
-\code{AR_funct()} will return only the log-likelihood
-if \code{LL.only = TRUE}.
-
-Otherwise, a \code{remoteAR.pixel} object is returned,
-which is a list with the following elements:
+\code{fitAR} returns a list object of class "remoteTS", which contains
+the following elements.
 
 \describe{
-    \item{\code{$call}}{matched function call}
-    \item{\code{$coef}}{regression coefficeint table}
-    \item{\code{$b}}{REML AR parameter}
-    \item{\code{$MSE}}{model MSE}
-    \item{\code{$resids}}{model residuals}
-    \item{\code{$s2beta}}{estimated coefficient covariance matrix}
-    \item{\code{$logLik}}{model log-likelihood}
+    \item{call}{the function call}
+    \item{coefficients}{a named vector of coefficients}
+    \item{SE}{the standard errors of parameter estimates}
+    \item{tstat}{the t-statistics for coefficients}
+    \item{pval}{the p-values corresponding to t-tests of coefficients}
+    \item{MSE}{the model mean squared error}
+    \item{logLik}{the log-likelihood of the model fit}
+    \item{residuals}{the residuals: response minus fitted values}
+    \item{fitted.values}{the fitted mean values}
+    \item{rho}{The AR parameter, determined via REML}
+    \item{rank}{the numeric rank of the fitted model}
+    \item{df.residual}{the residual degrees of freedom}
+    \item{terms}{the \code{stats::terms} object used}
 }
+
+Output is structured similarly to an "lm" object.
+
+When \code{logLik.only == F}, \code{AR_fun} returns the output described in
+\code{?fitAR}. When \code{logLik.only == T}, it returns a quantity that is
+linearly and negatively related to the restricted log likelihood
+(i.e., partial log-likelihood).
 }
 \description{
-Fit an Auto-regressive time series analysis using restricted
-maximum likelihood
+\code{fitAR} is used to fit AR(1) time series regression
+analysis using restricted maximum likelihood
 }
 \details{
-\code{fitAR()} obtains the REML AR parameter by performing
-mathematical optimization for \code{par} in \code{AR_funct(LL.only = TRUE)}.
-Once the REML parameter is obtained, \code{AR_funct(LL.only = FALSE)} is
-called.
+This function finds the restricted maximum likelihood (REML) to estimate
+parameters for the regression model with AR(1) random error terms
 
-By default, the print.remoteAR() method does not show all output.
-to access individual components, use \code{names()} to see element names
-and the S3 \code{$} operator to access them.
+\deqn{y(t) =  X(t) \beta + \varepsilon(t)}{y(t) = X(t)*beta + e(t)}
+\deqn{\varepsilon(t) =  \rho \varepsilon(t-1) + \delta(t)}{e(t) = rho*e(t-1) + delta(t)}
+
+where \eqn{y(t)} is the response at time \eqn{t};
+
+\eqn{X(t)} is a model matrix containing covariates;
+
+\eqn{\beta}{beta} is a vector of effects of \eqn{X(t)};
+\eqn{\varepsilon(t)}{e(t)} is the autocorrelated random error;
+
+\eqn{\delta \sim N(0, \sigma)}{delta ~ N(0, sigma)} is a temporally independent
+Gaussian random variable with mean zero and standard deviation
+\eqn{\sigma}{sigma};
+
+and \eqn{\rho}{rho} is the AR(1) autoregression parameter
+
+\code{fitAR} estimates the parameter via mathematical optimization
+of the restricted log-likelihood function calculated by the workhorse function
+\code{remotePARTS:::AR_fun()}.
+
+\code{AR_fun} is the work horse behind \code{fitAR} that is called
+by \code{optim} to estimate the autoregression parameter \eqn{\rho}{rho}.
 }
 \examples{
-time = 1:30
-x = rnorm(31)
-x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-U = stats::model.matrix(formula(x ~ time))
 
-# using the AR function with a given paramter
-AR_funct(par = .2, x, U, LL.only = TRUE)
-AR_funct(par = .2, x, U, LL.only = FALSE)
+# simulate dummy data
+t = 1:30 # times series
+Z = rnorm(30) # random independent variable
+x = .2*Z + (.05*t) # generate dependent effects
+x[2:30] = x[2:30] + .2*x[1:29] # add autocorrelation
 
-# find the REML solution for par and save results
-AR <- fitAR(x ~ time)
+# fit the AR model, using Z as a covariate
+(AR = fitAR(x ~ Z))
 
-# extract info
-coef(AR) # time coefficient table; also AR$coef
-AR$MSE # model MSE
-AR$resids # model residuals
-AR$b # AR parameter estimate
-AR$logLik  # log-likelihood of the model
+# get specific components
+AR$residuals
+AR$coefficients
+AR$pval
+
+# now using time as a covariate
+(AR.time <- fitAR(x ~ t))
+
+# source variable from a dataframe
+df = data.frame(y = x, t.scaled = t/30, Z = Z)
+fitAR(y ~ t.scaled + Z, data = df)
+
+## Methods
+summary(AR)
+residuals(AR)
+coefficients(AR)
+
+
+# simulate dummy data
+# x = rnorm(31)
+# time = 1:30
+# x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
+# U = stats::model.matrix(formula(x ~ time))
+
+# fit an AR
+# remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
+
+# get the partial logLik of the AR parameter, given the data.
+# remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
+
+# # show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
+# n = 100
+# out.mat = matrix(NA, nrow = n, ncol = 3,
+#                  dimnames = list(NULL, c("par", "logLik", "partialLL")))
+# out.mat[, "par"] = seq(-10, 10, length.out = n)
+# for (i in seq_len(n) ) {
+#    p = out.mat[i, "par"]
+#    out.mat[i, "logLik"] = remotePARTS:::AR_fun(par = p, y = x, X = U, logLik.only = TRUE)
+#    out.mat[i, "partialLL"] = remotePARTS:::AR_fun(par = p, y = x, X = U,
+#                                                   logLik.only = FALSE)$logLik
+# }
+# plot(x = out.mat[, "partialLL"], y = out.mat[, "logLik"])
+}
+\references{
+Ives, A. R., K. C. Abbott, and N. L. Ziebarth. 2010. Analysis of ecological
+
+    time series with ARMA(p,q) models. Ecology 91:858-871.
 }
 \seealso{
-[fitAR.map()] for fitting to a full map and [fitCLS()] &
-[fitCLS.map()] for CLS versions.
+\code{\link{fitAR_map}} to easily apply \code{fit_AR} to many pixels;
+\code{\link{fitCLS}} and \code{\link{fitCLS_map}} for conditional least squares
+time series analyses.
+
+Other remoteTS: 
+\code{\link{fitAR_map}()},
+\code{\link{fitCLS_map}()},
+\code{\link{fitCLS}()}
+
+Other remoteTS: 
+\code{\link{fitAR_map}()},
+\code{\link{fitCLS_map}()},
+\code{\link{fitCLS}()}
 }
-\concept{remoteAR}
+\concept{remoteTS}

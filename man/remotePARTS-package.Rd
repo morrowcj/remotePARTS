@@ -6,14 +6,8 @@
 \alias{remotePARTS-package}
 \title{remotePARTS: Spatio-Temporal Auto-Regression for Remote Sensing Data}
 \description{
-"remoteSTAR is a set of tools for analyzing sets of spatially 
-  correlated time series data, collected via remote sensing methods."
+"remotePARTS is a set of tools for analyzing sets of spatially correlated time series data, collected via remote sensing methods."
 }
-\section{remotePARTS functions}{
-
-\code{\link{fitGLS}}
-}
-
 \author{
 \strong{Maintainer}: Clay Morrow \email{morrow5@wisc.edu} (\href{https://orcid.org/0000-0002-3069-3296}{ORCID})
 

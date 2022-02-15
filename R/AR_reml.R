@@ -1,258 +1,448 @@
-
 ## Pixel AR REML----
-#' @title Pixel AR REML
-#' @description Fit an Auto-regressive time series analysis using restricted
-#' maximum likelihood
-#' @rdname fitAR
+#' @title AR regressions by REML
 #'
-#' @param formula model formula
-#' @param data object in which the model will first look for data
+#' @description \code{fitAR} is used to fit AR(1) time series regression
+#' analysis using restricted maximum likelihood
 #'
-#' @return \code{AR_funct()} will return only the log-likelihood
-#' if \code{LL.only = TRUE}.
+#' @family remoteTS
 #'
-#' Otherwise, a \code{remoteAR.pixel} object is returned,
-#' which is a list with the following elements:
+#' @param formula a model formula, as used by \code{stats::lm()}
+#' @param data optional data environment to search for variables in \code{formula}.
+#' As used by \code{lm()}
+#'
+#' @details
+#' This function finds the restricted maximum likelihood (REML) to estimate
+#' parameters for the regression model with AR(1) random error terms
+#'
+#' \deqn{y(t) =  X(t) \beta + \varepsilon(t)}{y(t) = X(t)*beta + e(t)}
+#' \deqn{\varepsilon(t) =  \rho \varepsilon(t-1) + \delta(t)}{e(t) = rho*e(t-1) + delta(t)}
+#'
+#' where \eqn{y(t)} is the response at time \eqn{t};
+#'
+#' \eqn{X(t)} is a model matrix containing covariates;
+#'
+#' \eqn{\beta}{beta} is a vector of effects of \eqn{X(t)};
+#' \eqn{\varepsilon(t)}{e(t)} is the autocorrelated random error;
+#'
+#' \eqn{\delta \sim N(0, \sigma)}{delta ~ N(0, sigma)} is a temporally independent
+#' Gaussian random variable with mean zero and standard deviation
+#' \eqn{\sigma}{sigma};
+#'
+#' and \eqn{\rho}{rho} is the AR(1) autoregression parameter
+#'
+#' \code{fitAR} estimates the parameter via mathematical optimization
+#' of the restricted log-likelihood function calculated by the workhorse function
+#' \code{remotePARTS:::AR_fun()}.
+#'
+#' @references
+#'
+#' Ives, A. R., K. C. Abbott, and N. L. Ziebarth. 2010. Analysis of ecological
+#'
+#'     time series with ARMA(p,q) models. Ecology 91:858-871.
+#'
+#' @return \code{fitAR} returns a list object of class "remoteTS", which contains
+#' the following elements.
 #'
 #' \describe{
-#'     \item{\code{$call}}{matched function call}
-#'     \item{\code{$coef}}{regression coefficeint table}
-#'     \item{\code{$b}}{REML AR parameter}
-#'     \item{\code{$MSE}}{model MSE}
-#'     \item{\code{$resids}}{model residuals}
-#'     \item{\code{$s2beta}}{estimated coefficient covariance matrix}
-#'     \item{\code{$logLik}}{model log-likelihood}
+#'     \item{call}{the function call}
+#'     \item{coefficients}{a named vector of coefficients}
+#'     \item{SE}{the standard errors of parameter estimates}
+#'     \item{tstat}{the t-statistics for coefficients}
+#'     \item{pval}{the p-values corresponding to t-tests of coefficients}
+#'     \item{MSE}{the model mean squared error}
+#'     \item{logLik}{the log-likelihood of the model fit}
+#'     \item{residuals}{the residuals: response minus fitted values}
+#'     \item{fitted.values}{the fitted mean values}
+#'     \item{rho}{The AR parameter, determined via REML}
+#'     \item{rank}{the numeric rank of the fitted model}
+#'     \item{df.residual}{the residual degrees of freedom}
+#'     \item{terms}{the \code{stats::terms} object used}
 #' }
 #'
-#' @details \code{fitAR()} obtains the REML AR parameter by performing
-#' mathematical optimization for \code{par} in \code{AR_funct(LL.only = TRUE)}.
-#' Once the REML parameter is obtained, \code{AR_funct(LL.only = FALSE)} is
-#' called.
+#' Output is structured similarly to an "lm" object.
 #'
-#' By default, the print.remoteAR() method does not show all output.
-#' to access individual components, use \code{names()} to see element names
-#' and the S3 \code{$} operator to access them.
-#'
-#' @seealso [fitAR.map()] for fitting to a full map and [fitCLS()] &
-#' [fitCLS.map()] for CLS versions.
-#'
-#' @export
+#' @seealso \code{\link{fitAR_map}} to easily apply \code{fit_AR} to many pixels;
+#' \code{\link{fitCLS}} and \code{\link{fitCLS_map}} for conditional least squares
+#' time series analyses.
 #'
 #' @examples
-#' time = 1:30
-#' x = rnorm(31)
-#' x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-#' U = stats::model.matrix(formula(x ~ time))
 #'
-#' # using the AR function with a given paramter
-#' AR_funct(par = .2, x, U, LL.only = TRUE)
-#' AR_funct(par = .2, x, U, LL.only = FALSE)
+#' # simulate dummy data
+#' t = 1:30 # times series
+#' Z = rnorm(30) # random independent variable
+#' x = .2*Z + (.05*t) # generate dependent effects
+#' x[2:30] = x[2:30] + .2*x[1:29] # add autocorrelation
 #'
-#' # find the REML solution for par and save results
-#' AR <- fitAR(x ~ time)
+#' # fit the AR model, using Z as a covariate
+#' (AR = fitAR(x ~ Z))
 #'
-#' # extract info
-#' coef(AR) # time coefficient table; also AR$coef
-#' AR$MSE # model MSE
-#' AR$resids # model residuals
-#' AR$b # AR parameter estimate
-#' AR$logLik  # log-likelihood of the model
-fitAR <- function(formula, data){
-  ## Produce model matrix and model frame from call ----
-  call <- match.call() # function call
-  mf <- match.call(expand.dots = FALSE) # don't expand ...
-  m <- match(c("formula", "data", "subset",
-               "weights", "na.action", "offset"),
-             names(mf), 0L) # match arguments provided by call
-  mf <- mf[c(1L, m)] #function name, plus arguments matched
-  mf$drop.unused.levels <- TRUE # show that we dropped levels
+#' # get specific components
+#' AR$residuals
+#' AR$coefficients
+#' AR$pval
+#'
+#' # now using time as a covariate
+#' (AR.time <- fitAR(x ~ t))
+#'
+#' # source variable from a dataframe
+#' df = data.frame(y = x, t.scaled = t/30, Z = Z)
+#' fitAR(y ~ t.scaled + Z, data = df)
+#'
+#' ## Methods
+#' summary(AR)
+#' residuals(AR)
+#' coefficients(AR)
+#'
+#' @export
+fitAR <- function(formula, data = NULL){
+  # structure data from input
+  call <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
   mf[[1L]] <- quote(stats::model.frame) # rename the function call
-  mf <- eval(mf, parent.frame()) # evaluate the model frame with the data
-  mt <- attr(mf, "terms") # model terms
-  y <- stats::model.response(mf, "numeric") # response (vector)
-  # w <- as.vector(model.weights(mf)) # model.weights
-  # offset <- model.offset(mf) # model offset
-  if (is.matrix(y)){stop("response is a matrix: must be a vector")}
-  ny <- length(y)
-  U <- stats::model.matrix(mt, mf, contrasts = NULL) # create model matrix
+  mf$drop.unused.levels <- TRUE
+  mf <- eval(mf, parent.frame())
+  mt <- attr(mf, "terms")
+  resp <- stats::model.response(mf, "numeric")
+  if (is.matrix(resp)){stop("response is a matrix: must be a vector")} # throw dimension error
+  X <- stats::model.matrix(mt, mf, contrasts = NULL)
 
-  ## Optimize AR_funct() for par ----
-  opt <- stats::optim(fn = AR_funct, par = 0.2, x = y, U = U, LL.only = TRUE,
-               method = "Brent", upper = 1, lower = -1,
-               control = list(maxit = 10^4))
+  # return(list(call, mf = mf, mt = mt, resp = resp, X = X))
+
+  # Optimize over AR_fun() for par
+  opt <- stats::optim(fn = AR_fun, par = 0.2, y = resp, X = X, logLik.only = TRUE,
+                      method = "Brent", upper = 1, lower = -1,
+                      control = list(maxit = 10^4))
 
   b <- opt$par # optimized parameter
 
-  ## Perform the AR regression with the optimized parameter ----
-  AR.out = AR_funct(par = b, x = y, U = U, LL.only = FALSE)
+  # Perform the AR regression with the optimized parameter and return results
+  AR.out = AR_fun(par = b, y = resp, X = X, logLik.only = FALSE)
   AR.out$call = call
+
+  AR.out$rho = b
+  AR.out$rank = ncol(X)
+  AR.out$df.residual = nrow(X) - ncol(X)
+  AR.out$terms = terms(as.formula(formula))
+
+  class(AR.out) <- append("lm", class(AR.out))
+  class(AR.out) <- append("remoteTS", class(AR.out))
 
   return(AR.out)
 }
 
-## AR function ----
+## AR workhorse function ----
 #' @rdname fitAR
-#' @family remoteAR
+#' @family remoteTS
 #'
 #' @param par AR parameter value
-#' @param x vector of time series (response)
-#' @param U model matrix (predictors)
-#' @param LL.only logical: should only the log-liklihood be computed
+#' @param y vector of time series (response)
+#' @param X model matrix (predictors)
+#' @param logLik.only logical: should only the partial log-likelihood be computed
 #'
-#' @export
-AR_funct <- function(par, x, U, LL.only = TRUE) {
+#' @details \code{AR_fun} is the work horse behind \code{fitAR} that is called
+#' by \code{optim} to estimate the autoregression parameter \eqn{\rho}{rho}.
+# ' \code{AR_fun} calculates the restricted log likelihood function.
+#'
+#' @return
+#' When \code{logLik.only == F}, \code{AR_fun} returns the output described in
+#' \code{?fitAR}. When \code{logLik.only == T}, it returns a quantity that is
+#' linearly and negatively related to the restricted log likelihood
+#' (i.e., partial log-likelihood).
+#'
+#' @examples
+#'
+#' # simulate dummy data
+#' # x = rnorm(31)
+#' # time = 1:30
+#' # x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
+#' # U = stats::model.matrix(formula(x ~ time))
+#'
+#' # fit an AR
+#' # remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
+#'
+#' # get the partial logLik of the AR parameter, given the data.
+#' # remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
+#'
+#' # # show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
+#' # n = 100
+#' # out.mat = matrix(NA, nrow = n, ncol = 3,
+#' #                  dimnames = list(NULL, c("par", "logLik", "partialLL")))
+#' # out.mat[, "par"] = seq(-10, 10, length.out = n)
+#' # for (i in seq_len(n) ) {
+#' #    p = out.mat[i, "par"]
+#' #    out.mat[i, "logLik"] = remotePARTS:::AR_fun(par = p, y = x, X = U, logLik.only = TRUE)
+#' #    out.mat[i, "partialLL"] = remotePARTS:::AR_fun(par = p, y = x, X = U,
+#' #                                                   logLik.only = FALSE)$logLik
+#' # }
+#' # plot(x = out.mat[, "partialLL"], y = out.mat[, "logLik"])
+AR_fun <- function(par, y, X, logLik.only = TRUE) {
+  call = match.call()
+
+  # setup variables
   b <- par # parameter of interest
-  n.obs <- length(x) # number of time points
-  q <- ncol(U) # number of covariates in model matrix
+  n.obs <- length(y) # number of time points
+  q <- ncol(X) # number of covariates in model matrix
   B <- diag(n.obs) # n length identity matrix
-  diag(B[-1, ]) <- -b # set sub-diagonal to negative b
+  diag(B[-1, ]) <- -b # set sub-diagonal to -b
   iS <- diag(n.obs) # another identity matrix
   iS[1, 1] <- (1 - b^2) # set first element to 1-b^2
-  iV <- t(B) %*% iS %*% B # matrix multiply B'*iS*B
+  iV <- t(B) %*% iS %*% B
 
-  # handle missing/NA values by removing all NA elements from each object
-  if(any(is.na(x))){
-    iV <- iV[!is.na(x), !is.na(x)]
-    U <- U[!is.na(x),]
-    x <- x[!is.na(x)]
+  # remove NA elements
+  if(any(is.na(y))){
+    iV <- iV[!is.na(y), !is.na(y)]
+    X <- X[!is.na(y),]
+    y <- y[!is.na(y)]
   }
 
   # log determinant of iV
   logdetV <- -determinant(iV)$modulus[1]
 
-  # solve Am + B for m where A = (U'*iV*U) and B = (U'*iV*x)
-  ## beta is the effect of the covariates
-  beta <- solve(t(U) %*% iV %*% U, t(U) %*% iV %*% x)
-  # remove the effect of the covariates from x
-  H <- x - U %*% beta
+  # Regression calculations
+  ## solve Am + B for m where A = (X'*iV*X) and B = (X'*iV*y)
+  ### beta is the effect of the covariates
+  beta <- solve(t(X) %*% iV %*% X, t(X) %*% iV %*% y)
+  # remove the effect of the covariates from y
+  H <- y - X %*% beta
   # estimate the variance
   s2 <- (t(H) %*% iV %*% H)/(n.obs - q)
-  # calculate the log-likelihood of b given x and U
-  LL <- 0.5 * ((n.obs - q) * log(s2) + logdetV +
-                 determinant(t(U) %*% iV %*% U)$modulus[1] +
+  # calculate the partial log-likelihood of b given y and X
+  logLik <- 0.5 * ((n.obs - q) * log(s2) + logdetV +
+                 determinant(t(X) %*% iV %*% X)$modulus[1] +
                  (n.obs - q))
-  #show(c(LL,b))
 
-  if(LL.only){
-  # return log-likelihood
-  return(as.vector(LL))
+  if(logLik.only){
+    # return log-likelihood
+    return(as.vector(logLik))
+
   } else {
+
+    # important stats
     MSE <- as.numeric(s2) #MSE
-    s2beta <- MSE * solve(t(U) %*% iV %*% U) #SE
+    s2beta <- MSE * solve(t(X) %*% iV %*% X) #SE
     t.stat = (abs(beta) / diag(s2beta)^0.5)
     pval = 2 * stats::pt(q = t.stat, df = n.obs - q,
-                  lower.tail = FALSE )
+                         lower.tail = FALSE )
 
-    ## log likelihood without constants (i.e. s2) - no parameter dependancy
+    yhat = X %*% beta
+
+    # log likelihood without constants (i.e. s2) - no parameter dependancy
     logLik <- 0.5 * (n.obs - q) * log(2 * pi) +
-      determinant(t(U) %*% U)$modulus[1] - LL
+      determinant(t(X) %*% X)$modulus[1] - logLik
 
-    coef.tab <- data.frame("Est" = beta,
-                      "SE" = diag(s2beta),
-                      "t.stat" = t.stat,
-                      "p.val" = pval)
-
-    out.list = list(call = match.call(),
-                    coef = coef.tab,
-                    b = b,
-                    MSE = MSE,
-                    s2beta = s2beta,
-                    resids = as.vector(H),
-                    logLik = as.vector(logLik))
-
-    class(out.list) <- c("remoteAR", "pixel")
+    # collect output
+    out.list <- list(call = call,
+                     coefficients = beta[, 1],
+                     SE = diag(s2beta),
+                     tstat = t.stat[, 1],
+                     pval = pval[, 1],
+                     MSE = MSE,
+                     logLik = logLik[, 1],
+                     residuals = as.vector(H),
+                     fitted.values = as.vector(yhat))
 
     return(out.list)
   }
 }
 
-## Full map AR ----
-#' @title Map AR REML
-#' @description Fit AR REML models to a time series matrix
+
+## Full Map AR ----
+#' @title Map-level AR REML
 #'
-#' @param X nxp time series response matrix with p columns corresponding to time
-#'  points and n columns corresponding to the number of pixels
-#' @param t p length temporal response vector
-#' @param Z (currently not in use) - Z will be used to add covariates to the model.
-#' @param ret_int.coef should the intercept coeffients be returned? logical
-#' @param ret_AR.par should the AR parameter estimates be returned? logical
-#' @param ret_MSE should the model MSEs be returned? logical
-#' @param ret_resid should the model residuals be returned? logical
-#' @param ret_logLik should the model log-likelihoods be returned? logical
+#' @description \code{fitAR_map} is used to fit AR REML regression to each spatial
+#' location (pixel) within spatiotemporal data.
 #'
-#' @return \code{remoteAR.map} object. A list with the following elements:
+#' @family remoteTS
+#'
+#' @param Y a spatiotemporal response variable: a numeric matrix or data frame
+#' where columns correspond to time points and rows correspond to pixels.
+#' @param coords a numeric coordinate matrix or data frame, with two columns and
+#' rows corresponding to each pixel
+#' @param formula a model formula, passed to \code{fitAR()}: the left side
+#' of the formula should always be "y" and the right hand side should refer to
+#' variables in \code{X.list}
+#' @param X.list a named list of temporal or spatiotemporal predictor variables:
+#' elements must be either numeric vectors with one element for each time point
+#' or a matrix/data frame with rows corresponding to pixels and columns
+#' corresponding to time point. These elements must be named and referred to
+#' in \code{formula}
+#' @param resids.only logical: should output beyond coordinates and residuals be
+#' withheld? Useful when passing output to \code{fitCor()}
+#'
+#' @details \code{fitAR_map} is a wrapper function that applies \code{fitAR} to
+#' many pixels.
+#'
+#' The function loops through the rows of \code{Y}, matched with rows of
+#' spatiotemporal predictor matrices. Purely temporal predictors, given by
+#' vectors, are used for all pixels. These predictor variables, given by the
+#' right side of \code{formula} are sourced from named elements in \code{X.list}.
+#'
+#' @seealso \code{\link{fitAR}} for fitting AR REML to individual time series and \code{\link{fitCLS}}
+#' & \code{\link{fitCLS_map}} for time series analysis based on conditional least squares.
+#'
+#' @return \code{fitCLS_map} returns a list object of class "mapTS".
+#'
+#' The output will always contain at least these elements:
+#'
 #' \describe{
-#'     \item{\code{$call}}{matched function call}
-#'     \item{\code{$time.coef}}{coefficient matrix for the temporal variable}
-#'     \item{\code{$AR.par}}{an optional vector of the AR parameters}
-#'     \item{\code{$MSE}}{an optional vector of model MSEs}
-#'     \item{\code{$logLik}}{optional vector of log-likelihoods}
-#'     \item{\code{$resids}}{optional nxp matrix of model residuals}
+#'    \item{call}{the function call}
+#'    \item{coords}{the coordinate matrix or dataframe}
+#'    \item{residuals}{time series residuals: rows correspond to pixels
+#'    (\code{coords})}
 #' }
 #'
-#' @details by default the print.remoteAR() method does not show all output.
-#' to access individual components, use \code{names()} to see element names
-#' and the S3 \code{$} operator to access them.
+#' When \code{resids.only = FALSE}, the output will also contain the following
+#' components. Matrices have rows that correspond to pixels and columns that
+#' correspond to time points and vector elements correspond to pixels.
 #'
-#' @export
+#' \describe{
+#'    \item{coefficients}{a numeric matrix of coefficeints}
+#'    \item{SEs}{a numeric matrix of coefficient standard errors}
+#'    \item{tstats}{a numeric matrix of t-statistics for coefficients}
+#'    \item{pvals}{a numeric matrix of p-values for coefficients t-tests}
+#'    \item{MSEs}{a numeric vector of MSEs}
+#'    \item{logLiks}{a numeric vector of log-likelihoods}
+#'    \item{fitted.values}{a numeric matrix of fitted values}
+#' }
+#'
+#' An attribute called "resids.only" is also set to match the value of
+#' \code{resids.only}
 #'
 #' @examples
-#' t = 1:30; n.pix = 10
-#' X = matrix(rnorm(length(t)*n.pix), ncol = length(t))
-#' ARfit = fitAR.map(X, t) # only $call and $time.coef are printed by print.remoteAR()
-#' ARfit # print
+#' # simulate dummy data
+#'  time.points = 9 # time series length
+#'  map.width = 5 # square map width
+#'  coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
+#'  ## create empty spatiotemporal variables:
+#'  X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
+#'  Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
+#'  # setup first time point:
+#'  Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
+#'  X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
+#'  ## project through time:
+#'  for(t in 2:time.points){
+#'    Z[, t] <- Z[, t-1] + rnorm(map.width^2)
+#'    X[, t] <- .2*X[, t-1] + .1*Z[, t] + .05*t + rnorm(nrow(coords), 0 , .25)
+#'  }
 #'
-#' # Extract specific output:
-#' coef(ARfit) # data frame of time coefficeints (alternatively fitAR.map(X, t)$time.coef)
-#' ARfit$AR.par # AR parameters
-#' ARfit$MSE # model MSEs
-#' ARfit$logLik # model log-likelihoods
-#' resid(ARfit) # matrix of model residuals (alternatively fitAR.map(X, t)$resids)
-fitAR.map <- function(X, t, Z = NULL,
-                      ret_int.coef = FALSE, ret_AR.par = TRUE,
-                      ret_MSE = TRUE, ret_resid = TRUE, ret_logLik = TRUE){
-  stopifnot(ncol(X) == length(t))
-  n.pixels = nrow(X)
-  n.time = length(t)
+#' # # visualize dummy data (NOT RUN)
+#' # library(ggplot2);library(dplyr)
+#' # data.frame(coords, X) %>%
+#' #   reshape2::melt(id.vars = c("x", "y")) %>%
+#' #   ggplot(aes(x = x, y = y, fill = value)) +
+#' #   geom_tile() +
+#' #   facet_wrap(~variable)
+#'
+#' # fit AR, showing all output
+#' fitAR_map(X, coords, formula = y ~ t, resids.only = TRUE)
+#'
+#' # fit AR with temporal and spatiotemporal predictors
+#' (AR.map <- fitAR_map(X, coords, formula = y ~ t + Z, X.list = list(t = 1:ncol(X),
+#'                      Z = Z), resids.only = FALSE))
+#' ## extract some values
+#' AR.map$coefficients # coefficients
+#' AR.map$logLik # log-likelihoods
+#'
+#' ## Methods
+#' summary(AR.map)
+#' residuals(AR.map)
+#' coefficients(AR.map)
+#'
+#' @export
+fitAR_map <- function(Y, coords, formula = "y ~ t",
+                      X.list = list(t = 1:ncol(Y)),
+                      resids.only = FALSE){
+  call = match.call()
 
-  ## Run fitAR
-  if (!is.null(Z)){
-    message("handling of Z not yet implemented")
+  ## input checks
+  if (!is.matrix(Y) & !is.data.frame(Y)) { # Y
+    stop(paste("Y must be a matrix or dataframe with ncol(Y) time points",
+               "and nrow(Y) pixels"))
   }
-  AR.list = lapply(1:n.pixels, function(x){
-    y = X[x, ]
-    return(fitAR(y ~ t))
-  })
-
-  ## Extract coefficients
-  coef.list <- lapply(AR.list, coef)
-
-  ## Initialize output
-  out.list <- list(call = match.call(),
-                   time.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels)))
-  colnames(out.list$time.coef) <- c("Est", "SE", "t.stat", "p.val")
-  if (ret_int.coef) {
-    out.list$int.coef = as.data.frame(matrix(NA, ncol = 4, nrow = n.pixels))
-    colnames(out.list$int.coef) <- c("Est", "SE", "t.stat", "p.val")
+  if (!is.matrix(coords) & !is.data.frame(coords) |
+      nrow(coords) != nrow(Y) | ncol(coords) != 2){
+    stop(paste("coords must be a matrix or dataframe with 2 columns",
+               "and rows equal to nrow(Y)"))
   }
-  if (ret_AR.par) {out.list$AR.par = numeric(n.pixels)}
-  if (ret_MSE) {out.list$MSE = numeric(n.pixels)}
-  if (ret_logLik) {out.list$logLik = numeric(n.pixels)}
-  if (ret_resid) {out.list$resids = matrix(NA, ncol = n.time, nrow = n.pixels)}
+  if (is.null(names(X.list))) {
+    stop(paste("X.list must be a named list, with element names",
+               "corresponding to the right hand side of formula"))
+  }
 
-  ## Fill output
-  for (i in 1:n.pixels) {
-    out.list$time.coef[i, ] <- unlist(coef.list[[i]]["t", ])
-    if (ret_int.coef) {
-      out.list$int.coef[i, ] <- unlist(coef.list[[i]]["(Intercept)", ])
+  ## data dimensions
+  n.pix = nrow(Y) # pixels
+  n.time = ncol(Y) # time points
+
+  ## setup output
+  residuals = matrix(NA, nrow = n.pix, ncol = n.time)
+
+  ## apply CLS to map
+  for (i in 1:n.pix) {
+
+    ## extract one pixel of data from Y into a dataframe
+    df = data.frame(y = Y[i, ]) # times series at pixel i
+
+    ## Parse covariate list, filling in df
+    for(j in names(X.list)) {
+      if (length(X.list[[j]]) == ncol(Y)) { ## purely temporal predictor
+        df[, j] = X.list[[j]]
+
+      } else if (all(dim(X.list[[j]]) == c(nrow(Y), ncol(Y)))) { ## spatio-temporal predictor
+        df[, j] = X.list[[j]][i, ]
+
+      } else { ## dimension mismatch
+        stop(paste0("all elements j of X.list must satisfy one of the following conditions:",
+                    "\n  1) dim(X.list[[j]]) == c(nrow(Y), ncol(Y))",
+                    "\n  2) length(X.list[[j]]) == ncol(Y)",
+                    "\n  culprit: X.list[['", j,"']]"))
+      }
     }
-    if (ret_AR.par) {out.list$AR.par[i] = AR.list[[i]]$b}
-    if (ret_MSE) {out.list$MSE[i] = AR.list[[i]]$MSE}
-    if (ret_logLik) {out.list$logLik[i] = AR.list[[i]]$logLik}
-    if (ret_resid) {out.list$resids[i, ] = AR.list[[i]]$resids}
+
+    ## fit CLS
+    ar = fitAR(formula = as.formula(formula), data = df)
+
+    ## build output elements
+    residuals[i, ] <- ar$residuals
+    if (!resids.only){ # additional output
+      if(i == 1) {
+        ## output setup
+        coefficients <- matrix(NA, nrow = n.pix, ncol = length(ar$coefficients),
+                               dimnames = list(NULL ,names(ar$coefficients)))
+        SEs <- matrix(NA, nrow = n.pix, ncol = length(ar$SE),
+                      dimnames = list(NULL, names(ar$SE)))
+        tstats <- matrix(NA, nrow = n.pix, ncol = length(ar$tstat),
+                         dimnames = list(NULL, names(ar$tstat)))
+        pvals <- matrix(NA, nrow = n.pix, ncol = length(ar$pval),
+                        dimnames = list(NULL, names(ar$pval)))
+        MSEs <- vector("numeric", n.pix)
+        logLiks <- vector("numeric", n.pix)
+        fitted.values <- matrix(NA, nrow = n.pix, ncol = length(ar$fitted.values))
+      }
+      ## add to output
+      coefficients[i, ] <- ar$coefficients
+      SEs[i, ] <- ar$SE
+      tstats[i, ] <- ar$tstat
+      pvals[i, ] <- ar$pval
+      MSEs[i] <- ar$MSE
+      logLiks[i] <- ar$logLik
+      fitted.values[i, ] <- ar$fitted.values
+    }
   }
 
-  class(out.list) <- c("remoteAR", "map")
+  ## conditional return
+  if(resids.only){
+    out <- list(call = call, coords = coords, residuals = residuals)
+    attr(out, "resids.only") = TRUE
+  } else {
+    out <- list(call = call, coords = coords, coefficients = coefficients, SEs = SEs, tstats = tstats,
+                pvals = pvals, MSEs = MSEs, logLiks = logLiks, fitted.values = fitted.values,
+                residuals = residuals)
+    attr(out, "resids.only") = FALSE
+  }
 
-  return(out.list)
+  class(out) <- append("mapTS", class(out))
+
+  return(out)
 }
