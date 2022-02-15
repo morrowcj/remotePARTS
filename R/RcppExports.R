@@ -27,9 +27,10 @@
 #' @param nug_j nugget from partition j
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
+#' @param ncores integer indicating nubmer of cores to use
 #'
-.crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2) {
-    .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2)
+.crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, ncores) {
+    .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, ncores)
 }
 
 #' Fit GLS to remote sensing data
@@ -49,6 +50,7 @@
 #' @param nug_tol numeric tolerance for nugget search
 #' @param invCholV numeric inverse cholesky matrix
 #' @param use_invCholV logical: should invCholV be used instead of V
+#' @param ncores integer indicating cores to use
 #'
 #' @examples
 #' #   data.file = system.file("extdata", "AK_ndvi_common-land.csv", package = "remotePARTS")
@@ -79,8 +81,8 @@
 #' #                nugget = 0.0, save_xx = FALSE, save_invchol = FALSE, LL_only = FALSE, no_F = FALSE,
 #' #                use_invCholV = FALSE, optimize_nugget = TRUE, nug_l = 0.0, nug_u = 1.0, nug_tol = 1e-7)
 #'
-.fitGLS_cpp <- function(X, V, y, X0, nugget, save_xx, save_invchol, LL_only, no_F, optimize_nugget, nug_l, nug_u, nug_tol, invCholV, use_invCholV) {
-    .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, save_invchol, LL_only, no_F, optimize_nugget, nug_l, nug_u, nug_tol, invCholV, use_invCholV)
+.fitGLS_cpp <- function(X, V, y, X0, nugget, save_xx, save_invchol, LL_only, no_F, optimize_nugget, nug_l, nug_u, nug_tol, invCholV, use_invCholV, ncores) {
+    .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0, nugget, save_xx, save_invchol, LL_only, no_F, optimize_nugget, nug_l, nug_u, nug_tol, invCholV, use_invCholV, ncores)
 }
 
 #' Invert the cholesky decomposition of V
@@ -111,6 +113,7 @@
 #' @param invchol numeric inverse cholesky matrix
 #' @param use_invchol logical: should invchol be used instead of V?
 #' @param debug logical: debug mode?
+#' @param ncores integer indicating number of cores to use
 #'
 #' @examples
 #' #   data.file = system.file("extdata", "AK_ndvi_common-land.csv", package = "remotePARTS")
@@ -136,7 +139,7 @@
 #' #
 #' #  warning("optimize_nugget_cpp CANNOT recycle the invchol matrix!! remove this functionality")
 #'
-.optimize_nugget_cpp <- function(X, X0, V, y, lower, upper, tol, invchol, use_invchol, debug) {
-    .Call(`_remotePARTS_optimize_nugget_cpp`, X, X0, V, y, lower, upper, tol, invchol, use_invchol, debug)
+.optimize_nugget_cpp <- function(X, X0, V, y, lower, upper, tol, invchol, use_invchol, debug, ncores) {
+    .Call(`_remotePARTS_optimize_nugget_cpp`, X, X0, V, y, lower, upper, tol, invchol, use_invchol, debug, ncores)
 }
 

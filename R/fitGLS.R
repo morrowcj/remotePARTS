@@ -29,6 +29,8 @@
 #' when calculating \code{V} internally
 #' @param invCholV optional pre-calculated inverse cholesky matrix to use in place
 #' of \code{V}
+#' @param ncores an optional integer indicating how many CPU threads to use for
+#' matrix calculations.
 #' @param ... additional arguments passed to \code{optimize_nugget}, which are
 #' only used if if \code{nugget = NA}
 #'
@@ -71,6 +73,10 @@
 #' package) to fit models as efficiently as possible. As such, all available
 #' CPU cores are used for matrix calculations on systems with OpenMP
 #' support.
+#'
+#' \code{ncores} is passed to the C++ code Eigen::setNpThreads() which sets
+#' the number of cores used for compatible Eigen matrix operations (when OpenMP
+#' is used).
 #'
 #' @return \code{fitGLS} returns a list object of class "remoteGLS", if
 #' \code{logLik.only = FALSE}. The list contains at least the following elements:
@@ -170,8 +176,15 @@
 #' @export
 fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALSE,
                    save.invchol = FALSE, logLik.only = FALSE, no.F = FALSE,
-                   coords, distm_FUN ,covar_FUN, covar.pars, invCholV,
+                   coords, distm_FUN ,covar_FUN, covar.pars, invCholV, ncores = NA,
                    ...){
+
+  if(is.na(ncores)){
+    ncores = 0L
+  } else {
+    ncores = as.integer(ncores)
+  }
+
 
   # Parse formula arguments to make model matrix
   call <- match.call() # function call
@@ -262,7 +275,7 @@ fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALS
   GLS <- .Call(`_remotePARTS_fitGLS_cpp`, X, V, y, X0,
                nugget, save.xx, save.invchol, logLik.only, no.F,
                optimize_nugget = FALSE, nug_l = 0, nug_u = 1, nug_tol = 1e-5,
-               invCholV = invCholV,  use_invCholV = use_invCholV)
+               invCholV = invCholV,  use_invCholV = use_invCholV, ncores = ncores)
 
   # return only log-likelihood, if prompted
   if(logLik.only){

@@ -17,6 +17,7 @@
 //' @param nug_tol numeric tolerance for nugget search
 //' @param invCholV numeric inverse cholesky matrix
 //' @param use_invCholV logical: should invCholV be used instead of V
+//' @param ncores integer indicating cores to use
 //'
 //' @examples
 //' #   data.file = system.file("extdata", "AK_ndvi_common-land.csv", package = "remotePARTS")
@@ -62,12 +63,15 @@ List fitGLS_cpp(const MapMatd& X,
                  double nug_u,
                  double nug_tol,
                  const MapMatd& invCholV,
-                 bool use_invCholV){
+                 bool use_invCholV,
+                 int ncores){
+
+  Eigen::setNbThreads(ncores);
 
   int nX = X.rows(), pX = X.cols(); // dimensions of X
   double nug;
   // Optimize nugget, if asked
-  nug = (optimize_nugget) ? optimize_nugget_cpp(X, X0, V, y, nug_l, nug_u, nug_tol, invCholV, false, false) : nugget;
+  nug = (optimize_nugget) ? optimize_nugget_cpp(X, X0, V, y, nug_l, nug_u, nug_tol, invCholV, false, false, ncores) : nugget;
 
   // Inverse Cholesky Matrix
   MatrixXd iChol;

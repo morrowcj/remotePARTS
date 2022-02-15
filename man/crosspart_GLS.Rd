@@ -16,7 +16,8 @@ crosspart_GLS(
   nug_j,
   df1,
   df2,
-  small = TRUE
+  small = TRUE,
+  ncores = NA
 )
 }
 \arguments{
@@ -73,7 +74,7 @@ Calculate cross-partition statistics between two GLS partitions
 \dontrun{
 ## read data
 data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+df = ndvi_AK3000[1:1000, ] # first 1000 rows
 
 # partition matrix
 pm = sample_partitions(nrow(df), npart = 2, partsize = 500)

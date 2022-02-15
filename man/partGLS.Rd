@@ -21,6 +21,7 @@ fitGLS_partition(
   do.chisqr.test = TRUE,
   progressbar = TRUE,
   debug = FALSE,
+  ncores = NA,
   ...
 )
 
@@ -250,11 +251,16 @@ data(ndvi_AK3000)
 df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 
 ## create partition matrix
-pm = sample_partitions(nrow(ndvi_AK3000), partsize = 500, npart = 5)
+pm = sample_partitions(nrow(df), npart = 3)
 
 ## fit GLS with fixed nugget
 partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-                           data = ndvi_AK3000, nugget = 0)
+                           data = df, nugget = 0)
+
+## now with a numeric predictor
+fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
+## 0 intercept (produces NAs)
+fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 
 ## hypothesis tests
 chisqr(partGLS) # explanatory power of model

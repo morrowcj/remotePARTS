@@ -19,6 +19,7 @@
 //' @param invchol numeric inverse cholesky matrix
 //' @param use_invchol logical: should invchol be used instead of V?
 //' @param debug logical: debug mode?
+//' @param ncores integer indicating number of cores to use
 //'
 //' @examples
 //' #   data.file = system.file("extdata", "AK_ndvi_common-land.csv", package = "remotePARTS")
@@ -48,7 +49,7 @@
 double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V, const MapMatd& y,
                            double lower, double upper, double tol,
                            const MapMatd& invchol, bool use_invchol,
-                           bool debug){
+                           bool debug, int ncores){
 
   // varible declaration
   double ax = lower;
@@ -83,7 +84,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
   x = v;
   e = 0.;
   // fx = -LogLikGLS_cpp(x, X, V, y, invchol, use_invchol); //invert function to minimize
-  fxL = fitGLS_cpp(X, V, y, X0, x, false, false, true, false, false, 0., 0., 0., invchol, false);
+  fxL = fitGLS_cpp(X, V, y, X0, x, false, false, true, false, false, 0., 0., 0., invchol, false, ncores);
   fxV = fxL["logLik"];
   fx = fxV[0] * -1;
   fv = fx;
@@ -147,7 +148,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
     if (abs(d) >= tol1) {u = x + d;}
     if (abs(d) < tol1) {u = x + copysign(tol1, d);}
     // fu = -LogLikGLS_cpp(u, X, V, y, invchol, use_invchol);
-    fuL = fitGLS_cpp(X, V, y, X0, u, false, false, true, false, false, 0., 0., 0., invchol, false);
+    fuL = fitGLS_cpp(X, V, y, X0, u, false, false, true, false, false, 0., 0., 0., invchol, false, ncores);
     fuV = fuL["logLik"];
     fu = fuV[0] * -1;
     // Rcout << "u = " << u << " fu = " << fu << endl;
@@ -195,7 +196,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
     f_min = x;
     if (ax + tol >= f_min){
       // if (fx <= -LogLikGLS_cpp(f_min, X, V, y, invchol, use_invchol)){
-      fxL2 = fitGLS_cpp(X, V, y, X0, f_min, false, false, true, false, false, 0., 0., 0., invchol, false);
+      fxL2 = fitGLS_cpp(X, V, y, X0, f_min, false, false, true, false, false, 0., 0., 0., invchol, false, ncores);
       fxV2 = fxL2["logLik"];
       fx2 = fxV2[0] * -1;
       if (fx <= fx2){
