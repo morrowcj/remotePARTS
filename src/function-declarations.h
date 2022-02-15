@@ -19,7 +19,7 @@ MatrixXd solve_ident_cpp(const MatrixXd& A);
  */
 
 // calculate inverse cholesky matrix
-MatrixXd invchol_cpp(const MapMatd& V, double nugget);
+MatrixXd invchol_cpp(const MapMatd& V, double nugget, int ncores);
 
 double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V,
                            const MapMatd& y, double lower, double upper, double tol,

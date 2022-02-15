@@ -75,7 +75,7 @@ List fitGLS_cpp(const MapMatd& X,
 
   // Inverse Cholesky Matrix
   MatrixXd iChol;
-  iChol = (use_invCholV) ? invCholV : invchol_cpp(V, nug);
+  iChol = (use_invCholV) ? invCholV : invchol_cpp(V, nug, ncores);
   // matrix multiplication
   MatrixXd xx = iChol * X; // t(inv(U)) %*% X
   MatrixXd yy = iChol * y; // t(inv(U)) %*% y

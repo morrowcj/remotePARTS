@@ -89,9 +89,10 @@
 #'
 #' @param V numeric matrix
 #' @param nugget numeric nugget to add to variance matrix
+#' @param ncores integer indicating number of cores to use
 #'
-.invchol_cpp <- function(V, nugget = 0.) {
-    .Call(`_remotePARTS_invchol_cpp`, V, nugget)
+.invchol_cpp <- function(V, nugget = 0., ncores = 0L) {
+    .Call(`_remotePARTS_invchol_cpp`, V, nugget, ncores)
 }
 
 #' Find the maximum likelihood estimate of the nugget

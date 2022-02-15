@@ -5,6 +5,8 @@
 #'
 #' @param M numeric (double), positive definite matrix
 #' @param nugget numeric (double) nugget to add to M
+#' @param ncores optional integer indicating how many cores to use during the
+#' inversion calculation
 #'
 #' @return numeric matrix: inverse of the Cholesky decomposition (lower triangle)
 #'
@@ -21,7 +23,13 @@
 #' # with a nugget:
 #' invert_chol(M, nugget = 0.2)
 #' @export
-invert_chol <- function(M, nugget = 0){
+invert_chol <- function(M, nugget = 0, ncores = NA){
+
+  if(is.na(ncores)){
+    ncores = 0L
+  } else {
+    ncores = as.integer(ncores)
+  }
 
   # exception handling ----
   if(!is.matrix(M)){stop("M is not of class 'matrix'")}
@@ -30,5 +38,5 @@ invert_chol <- function(M, nugget = 0){
 
   # execute the C++ function ----
   # return(.invchol_cpp(M, nugget))
-  return(.Call(`_remotePARTS_invchol_cpp`, M, nugget))
+  return(.Call(`_remotePARTS_invchol_cpp`, M, nugget, ncores))
 }
