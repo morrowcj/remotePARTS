@@ -4,11 +4,12 @@
 //'
 //' @param V numeric matrix
 //' @param nugget numeric nugget to add to variance matrix
+//' @param ncores integer indicating number of cores to use
 //'
 // [[Rcpp::export(.invchol_cpp)]]
-MatrixXd invchol_cpp(const MapMatd& V, double nugget = 0.){
+MatrixXd invchol_cpp(const MapMatd& V, double nugget = 0., int ncores = 0L){
 
-  //Eigen::setNbThreads(threads);
+  Eigen::setNbThreads(ncores);
 
   double n = V.rows(); //dim of V
 

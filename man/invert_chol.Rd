@@ -4,12 +4,15 @@
 \alias{invert_chol}
 \title{Invert the cholesky decomposition of V}
 \usage{
-invert_chol(M, nugget = 0)
+invert_chol(M, nugget = 0, ncores = NA)
 }
 \arguments{
 \item{M}{numeric (double), positive definite matrix}
 
 \item{nugget}{numeric (double) nugget to add to M}
+
+\item{ncores}{optional integer indicating how many cores to use during the
+inversion calculation}
 }
 \value{
 numeric matrix: inverse of the Cholesky decomposition (lower triangle)

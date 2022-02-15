@@ -61,14 +61,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // invchol_cpp
-MatrixXd invchol_cpp(const MapMatd& V, double nugget);
-RcppExport SEXP _remotePARTS_invchol_cpp(SEXP VSEXP, SEXP nuggetSEXP) {
+MatrixXd invchol_cpp(const MapMatd& V, double nugget, int ncores);
+RcppExport SEXP _remotePARTS_invchol_cpp(SEXP VSEXP, SEXP nuggetSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const MapMatd& >::type V(VSEXP);
     Rcpp::traits::input_parameter< double >::type nugget(nuggetSEXP);
-    rcpp_result_gen = Rcpp::wrap(invchol_cpp(V, nugget));
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(invchol_cpp(V, nugget, ncores));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -97,7 +98,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 12},
     {"_remotePARTS_fitGLS_cpp", (DL_FUNC) &_remotePARTS_fitGLS_cpp, 16},
-    {"_remotePARTS_invchol_cpp", (DL_FUNC) &_remotePARTS_invchol_cpp, 2},
+    {"_remotePARTS_invchol_cpp", (DL_FUNC) &_remotePARTS_invchol_cpp, 3},
     {"_remotePARTS_optimize_nugget_cpp", (DL_FUNC) &_remotePARTS_optimize_nugget_cpp, 11},
     {NULL, NULL, 0}
 };
