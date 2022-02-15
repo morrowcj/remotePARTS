@@ -57,7 +57,7 @@ ARfit <- fitAR_map(Y = Y, coords = coords)
 head(coefficients(ARfit))
 
 ## -----------------------------------------------------------------------------
-ARfit$coefficients[, "t"] <- ARfit$coefficients[,2]/rowMeans(ndvi_AK3000[, ndvi.cols])
+ARfit$coefficients[, "t"] <- ARfit$coefficients[,"t"]/rowMeans(ndvi_AK3000[, ndvi.cols])
 ndvi_AK3000$AR_coef <- coefficients(ARfit)[, "t"] # save time trend coefficient
 
 ## ----fig.width = 4.5, fig.asp = .8--------------------------------------------
@@ -163,7 +163,7 @@ GLS.opt
 df = ndvi_AK[!ndvi_AK$rare.land, ]
 
 ## -----------------------------------------------------------------------------
-pm <- sample_partitions(npix = nrow(df), partsize = 1500)
+pm <- sample_partitions(npix = nrow(df), partsize = 1500, npart = NA)
 dim(pm)
 
 ## ---- eval = FALSE------------------------------------------------------------

@@ -30,6 +30,12 @@ print.partGLS <- function(x, ...){
 #' @examples
 #' remotePARTS:::part_chisqr(Fmean = 3.6, rSSR = .021, df1 = 2, npart = 5)
 part_chisqr <- function(Fmean, rSSR, df1, npart){
+  checks = c(is.na(Fmean) | is.infinite(Fmean),
+             is.na(rSSR) | is.infinite(rSSR),
+             is.na(npart) | is.infinite(npart))
+  if(any(checks)){
+    stop("NA values supplied to part_chisqr")
+  }
   rZ <- (rSSR/df1)^0.5
   v.MSR <- diag(df1) - rZ
   V.MSR <- kronecker(diag(npart),v.MSR) + rZ
@@ -88,7 +94,6 @@ chisqr.partGLS <- function(x, ...){
 #'
 #' @return coefficient table with estimates, standard errors, t-statistics, and p-values
 part_ttest <- function(coefs, part.SEs, rcoef, df2, npart){
-
   secoef <- matrix(NA, length(coefs), 1)
   for(i in seq_len(length(coefs))){
     R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1, npart, npart)

@@ -198,11 +198,16 @@
 #' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
 #'
 #' ## create partition matrix
-#' pm = sample_partitions(nrow(ndvi_AK3000), partsize = 500, npart = 5)
+#' pm = sample_partitions(nrow(df), npart = 3)
 #'
 #' ## fit GLS with fixed nugget
 #' partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#'                            data = ndvi_AK3000, nugget = 0)
+#'                            data = df, nugget = 0)
+#'
+#' ## now with a numeric predictor
+#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
+#' ## 0 intercept (produces NAs)
+#' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 #'
 #' ## hypothesis tests
 #' chisqr(partGLS) # explanatory power of model
@@ -352,7 +357,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       if(debug){crosspartGLS[[cross]] = rGLS}
       # collect stats
       rcoefs[cross, ] <- rGLS$rcoefij
-      rSSRs[cross] <- rGLS$rSSRij
+      rSSRs[cross] <- ifelse(is.na(rGLS$rSSRij) | is.infinite(rGLS$rSSRij),
+                             NA,
+                             rGLS$rSSRij)
       rSSEs[cross] <- rGLS$rSSEij
     }
     # delete large matrix for i
@@ -373,8 +380,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                               Fstats = Fstats,
                                               pvals_F = Fpvals)),
                  cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
-                 overall = list(coefficients = colMeans(coefs),
-                                rcoefficients = colMeans(rcoefs),
+                 overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
+                                rcoefficients = colMeans(rcoefs, na.rm = TRUE),
                                 rSSR = mean(rSSRs, na.rm = TRUE),
                                 rSSE = mean(rSSEs, na.rm = TRUE),
                                 Fstat = mean(Fstats, na.rm = TRUE),
@@ -383,10 +390,14 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   if(debug){outlist$crossGLS = crosspartGLS}
   class(outlist) <- append("partGLS", class(outlist))
   if(do.chisqr.test){
-    outlist$overall$pval.chisqr = chisqr(outlist)
+    outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
+                                           error = function(e){warning("error in chisqr()")},
+                                           warning = function(w){warning("warning in chisqr()")})
   }
   if(do.t.test){
-    outlist$overall$t.test = t.test(outlist)
+    outlist$overall$t.test = tryCatch(t.test(outlist),
+                                      error = function(e){warning("error in t.test()")},
+                                      warning = function(w){warning("warning in t.test()")})
   }
   close(pb)
   return(outlist)
@@ -456,7 +467,7 @@ calc_dfpart <- function(partsize, p, p0){
 #' \dontrun{
 #' ## read data
 #' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+#' df = ndvi_AK3000[1:1000, ] # first 1000 rows
 #'
 #' # partition matrix
 #' pm = sample_partitions(nrow(df), npart = 2, partsize = 500)
