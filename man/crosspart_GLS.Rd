@@ -122,7 +122,7 @@ dfs = remotePARTS:::calc_dfpart(partsize = nrow(pm), p = ncol(GLS.i$xx),
 }
 \seealso{
 Other partitionedGLS: 
-\code{\link{fitGLS_partition}()},
+\code{\link{MC_GLSpart}()},
 \code{\link{sample_partitions}()}
 }
 \concept{partitionedGLS}

@@ -84,8 +84,8 @@ only used if if \code{nugget = NA}}
     \item{pval_t}{p-value of the t-statistic}
     \item{logLik}{the Log-likelihood of the model}
     \item{nugget}{the nugget used in fitting}
+    \item{covar_coef}{the covariance matrix of the coefficients}
 }
-
 
 If \code{no.F = FALSE}, the following elements, corresponding to the null
 model and F-test are also calculated:

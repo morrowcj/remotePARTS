@@ -92,8 +92,8 @@
 #'     \item{pval_t}{p-value of the t-statistic}
 #'     \item{logLik}{the Log-likelihood of the model}
 #'     \item{nugget}{the nugget used in fitting}
+#'     \item{covar_coef}{the covariance matrix of the coefficients}
 #' }
-#'
 #'
 #' If \code{no.F = FALSE}, the following elements, corresponding to the null
 #' model and F-test are also calculated:
@@ -288,7 +288,8 @@ fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALS
 
   # Update list elements
   GLS <- append(list(call = call), GLS)
-  names(GLS$coefficients) = names(GLS$SE) = names(GLS$tstat) = names(GLS$pval_t) = colnames(X)
+  colnames(GLS$covar_coef) = rownames(GLS$covar_coef) =names(GLS$coefficients) =
+    names(GLS$SE) = names(GLS$tstat) = names(GLS$pval_t) = colnames(X)
   # GLS$predictors = colnames(X)
   # GLS$nugget = nugget
   GLS$formula = deparse(as.formula(formula))

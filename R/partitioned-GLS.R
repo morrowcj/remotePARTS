@@ -27,8 +27,9 @@
 #' fit be conducted?
 #' @param progressbar logical: should progress be tracked with a progress bar?
 #' @param debug logical debug mode
-#' @param ncores an optional integer indicating how many CPU threads to use for
-#' matrix calculations, passed to fitGLS.
+#' @param ncores an optional integer indicating how many CPU threads to use for calculations.
+#' @param parallel logical: should all calculations be done in parallel? See details for
+#' more information
 #' @param ... arguments passed to \code{part_FUN}
 #'
 #' @details
@@ -82,6 +83,32 @@
 #'
 #' If \code{progressbar = TRUE} a text progress bar shows the current status
 #' of the calculations in the console.
+#'
+#' @section parallel implementation:
+#'
+#' In order to be efficient and account for different user situations, parallel
+#' processing is available natively in \code{fitGLS_partition}. There are a few
+#' different specifications that will result in different behavior:
+#'
+#' When \code{parallel = TRUE} and \code{ncores > 1}, all calculations are done
+#' completely in parallel. In this case, parallelization is implemented with the
+#' \code{parallel}, \code{doParallel}, and \code{foreach} packages. In this version,
+#' all matrix operations are serialized on each worker but multiple operations
+#' can occur simultaneously..
+#'
+#' When \code{parallel = FALSE} and \code{ncores > 1}, then most calculations
+#' are done on a single core but matrix opperations use multiple cores. In this
+#' case, \code{ncores} is passed to fitGLS.
+#'
+#' When \code{ncores <= 1}, then the calculations are completely serialized
+#'
+#' When \code{ncores = NA} (the default), only matrix multiplication is done in
+#' parallel and the number of cores determined by defaults used by \code{Eigen}.
+#' Typically, if \code{OpenMP} is available, all cores are used, otherwise only
+#' 1 is used. In this case, \code{parallel} is ignored (and treated as FALSE).
+#'
+#' In the parallel implementation of this function, a progress bar is not possible,
+#' so \code{progressbar} is ignored.
 #'
 #' @section \code{part_FUN} details:
 #'
@@ -219,6 +246,11 @@
 #' (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 #'                                 data = ndvi_AK3000, nugget = NA))
 #' partGLS.opt$part$nuggets # ML nuggets
+#' \dontrun{
+#' ## fully parallel, using 2 cores
+#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
+#'                  ncores = 2, parallel = TRUE, debug = FALSE)
+#' }
 #' }
 #' @export
 fitGLS_partition <- function(formula, partmat, formula0 = NULL,
@@ -226,14 +258,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                              distm_FUN = "distm_scaled", covar_FUN = "covar_exp",
                              covar.pars = c(range = .1), nugget = NA, ncross = 6,
                              save.GLS = FALSE, do.t.test = TRUE, do.chisqr.test = TRUE,
-                             progressbar = TRUE, debug = FALSE, ncores = NA,
+                             progressbar = TRUE, debug = FALSE, ncores = NA, parallel = TRUE,
                              ...){
-  if(is.na(ncores)){
-    ncores = 0L
-  } else {
-    ncores = as.integer(ncores)
-  }
-
   # Setup
   call = match.call()
   ## partmat dimensions
@@ -252,165 +278,189 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   } else {
     formula0 = as.formula(formula0)
   }
-  # output setup
-  partGLS = vector("list", npart)
-  if(debug){crosspartGLS = vector("list", npairs)}
-  if(progressbar){
-    pb = txtProgressBar(min = 0, max = npart, style = 3)
-  }
-  for(i in 1:npart){
-  # for (i in 1){
-    if (debug) {cat("i =", i, "\n")}
-    # partition data
-    idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, ...)
-    # idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, data = data)
 
-    # Calculate GLS, if not already done
-    if (is.null(partGLS[[i]])){
-      ## covariance of parition
-      Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
-      ## GLS of parition
-      partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
-                             nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
-                             no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
-                             ncores = ncores)
-      ## build some empty stat tables on first loop
-      if (i == 1){
-        p = ncol(partGLS[[1]]$xx)
-        p0 = ncol(partGLS[[1]]$xx0)
-        # part stats
-        coefs = SEs = tstats = tpvals =
-          matrix(NA, nrow = npart, ncol = p,
-                 dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
-        nuggets = LLs = SSEs = MSEs = MSRs = Fstats = Fpvals = rep(NA, times = npart)
-        # cross stats
-        rSSRs = rSSEs = rep(NA, npairs)
-        rcoefs = matrix(NA, nrow = npairs, ncol = p,
-                       dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
-      }
-      # collect some stats
-      coefs[i, ] = partGLS[[i]]$coefficients
-      SEs[i, ] = partGLS[[i]]$SE
-      tstats[i, ] = partGLS[[i]]$tstat
-      tpvals[i, ] = partGLS[[i]]$pval_t
-      nuggets[i] = partGLS[[i]]$nugget
-      LLs[i] = partGLS[[i]]$logLik
-      SSEs[i] = partGLS[[i]]$SSE
-      MSEs[i] = partGLS[[i]]$MSE
-      MSRs[i] = partGLS[[i]]$MSR
-      Fstats[i] = partGLS[[i]]$Fstat
-      Fpvals [i] = partGLS[[i]]$pval_F
+  ## Decide if calculations should be parallelized
+  if(!is.na(ncores) && parallel & ncores > 1){
+    if(debug){cat("Conducting parallel paritioned GLS\n")}
+    MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
+                       part_FUN = part_FUN, distm_FUN = distm_FUN,
+                       covar_FUN = covar_FUN, covar.pars = covar.pars,
+                       nugget = nugget, ncross = ncross, save.GLS = save.GLS,
+                       ncores = ncores, debug = debug, ...)
+    if(debug){cat("compiling parallel output into partGLS object\n")}
+    outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat),
+                            save.GLS = save.GLS, do.t.test = do.t.test, do.chisqr.test = do.chisqr.test,
+                            debug = debug)
+    outlist$call <- call
+  } else {
+    if(debug){cat("Conducting partitioned GLS\n")}
+    if(is.na(ncores)){
+      ncores = 0L
+    } else {
+      ncores = as.integer(ncores)
     }
-    # calculate inverse cholesky it needed
-    if (is.null(partGLS[[i]]$invcholV)){
-      Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
-      partGLS[[i]]$invcholV <- invert_chol(Vi)
-    }
-    if (i < ncross) for (j in (i+1):ncross) {
-    # if (i < ncross) for (j in 2) {
-      if (debug) {cat("j =", j, "\n")}
-      # parition data
-      jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
-      # jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, data = data)
 
-      # calculate GLS, if not already done
-      if (is.null(partGLS[[j]])){
-        Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
-        partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
-                               nugget = nugget, formula0 = formula0, save.xx = TRUE,
-                               no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE,
+    # output setup
+    partGLS = vector("list", npart)
+    if(debug){crosspartGLS = vector("list", npairs)}
+    if(progressbar){
+      pb = txtProgressBar(min = 0, max = npart, style = 3)
+    }
+    for(i in 1:npart){
+      # for (i in 1){
+      if (debug) {cat("i =", i, "\n")}
+      ## partition data
+      idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, ...)
+      # idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, data = data)
+
+      ## Calculate GLS, if not already done
+      if (is.null(partGLS[[i]])){
+        ## covariance of parition
+        Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
+        ## GLS of parition
+        partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
+                               nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
+                               no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
                                ncores = ncores)
-        if(length(partGLS[[j]]$coefficients) != ncol(coefs)){
-          stop("dimension mismatch: different number of coefficients between parts i and j. Filter data or try different partition matrix.")
+        ## build some empty stat tables on first loop
+        if (i == 1){
+          p = ncol(partGLS[[1]]$xx)
+          p0 = ncol(partGLS[[1]]$xx0)
+          ## part stats
+          coefs = SEs = tstats = tpvals =
+            matrix(NA, nrow = npart, ncol = p,
+                   dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
+          nuggets = LLs = SSEs = MSEs = MSRs = Fstats = Fpvals = rep(NA, times = npart)
+          ## cross stats
+          rSSRs = rSSEs = rep(NA, npairs)
+          rcoefs = matrix(NA, nrow = npairs, ncol = p,
+                          dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
         }
         ## collect some stats
-        coefs[j, ] = partGLS[[j]]$coefficients
-        SEs[j, ] = partGLS[[j]]$SE
-        tstats[j, ] = partGLS[[j]]$tstat
-        tpvals[j, ] = partGLS[[j]]$pval_t
-        nuggets[j] = partGLS[[j]]$nugget
-        LLs[j] = partGLS[[j]]$logLik
-        SSEs[j] = partGLS[[j]]$SSE
-        MSEs[j] = partGLS[[j]]$MSE
-        MSRs[j] = partGLS[[j]]$MSR
-        Fstats[j] = partGLS[[j]]$Fstat
-        Fpvals[j] = partGLS[[j]]$pval_F
+        coefs[i, ] = partGLS[[i]]$coefficients
+        SEs[i, ] = partGLS[[i]]$SE
+        tstats[i, ] = partGLS[[i]]$tstat
+        tpvals[i, ] = partGLS[[i]]$pval_t
+        nuggets[i] = partGLS[[i]]$nugget
+        LLs[i] = partGLS[[i]]$logLik
+        SSEs[i] = partGLS[[i]]$SSE
+        MSEs[i] = partGLS[[i]]$MSE
+        MSRs[i] = partGLS[[i]]$MSR
+        Fstats[i] = partGLS[[i]]$Fstat
+        Fpvals [i] = partGLS[[i]]$pval_F
       }
-      # which cross are we on?
-      cross = which( (cross.pairs[,1] == i) & (cross.pairs[, 2] == j) )
-      if (debug) {cat( "cross #", cross, "\n")}
-      # calculate inverse cholesky it needed
-      if (is.null(partGLS[[j]]$invcholV)){
-        Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
-        partGLS[[j]]$invcholV <- invert_chol(Vj)
+      ## calculate inverse cholesky it needed
+      if (is.null(partGLS[[i]]$invcholV)){
+        Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
+        partGLS[[i]]$invcholV <- invert_chol(Vi)
       }
-      # cross covariance
-      if (debug) {cat("calulating Vij:\n")}
-      Vij = do.call(covar.f, args = append(list(d = dist.f(idat$coords, jdat$coords)),
-                                           as.list(covar.pars)))
-      # degrees of freedom
-      dfs = calc_dfpart(partsize = partsize, p = ncol(partGLS[[j]]$xx), p0 = ncol(partGLS[[j]]$xx0))
-      # calculate cross-partition stats
-      if (debug) {cat("calculating crossGLS\n")}
-      rGLS <- crosspart_GLS(xxi = partGLS[[i]]$xx,
-                            xxj = partGLS[[j]]$xx,
-                            xxi0 = partGLS[[i]]$xx0,
-                            xxj0 = partGLS[[j]]$xx0,
-                            invChol_i = partGLS[[i]]$invcholV,
-                            invChol_j = partGLS[[j]]$invcholV,
-                            Vsub = Vij,
-                            nug_i = partGLS[[i]]$nugget,
-                            nug_j = partGLS[[j]]$nugget,
-                            df1 = dfs[1], df2 = dfs[2],
-                            ncores = ncores)
-      # delete large matrix for j
-      partGLS[[j]]$invcholV = NULL
-      if(debug){crosspartGLS[[cross]] = rGLS}
-      # collect stats
-      rcoefs[cross, ] <- rGLS$rcoefij
-      rSSRs[cross] <- ifelse(is.na(rGLS$rSSRij) | is.infinite(rGLS$rSSRij),
-                             NA,
-                             rGLS$rSSRij)
-      rSSEs[cross] <- rGLS$rSSEij
+      if (i < ncross) for (j in (i+1):ncross) {
+        # if (i < ncross) for (j in 2) {
+        if (debug) {cat("j =", j, "\n")}
+        ## parition data
+        jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
+        # jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, data = data)
+
+        ## calculate GLS, if not already done
+        if (is.null(partGLS[[j]])){
+          Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
+          partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
+                                 nugget = nugget, formula0 = formula0, save.xx = TRUE,
+                                 no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE,
+                                 ncores = ncores)
+          if(length(partGLS[[j]]$coefficients) != ncol(coefs)){
+            stop("dimension mismatch: different number of coefficients between parts i and j. Filter data or try different partition matrix.")
+          }
+          ## collect some stats
+          coefs[j, ] = partGLS[[j]]$coefficients
+          SEs[j, ] = partGLS[[j]]$SE
+          tstats[j, ] = partGLS[[j]]$tstat
+          tpvals[j, ] = partGLS[[j]]$pval_t
+          nuggets[j] = partGLS[[j]]$nugget
+          LLs[j] = partGLS[[j]]$logLik
+          SSEs[j] = partGLS[[j]]$SSE
+          MSEs[j] = partGLS[[j]]$MSE
+          MSRs[j] = partGLS[[j]]$MSR
+          Fstats[j] = partGLS[[j]]$Fstat
+          Fpvals[j] = partGLS[[j]]$pval_F
+        }
+        ## which cross are we on?
+        cross = which( (cross.pairs[,1] == i) & (cross.pairs[, 2] == j) )
+        if (debug) {cat( "cross #", cross, "\n")}
+        ## calculate inverse cholesky it needed
+        if (is.null(partGLS[[j]]$invcholV)){
+          Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
+          partGLS[[j]]$invcholV <- invert_chol(Vj)
+        }
+        ## cross covariance
+        if (debug) {cat("calulating Vij:\n")}
+        Vij = do.call(covar.f, args = append(list(d = dist.f(idat$coords, jdat$coords)),
+                                             as.list(covar.pars)))
+        ## degrees of freedom
+        dfs = calc_dfpart(partsize = partsize, p = ncol(partGLS[[j]]$xx), p0 = ncol(partGLS[[j]]$xx0))
+        ## calculate cross-partition stats
+        if (debug) {cat("calculating crossGLS\n")}
+        rGLS <- crosspart_GLS(xxi = partGLS[[i]]$xx,
+                              xxj = partGLS[[j]]$xx,
+                              xxi0 = partGLS[[i]]$xx0,
+                              xxj0 = partGLS[[j]]$xx0,
+                              invChol_i = partGLS[[i]]$invcholV,
+                              invChol_j = partGLS[[j]]$invcholV,
+                              Vsub = Vij,
+                              nug_i = partGLS[[i]]$nugget,
+                              nug_j = partGLS[[j]]$nugget,
+                              df1 = dfs[1], df2 = dfs[2],
+                              ncores = ncores)
+        ## delete large matrix for j
+        partGLS[[j]]$invcholV = NULL
+        if(debug){crosspartGLS[[cross]] = rGLS}
+        ## collect stats
+        rcoefs[cross, ] <- rGLS$rcoefij
+        rSSRs[cross] <- ifelse(is.na(rGLS$rSSRij) | is.infinite(rGLS$rSSRij),
+                               NA,
+                               rGLS$rSSRij)
+        rSSEs[cross] <- rGLS$rSSEij
+      }
+      ## delete large matrix for i
+      partGLS[[i]]$invcholV = NULL
+      ## update progress bar
+      if(progressbar){
+        setTxtProgressBar(pb, i)
+      }
     }
-    # delete large matrix for i
-    partGLS[[i]]$invcholV = NULL
-    # update progress bar
-    if(progressbar){
-      setTxtProgressBar(pb, i)
+    ## collect and format output
+    outlist = list(call = call,
+                   GLS = if(save.GLS){partGLS}else{NULL},
+                   part = list(coefficients = coefs, SEs = SEs, tstats = tstats,
+                               pvals_t = tpvals, nuggets = nuggets,
+                               covar.pars = covar.pars,
+                               modstats = cbind(LLs = LLs, SSEs = SSEs,
+                                                MSEs = MSEs, MSRs = MSRs,
+                                                Fstats = Fstats,
+                                                pvals_F = Fpvals)),
+                   cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
+                   overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
+                                  rcoefficients = colMeans(rcoefs, na.rm = TRUE),
+                                  rSSR = mean(rSSRs, na.rm = TRUE),
+                                  rSSE = mean(rSSEs, na.rm = TRUE),
+                                  Fstat = mean(Fstats, na.rm = TRUE),
+                                  dfs = calc_dfpart(partsize, p, p0),
+                                  partdims = c(npart = npart, partsize = partsize)))
+    if(debug){outlist$crossGLS = crosspartGLS}
+    class(outlist) <- append("partGLS", class(outlist))
+    if(do.chisqr.test){
+      outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
+                                             error = function(e){warning("error in chisqr()")},
+                                             warning = function(w){warning("warning in chisqr()")})
     }
+    if(do.t.test){
+      outlist$overall$t.test = tryCatch(t.test(outlist),
+                                        error = function(e){warning("error in t.test()")},
+                                        warning = function(w){warning("warning in t.test()")})
+    }
+    close(pb)
   }
-  # collect and format output
-  outlist = list(call = call,
-                 GLS = if(save.GLS){partGLS}else{NULL},
-                 part = list(coefficients = coefs, SEs = SEs, tstats = tstats,
-                             pvals_t = tpvals, nuggets = nuggets,
-                             covar.pars = covar.pars,
-                             modstats = cbind(LLs = LLs, SSEs = SSEs,
-                                              MSEs = MSEs, MSRs = MSRs,
-                                              Fstats = Fstats,
-                                              pvals_F = Fpvals)),
-                 cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
-                 overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
-                                rcoefficients = colMeans(rcoefs, na.rm = TRUE),
-                                rSSR = mean(rSSRs, na.rm = TRUE),
-                                rSSE = mean(rSSEs, na.rm = TRUE),
-                                Fstat = mean(Fstats, na.rm = TRUE),
-                                dfs = calc_dfpart(partsize, p, p0),
-                                partdims = c(npart = npart, partsize = partsize)))
-  if(debug){outlist$crossGLS = crosspartGLS}
-  class(outlist) <- append("partGLS", class(outlist))
-  if(do.chisqr.test){
-    outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
-                                           error = function(e){warning("error in chisqr()")},
-                                           warning = function(w){warning("warning in chisqr()")})
-  }
-  if(do.t.test){
-    outlist$overall$t.test = tryCatch(t.test(outlist),
-                                      error = function(e){warning("error in t.test()")},
-                                      warning = function(w){warning("warning in t.test()")})
-  }
-  close(pb)
+  ## final return statement
   return(outlist)
 }
 
