@@ -72,7 +72,7 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL,
     partGLS.i <- fitGLS(formula = formula, data = idat$data, V = Vi,
                            nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
                            no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
-                           ncores = 1)
+                           ncores = 1L)
 
     # Partition J
     rGLS.list <- list() # empty list
@@ -88,7 +88,7 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL,
       partGLS.j <- fitGLS(formula = formula, data = jdat$data, V = Vj,
                              nugget = nugget, formula0 = formula0, save.xx = TRUE,
                              no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE,
-                             ncores = 1)
+                             ncores = 1L)
       ## check for dimension mismatch
       dim.mismatch <- ifelse(length(partGLS.j$coefficients) != length(partGLS.i$coefficients), TRUE, FALSE)
 
