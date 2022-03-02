@@ -141,8 +141,8 @@
 #'
 #' \donttest{
 #' ## read data
-#' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+#' data(ndvi_AK10000)
+#' df = ndvi_AK10000[seq_len(200), ] # first 200 rows
 #'
 #' ## fit covariance matrix
 #' V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)

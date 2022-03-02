@@ -315,8 +315,8 @@ copies of data.
 \examples{
 \dontrun{
 ## read data
-data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+data(ndvi_AK10000)
+df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
 
 ## create partition matrix
 pm = sample_partitions(nrow(df), npart = 3)
@@ -329,8 +329,8 @@ MCpartGLS = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 0 + land, partmat = pm
 }
 \donttest{
 ## read data
-data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+data(ndvi_AK10000)
+df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
 
 ## create partition matrix
 pm = sample_partitions(nrow(df), npart = 3)
@@ -341,7 +341,8 @@ partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 
 ## now with a numeric predictor
 fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
-## 0 intercept (produces NAs)
+
+## 0 intercept (produces NAs) and gives an error in statistical tests
 fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 
 ## hypothesis tests
@@ -350,7 +351,7 @@ t.test(partGLS) # significance of predictors
 
 ## fit ML nugget for each partition (slow)
 (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-                                data = ndvi_AK3000, nugget = NA))
+                                data = df, nugget = NA))
 partGLS.opt$part$nuggets # ML nuggets
 \dontrun{
 ## fully parallel, using 2 cores
@@ -360,15 +361,15 @@ fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
 }
 
 ## part_data examples
-part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK3000)
+part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK10000)
 
 \dontrun{
 ## part_csv examples
 ## CAUTION: this example for part_csv() requires file manipulation:
 # first, create a .csv file from ndviAK
-data(ndvi_AK3000)
-file.path = "ndviAK3000-remotePARTS.csv"
-write.csv(ndvi_AK, file = file.path)
+data(ndvi_AK10000)
+file.path = "ndviAK10000-remotePARTS.csv"
+write.csv(ndvi_AK10000, file = file.path)
 
 # build a partition from the first 30 pixels in the file
 part_csv(1:20, formula = CLS_coef ~ 0 + land, file = file.path)

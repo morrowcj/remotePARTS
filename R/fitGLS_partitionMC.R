@@ -7,8 +7,8 @@
 #' @examples
 #' \dontrun{
 #' ## read data
-#' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+#' data(ndvi_AK10000)
+#' df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
 #'
 #' ## create partition matrix
 #' pm = sample_partitions(nrow(df), npart = 3)
@@ -59,6 +59,7 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL,
 
 
   # Run parallel computations, collect all output in a list
+  i <- NULL # variable declaration for iterator
   out_list <- foreach::foreach(i = 1:npart, .packages = "remotePARTS") %dopar% {
     # Partition i
     ## partition data

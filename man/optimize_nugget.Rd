@@ -54,8 +54,8 @@ be used instead.
 \examples{
 \dontrun{
 ## read data
-data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(500), ] # first 1000 rows
+data(ndvi_AK10000)
+df = ndvi_AK10000[seq_len(200), ] # first 200 rows
 
 ## format data
 X = stats::model.matrix(CLS_coef ~ 0 + land, data = df)

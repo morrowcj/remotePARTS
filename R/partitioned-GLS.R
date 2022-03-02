@@ -223,8 +223,8 @@
 #' @examples
 #' \donttest{
 #' ## read data
-#' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+#' data(ndvi_AK10000)
+#' df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
 #'
 #' ## create partition matrix
 #' pm = sample_partitions(nrow(df), npart = 3)
@@ -235,7 +235,8 @@
 #'
 #' ## now with a numeric predictor
 #' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
-#' ## 0 intercept (produces NAs)
+#'
+#' ## 0 intercept (produces NAs) and gives an error in statistical tests
 #' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 #'
 #' ## hypothesis tests
@@ -244,7 +245,7 @@
 #'
 #' ## fit ML nugget for each partition (slow)
 #' (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#'                                 data = ndvi_AK3000, nugget = NA))
+#'                                 data = df, nugget = NA))
 #' partGLS.opt$part$nuggets # ML nuggets
 #' \dontrun{
 #' ## fully parallel, using 2 cores
@@ -529,8 +530,8 @@ calc_dfpart <- function(partsize, p, p0){
 #' @examples
 #' \dontrun{
 #' ## read data
-#' data(ndvi_AK3000)
-#' df = ndvi_AK3000[1:1000, ] # first 1000 rows
+#' data(ndvi_AK10000)
+#' df = ndvi_AK10000[seq_len(1000), ] # first rows
 #'
 #' # partition matrix
 #' pm = sample_partitions(nrow(df), npart = 2, partsize = 500)
@@ -632,7 +633,7 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
 #' @examples
 #'
 #' ## part_data examples
-#' part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK3000)
+#' part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK10000)
 #'
 part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("lng", "lat")){
   stopifnot(is.data.frame(data) | (is.matrix(data) & is.numeric(data)))
@@ -663,9 +664,9 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #' ## part_csv examples
 #' ## CAUTION: this example for part_csv() requires file manipulation:
 #' # first, create a .csv file from ndviAK
-#' data(ndvi_AK3000)
-#' file.path = "ndviAK3000-remotePARTS.csv"
-#' write.csv(ndvi_AK, file = file.path)
+#' data(ndvi_AK10000)
+#' file.path = "ndviAK10000-remotePARTS.csv"
+#' write.csv(ndvi_AK10000, file = file.path)
 #'
 #' # build a partition from the first 30 pixels in the file
 #' part_csv(1:20, formula = CLS_coef ~ 0 + land, file = file.path)
