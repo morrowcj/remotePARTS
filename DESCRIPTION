@@ -17,7 +17,7 @@ Description:
   remotely sensed data sets but any data with spatial and temporal variation
   can be analyzed. Tests are conducted using the PARTS method for analyzing spatially
   autocorrelated time series 
-  (Ives et al., 2021: https://doi.org/10.1016/j.rse.2021.112678). 
+  (Ives et al., 2021: <doi:10.1016/j.rse.2021.112678>). 
   The method's unique approach can handle extremely large data sets that other 
   spatiotemporal models cannot, while still appropriately accounting for 
   spatial and temporal autocorrelation. This is done by partitioning the data 

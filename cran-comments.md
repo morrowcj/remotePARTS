@@ -43,3 +43,13 @@ of the systems I have personally tested on.
 * Some examples in `partGLS.Rd` and `fitGLS_opt.Rd` can take a bit longer to run
 (10-20 seconds total) since the functions documented in these files need to 
 invert multiple large matrices. 
+
+* On the ubuntu-20.04 (release) system, an additional NOTE occurred, indicating
+that the libraries are much larger than on the other the systems:
+
+```
+  ❯ checking installed package size ... NOTE
+    installed size is 32.5Mb
+    sub-directories of 1Mb or more:
+      libs  31.0Mb
+```
