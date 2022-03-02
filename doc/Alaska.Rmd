@@ -55,47 +55,49 @@ theme_set(theme(panel.grid = element_blank(),
 
 # Alaska datasets
 
-`remotePARTS` ships with two data objects. Both objects contain NDVI values derived 
-from NASA's MODIS satellite for the US State of Alaska. The first object, `ndvi_AK`, 
-contains pxels for the full map (n = 31,486), and `ndvi_AK3000` is a representative 
-subset of 3,000 of those pixels. `ndvi_AK3000` exists as a smaller data set that 
-can be processed much faster than `ndvi_AK`, but both sets contain all the same 
-variables and can be analyzed similarly. These data can be loaded with 
-`data("ndvi_AK")` and `data("ndvi_AK3000")`.
+`remotePARTS` ships with one spatial data object. This dataset contains NDVI 
+values derived from NASA's MODIS satellite for the US State of Alaska. 
+The first object, `ndvi_AK10000`, due to package size limitations, this dataset is a 
+random sampling of 10,000 pixels from the full Alaska dataset. It is important 
+to note, though that `remotePARTS` can handle the full map (and much larger maps).
+
+For this vignette, we well also create a smaller 3000 pixel subsample `ndvi_AK3000`
+for demonstrative purposes:
 
 ```{r load_data}
-data("ndvi_AK")
-data("ndvi_AK3000")
+data("ndvi_AK10000")
+ndvi_AK3000 <- ndvi_AK10000[seq_len(3000),] # first 3000 pixels from the random 10K
 ```
 
-`ndvi_AK` is a `data.frame` with 38 columns. `lng` and `lat` are longitude and
+`ndvi_AK10000` is a `data.frame` with 37 columns. `lng` and `lat` are longitude and
 latitude, respectively. `AR_coef` and `CLS_coef` are pre-calculated coefficient
 estimates of the time trends in ndvi from pixel-level time series analyses
 via AR REML and conditional least squares, respectively. These coefficient
 estimates have been standardized by the mean ndvi value for the pixel over that
-time period. `land` is a factor representing land-cover classes, and `rare.land` 
-is a logical filtering variable that indicates if a pixel's land-cover class occurs 
-in less than 2% of the map. The remaining 32 columns, of the form `ndviYYYY`, 
-contain the NDVI values from 1982 to 2013.
-
-```{r data_structure}
-str(ndvi_AK)
-```
-
-Both `ndvi_AK` and `ndvi_AK3000` have no missing data. `remotePARTS` can **not**
+time period. `land` is a factor representing land-cover classes, 
+The remaining 32 columns, of the form `ndviYYYY`, contain the NDVI values from 
+1982 to 2013. These data sets already have rare land classes, that occur in less
+than 2% of pixels, removed. Additionally, both sets have
+no missing data. `remotePARTS` can **not**
 handle any missing data. It is essential that **all** missing data are removed 
 prior to conducting any analyses. 
 
-We are interested in asking the following questions using these data: "Is NDVI in Alaska 
-increasing over time?"; "Are Alaska's NDVI time trends associated with land-cover
-classes?"; and "Do Alaska's NDVI time trends differ with latitude?"
+```{r data_structure}
+str(ndvi_AK10000)
+```
 
-The figure below shows a temporal cross-section of these data for 1982, 1998, and 2013. 
+For this demonstration, we are interested in asking the following questions 
+using these data: "Is NDVI in Alaska increasing over time?"; "Are Alaska's 
+NDVI time trends associated with land-cover classes?"; and "Do Alaska's 
+NDVI time trends differ with latitude?"
+
+The figure below shows a temporal cross-section of these data for 1982, 1998, 
+and 2013. 
 
 ```{r plot_ndvi_time, fig.width = 6.5, fig.asp = .4}
-reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>% 
+reshape2::melt(ndvi_AK10000, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>% 
   ggplot(aes(x = lng, y = lat, col = value )) + 
-  geom_tile() +
+  geom_point(size = .1) +
   labs(col = "ndvi") +
   facet_wrap(~ gsub("ndvi", "", variable), ncol = 3) +
   scale_color_viridis_c(option = "magma") +
@@ -105,15 +107,14 @@ reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>%
 The following figure shows how Alaska's three primary land-cover classes are distributed.
 
 ```{r plot_land, fig.width = 4.5, fig.asp = .8}
-ndvi_AK %>% filter(rare.land == FALSE) %>% 
-ggplot(aes(x = lng, y = lat, fill = land, col = land)) + 
-  geom_tile() + 
-  scale_fill_viridis_d(direction = -1, end = .9) + 
+ndvi_AK10000 %>%  
+ggplot(aes(x = lng, y = lat, col = land)) + 
+  geom_point(size = .1) + 
   scale_color_viridis_d(direction = -1, end = .9) +
   labs(y = "Latitude", x = "Longitude", col = "Land cover", fill = "Land cover")
 ```
 
-Use `help("ndvi_AK)` and `help("ndvi_AK3000")` to see documentation for these 
+Use `help("ndvi_AK)` to see documentation for these 
 datasets.
 
 # Model
@@ -199,17 +200,15 @@ These scaled values of the time trend are then stored in the `ndvi_AK3000` data
 frame.
 
 Below is an image of the estimated coefficients (pre-calculated and scaled) for 
-the full `ndvi_AK`. From this, it appears that northern latitudes may be 
+the full `ndvi_AK10000`. From this, it appears that northern latitudes may be 
 greening faster than more southern latitudes.
 
 ```{r plot_ndvi_trend, fig.width = 4.5, fig.asp = .8}
-ndvi_AK %>% filter(rare.land == FALSE) %>% 
-  ggplot(aes(x = lng, y = lat, fill = AR_coef, col = AR_coef)) + 
-  geom_tile() + 
+ndvi_AK10000 %>% 
+  ggplot(aes(x = lng, y = lat, col = AR_coef)) + 
+  geom_point(size = .1) + 
   scale_color_gradient2(high = "red", low = "blue", 
                         mid = "grey90", midpoint = 0) + 
-  scale_fill_gradient2(high = "red", low = "blue", 
-                        mid = "grey90", midpoint = 0) +
   guides(fill = "none") + 
   labs(y = "Latitude", x = "Longitude", col = expression(beta[1]))
 ```
@@ -517,9 +516,8 @@ The t-tests show that the trend in NDVI, for all land-cover classes, was not
 statistically different from zero, meaning that NDVI did not show a statistically
 significant trend in any land-cover class. The F-test (ANOVA table), however, 
 shows that time trends in NDVI differ among the land-cover classes. The better fit
-of the model with land-cover classes can also be seen in the increase in the likelihood
-(`logLik` = `r round(GLS.opt$logLik, digits = 3)`) compared to the intercept-only model 
-(`logLik` = `r round(GLS.opt$logLik0, digits = 3)`).
+of the model with land-cover classes can also be seen in the increase in the likelihood (`logLik`)
+compared to the intercept-only model.
 
 ## Latitude effects
 
@@ -553,13 +551,13 @@ distance and covariance matrices that each contain
 $3,000 \times 3,000 = 9,000,000$ elements. This is approaching the
 upper size limit for obtaining relatively fast results.
 
-In contrast, the covariance matrix for the full `ndvi_AK` data set would have 
-$31,486 \times 31,486 = 991,368,196$ elements which creates a computationally 
+In contrast, the covariance matrix for the full `ndvi_AK10000` data set would have 
+$10,000 \times 10,000 = 100,000,000$ elements which creates a computationally 
 infeasible problem for a normal computer.
 
 For these reasons, `fitGLS_paritition` may be the most useful function in the
 `remotePARTS` package. This function can perform the GLS analysis on the full 
-`ndvi_AK` data set. In fact, `ndvi_AK` is quite small in comparison to many remote
+`ndvi_AK10000` data set. In fact, `ndvi_AK10000` is quite small in comparison to many remote
 sensing data sets that could be analyzed with `fitGLS_partition()`.
 
 ## Partitioned GLS
@@ -570,15 +568,15 @@ Specifically, this process (1) breaks the data
 into smaller and more manageable pieces (partitions), (2) conducts GLS on each
 partition, (3) calculates cross-partition statistics from pairs of partitions, 
 and (4) summarizes the results with statistical tests that account for correlations
-among partitions. We will use the full `ndvi_AK` data set to demonstrate 
+among partitions. We will use the full `ndvi_AK10000` data set to demonstrate 
 `fitGLS_parition()`.
 
 We have already performed the time-series analyses on the full data set so 
-you don't have to. These are in the `AR_coef` column of ndvi_AK. However, we 
+you don't have to. These are in the `AR_coef` column of `ndvi_AK10000`. However, we 
 used a complete data set, so you will need to remove rare land-cover classes. 
 
 ```{r remove_rare_land}
-df = ndvi_AK[!ndvi_AK$rare.land, ]
+df = ndvi_AK10000
 ```
 
 Step (1) is to divide pixels up into partitions, which is done with the function 

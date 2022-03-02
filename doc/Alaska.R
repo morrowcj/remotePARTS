@@ -16,26 +16,25 @@ theme_set(theme(panel.grid = element_blank(),
                 ))
 
 ## ----load_data----------------------------------------------------------------
-data("ndvi_AK")
-data("ndvi_AK3000")
+data("ndvi_AK10000")
+ndvi_AK3000 <- ndvi_AK10000[seq_len(3000),] # first 3000 pixels from the random 10K
 
 ## ----data_structure-----------------------------------------------------------
-str(ndvi_AK)
+str(ndvi_AK10000)
 
 ## ----plot_ndvi_time, fig.width = 6.5, fig.asp = .4----------------------------
-reshape2::melt(ndvi_AK, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>% 
+reshape2::melt(ndvi_AK10000, measure = c("ndvi1982", "ndvi1998", "ndvi2013")) %>% 
   ggplot(aes(x = lng, y = lat, col = value )) + 
-  geom_tile() +
+  geom_point(size = .1) +
   labs(col = "ndvi") +
   facet_wrap(~ gsub("ndvi", "", variable), ncol = 3) +
   scale_color_viridis_c(option = "magma") +
   labs(x = "Longitude", y = "Latitude")
 
 ## ----plot_land, fig.width = 4.5, fig.asp = .8---------------------------------
-ndvi_AK %>% filter(rare.land == FALSE) %>% 
-ggplot(aes(x = lng, y = lat, fill = land, col = land)) + 
-  geom_tile() + 
-  scale_fill_viridis_d(direction = -1, end = .9) + 
+ndvi_AK10000 %>%  
+ggplot(aes(x = lng, y = lat, col = land)) + 
+  geom_point(size = .1) + 
   scale_color_viridis_d(direction = -1, end = .9) +
   labs(y = "Latitude", x = "Longitude", col = "Land cover", fill = "Land cover")
 
@@ -57,13 +56,11 @@ ARfit$coefficients[, "t"] <- ARfit$coefficients[,"t"]/rowMeans(ndvi_AK3000[, ndv
 ndvi_AK3000$AR_coef <- coefficients(ARfit)[, "t"] # save time trend coefficient
 
 ## ----plot_ndvi_trend, fig.width = 4.5, fig.asp = .8---------------------------
-ndvi_AK %>% filter(rare.land == FALSE) %>% 
-  ggplot(aes(x = lng, y = lat, fill = AR_coef, col = AR_coef)) + 
-  geom_tile() + 
+ndvi_AK10000 %>% 
+  ggplot(aes(x = lng, y = lat, col = AR_coef)) + 
+  geom_point(size = .1) + 
   scale_color_gradient2(high = "red", low = "blue", 
                         mid = "grey90", midpoint = 0) + 
-  scale_fill_gradient2(high = "red", low = "blue", 
-                        mid = "grey90", midpoint = 0) +
   guides(fill = "none") + 
   labs(y = "Latitude", x = "Longitude", col = expression(beta[1]))
 
@@ -156,7 +153,7 @@ GLS.opt
                    no.F = FALSE))
 
 ## ----remove_rare_land---------------------------------------------------------
-df = ndvi_AK[!ndvi_AK$rare.land, ]
+df = ndvi_AK10000
 
 ## ----partition_matrix---------------------------------------------------------
 pm <- sample_partitions(npix = nrow(df), partsize = 1500, npart = NA)

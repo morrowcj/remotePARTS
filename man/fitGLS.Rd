@@ -84,8 +84,8 @@ only used if if \code{nugget = NA}}
     \item{pval_t}{p-value of the t-statistic}
     \item{logLik}{the Log-likelihood of the model}
     \item{nugget}{the nugget used in fitting}
+    \item{covar_coef}{the covariance matrix of the coefficients}
 }
-
 
 If \code{no.F = FALSE}, the following elements, corresponding to the null
 model and F-test are also calculated:
@@ -184,8 +184,8 @@ is used).
 
 \donttest{
 ## read data
-data(ndvi_AK3000)
-df = ndvi_AK3000[seq_len(1000), ] # first 1000 rows
+data(ndvi_AK10000)
+df = ndvi_AK10000[seq_len(200), ] # first 200 rows
 
 ## fit covariance matrix
 V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)

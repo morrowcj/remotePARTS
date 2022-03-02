@@ -55,7 +55,7 @@ sample_partitions(npix = nrow(dat.M), npart = 5, pixels = sub.indx)
 }
 \seealso{
 Other partitionedGLS: 
-\code{\link{crosspart_GLS}()},
-\code{\link{fitGLS_partition}()}
+\code{\link{MC_GLSpart}()},
+\code{\link{crosspart_GLS}()}
 }
 \concept{partitionedGLS}

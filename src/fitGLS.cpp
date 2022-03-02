@@ -141,6 +141,7 @@ List fitGLS_cpp(const MapMatd& X,
 
   if (no_F) {
     List No_F = List::create(Named("coefficients") = betahat,
+                             Named("covar_coef") = varcov,
                              Named("SSE") = SSE,
                              Named("MSE") = MSE,
                              Named("SE") = se,
@@ -220,6 +221,7 @@ List fitGLS_cpp(const MapMatd& X,
   // }
 
   List Full_out = List::create(Named("coefficients") = betahat,
+                               // Named("covar_coef") = varcov,
                                Named("SSE") = SSE,
                                Named("MSE") = MSE,
                                Named("SE") = se,
@@ -239,6 +241,8 @@ List fitGLS_cpp(const MapMatd& X,
                                Named("df_F") = dfF,
                                Named("Fstat") = FF,
                                Named("pval_F") = NA_REAL);
+
+  Full_out.push_back(varcov, "covar_coef"); // only way I could get this term to work
 
   if (save_xx){
     Full_out.push_back(xx, "xx");

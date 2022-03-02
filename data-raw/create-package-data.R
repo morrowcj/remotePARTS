@@ -139,3 +139,12 @@ if (!file.exists("data-raw/AK3000_ndvi_common-land.csv")) {
             to = "inst/extdata/AK3000_ndvi_common-land.csv",
             overwrite = TRUE)
 }
+
+## 01-Mar-2022 update to reduce total package size
+library(dplyr)
+load("data/ndvi_AK.rda", verbose = TRUE)
+tmp <- ndvi_AK[!ndvi_AK$rare.land, -grep("rare.land", names(ndvi_AK))]
+npix <- nrow(tmp)
+samp <- sample(npix, 10000)
+ndvi_AK10000 <- tmp[samp, ]
+save(ndvi_AK10000, file = "data/ndvi_AK10000.rda", compress = "xz")

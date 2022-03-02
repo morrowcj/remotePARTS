@@ -16,3 +16,6 @@
 #' @useDynLib remotePARTS, .registration = TRUE
 ## usethis namespace: end
 NULL
+
+# # get rid of warning for "i" iterator in foreach
+# utils::globalVariables("i") # alternative to i <- NULL in fitGLS_partitionMC

@@ -76,8 +76,8 @@
 #' @examples
 #' \donttest{
 #' ## read data
-#' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(500), ] # first 500 rows
+#' data(ndvi_AK10000)
+#' df = ndvi_AK10000[seq_len(200), ] # first 500 rows
 #'
 #' ## estimate nugget and range (very slow)
 #' fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,
@@ -152,8 +152,8 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
 #'
 #' @examples
 #' \dontrun{
-#' data(ndvi_AK3000)
-#' df = ndvi_AK3000[seq_len(500), ] # first 500 rows
+#' data(ndvi_AK10000)
+#' df = ndvi_AK10000[seq_len(200), ] # first 500 rows
 #' coords = df[, c("lng", "lat")]
 #' remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = .2),
 #'                              formula = CLS_coef ~ 0 + land, data = df,

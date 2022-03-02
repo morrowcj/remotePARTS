@@ -13,12 +13,48 @@
 # #' }
 #
 # "ndvi"
+#
+# #' NDVI Remote sensing data for Alaska
+# #'
+# #' @format data frame with 31486 rows corresponding to sites and 38 columns:
+# #' \describe{
+# #'   \item{lng}{longitude of the pixel}
+# #'   \item{lat}{latitude of the pixel}
+# #'   \item{AR_coef}{pre-calculated AR REML coefficient standardized by mean ndvi
+# #'   values for each pixel}
+# #'   \item{CLS_coef}{pre-calculated CLS coefficient standardized by mean ndvi
+# #'   values for each pixel}
+# #'   \item{land}{dominant land class of the pixel}
+# #'   \item{land}{logical: is this land class rare?}
+# #'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
+# #' }
+#
+# "ndvi_AK"
+#
+# #' NDVI Remote sensing data for Alaska
+# #'
+# #' subset of the \code{ndvi_AK} dataset containing 3000 random sites
+# #'
+# #' @format data frame with 3000 rows corresponding to sites and 38 columns:
+# #'
+# #' \describe{
+# #'   \item{lng}{longitude of the pixel}
+# #'   \item{lat}{latitude of the pixel}
+# #'   \item{AR_coef}{pre-calculated AR REML coefficient standardized by mean ndvi
+# #'   values for each pixel}
+# #'   \item{CLS_coef}{pre-calculated CLS coefficient standardized by mean ndvi
+# #'   values for each pixel}
+# #'   \item{land}{dominant land class of the pixel}
+# #'   \item{land}{logical: is this land class rare?}
+# #'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
+# #' }
+#
+# "ndvi_AK3000"
 
-#' NDVI Remote sensing data for Alaska
+#' NDVI remote sensing data for 10,000 random pixels from Alaska, with rare
+#' land classes removed.
 #'
-#' subset of the \code{ndvi} dataset containing only Alaska
-#'
-#' @format data frame with 31486 rows corresponding to sites and 38 columns:
+#' @format data frame with 10,000 rows corresponding to sites and 37 columns:
 #' \describe{
 #'   \item{lng}{longitude of the pixel}
 #'   \item{lat}{latitude of the pixel}
@@ -31,27 +67,7 @@
 #'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
 #' }
 
-"ndvi_AK"
-
-#' NDVI Remote sensing data for Alaska
-#'
-#' subset of the \code{ndvi_AK} dataset containing 3000 random sites
-#'
-#' @format data frame with 3000 rows corresponding to sites and 38 columns:
-#'
-#' \describe{
-#'   \item{lng}{longitude of the pixel}
-#'   \item{lat}{latitude of the pixel}
-#'   \item{AR_coef}{pre-calculated AR REML coefficient standardized by mean ndvi
-#'   values for each pixel}
-#'   \item{CLS_coef}{pre-calculated CLS coefficient standardized by mean ndvi
-#'   values for each pixel}
-#'   \item{land}{dominant land class of the pixel}
-#'   \item{land}{logical: is this land class rare?}
-#'   \item{ndvi<t>}{ndvi value of the pixel during the year <t>}
-#' }
-
-"ndvi_AK3000"
+"ndvi_AK10000"
 
 #' partitioned GLS results
 #'
@@ -61,3 +77,5 @@
 #' details
 
 "partGLS_ndviAK"
+
+

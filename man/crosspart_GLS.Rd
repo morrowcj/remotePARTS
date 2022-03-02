@@ -76,8 +76,8 @@ Calculate cross-partition statistics between two GLS partitions
 \examples{
 \dontrun{
 ## read data
-data(ndvi_AK3000)
-df = ndvi_AK3000[1:1000, ] # first 1000 rows
+data(ndvi_AK10000)
+df = ndvi_AK10000[seq_len(1000), ] # first rows
 
 # partition matrix
 pm = sample_partitions(nrow(df), npart = 2, partsize = 500)
@@ -122,7 +122,7 @@ dfs = remotePARTS:::calc_dfpart(partsize = nrow(pm), p = ncol(GLS.i$xx),
 }
 \seealso{
 Other partitionedGLS: 
-\code{\link{fitGLS_partition}()},
+\code{\link{MC_GLSpart}()},
 \code{\link{sample_partitions}()}
 }
 \concept{partitionedGLS}
