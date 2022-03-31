@@ -11,9 +11,7 @@ fitGLS_opt_FUN(
   data = NULL,
   coords,
   covar_FUN = "covar_exp",
-  distm_FUN = "distm_scaled",
-  is.trans = FALSE,
-  backtrans = list()
+  distm_FUN = "distm_scaled"
 )
 }
 \arguments{
@@ -30,13 +28,6 @@ fitGLS_opt_FUN(
 \item{covar_FUN}{a covariance function}
 
 \item{distm_FUN}{a distm function}
-
-\item{is.trans}{logical: are any of the values in \code{op} or \code{fp}
-transformed, needing back-transformation?}
-
-\item{backtrans}{optional: a named list of functions used to backtransform any element
-of \code{op} or \code{fp}. Names must correspond to names in \code{op}
-or \code{fp}.}
 }
 \value{
 \code{fitGLS_opt_FUN} returns the negative log likelihood of a GLS,
@@ -56,19 +47,5 @@ remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = .2),
 remotePARTS:::fitGLS_opt_FUN(op = c(range = .1), fp = c(nugget = 0),
                              formula = CLS_coef ~ 0 + land, data = df,
                              coords = coords)
-
-logit <- function(p) {log(p / (1 - p))}
-inv_logit <- function(l) {1 / (1 + exp(-l))}
-
-# input logit-transformed range parameters
-remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = logit(.2)),
-                             formula = CLS_coef ~ 0 + land, data = df,
-                             coords = coords, is.trans = TRUE,
-                             backtrans = list(nugget = inv_logit))
-# transformed range and nugget
-remotePARTS:::fitGLS_opt_FUN(op = c(range = logit(.1), nugget = logit(.2)),
-                             formula = CLS_coef ~ 0 + land, data = df,
-                             coords = coords, is.trans = TRUE,
-                             backtrans = list(nugget = inv_logit, range = inv_logit))
 }
 }
