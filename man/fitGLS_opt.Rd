@@ -17,6 +17,8 @@ fitGLS_opt(
   save.xx = FALSE,
   save.invchol = FALSE,
   no.F = TRUE,
+  trans = list(),
+  backtrans = list(),
   ...
 )
 }
@@ -44,6 +46,13 @@ a final GLS will not be fit with the estimated parameters}
 
 \item{formula0, save.xx, save.invchol, no.F}{arguments passed to \code{fitGLS}
 for final GLS output}
+
+\item{trans}{optional list of functions for transforming the values in
+\code{start} or \code{fixed} in order to constrain the parameter space within
+\code{optim}}
+
+\item{backtrans}{optional list of functions for back-transforming parameters
+to their correct scale (for use with \code{trans})}
 
 \item{...}{additional arguments passed to \code{stats::optim()}}
 }
@@ -102,6 +111,21 @@ Note that \code{fitGLS_opt} fits multiple GLS models, which requires
 inverting a large matrix for each one (unless a fixed 0 nugget is used).
 This process is very computationally intensive and may take a long time to
 finish depending upon your machine and the size of the data.
+
+Sometimes \code{optim} can have a difficult time finding a reasonable solution
+and without any constraits on parameter space (with certain algorithms), results
+may even be nonsensical. To combat this, \code{fitGLS_opt} has the arguments
+\code{trans} and \code{backtrans} which allow you to transform
+(and back-transform) parameters to a different scale. For example, you may
+want to force the 'range' parameter between 0 and 1. The logit function can
+do just that, as its limits are -Inf and Inf as x approaches 0 and 1,
+respectively. So, we can set \code{trans} to the logit function:
+\code{trans = list(range = function(x)log(x/(1-x)))}. Then we need to set
+\code{backtrans} to the inverse logit function to return a parameter value
+between 0 and 1: \code{backtrans = list(range = function(x)1/(1+exp(-x)))}.
+This will force the optimizer to only search for the range parameter in the
+space from 0 to 1. Any other constraint function can be used for \code{trans}
+provided that there is a matching back-transformation.
 }
 \examples{
 \donttest{
@@ -119,6 +143,16 @@ fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,
              coords = df[, c("lng", "lat")],
              start = c(range = .1), fixed = c("nugget" = 0),
              method = "Brent", lower = 0, upper = 1)
+
+## constrain nugget to 0 and 1
+logit <- function(p) {log(p / (1 - p))}
+inv_logit <- function(l) {1 / (1 + exp(-l))}
+
+fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,
+           coords = df[, c("lng", "lat")],
+           start = c(range = .1, nugget = 1e-10),
+           trans = list(nugget = logit), backtrans = list(nugget = inv_logit),
+           opt.only = TRUE)
 }
 }
 \seealso{
