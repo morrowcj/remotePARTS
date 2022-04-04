@@ -19,6 +19,7 @@ fitGLS_opt(
   no.F = TRUE,
   trans = list(),
   backtrans = list(),
+  debug = TRUE,
   ...
 )
 }
@@ -53,6 +54,8 @@ for final GLS output}
 
 \item{backtrans}{optional list of functions for back-transforming parameters
 to their correct scale (for use with \code{trans})}
+
+\item{debug}{logical: debug mode (for use with \code{trans} and \code{backtrans})}
 
 \item{...}{additional arguments passed to \code{stats::optim()}}
 }

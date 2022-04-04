@@ -24,6 +24,7 @@
 #' \code{optim}
 #' @param backtrans optional list of functions for back-transforming parameters
 #' to their correct scale (for use with \code{trans})
+#' @param debug logical: debug mode (for use with \code{trans} and \code{backtrans})
 #' @param ... additional arguments passed to \code{stats::optim()}
 #'
 #' @details \code{fitGLS_opt} fits a GLS by estimating spatial parameters from
@@ -129,25 +130,39 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
                        formula0 = NULL, save.xx = FALSE, save.invchol = FALSE,
                        no.F = TRUE,
                        trans = list(), backtrans = list(),
+                       debug = TRUE,
                        ...){
   call = match.call()
 
+  if(debug){
+    cat("initial paramters:\n")
+    print(c(start, fixed))
+  }
   # transform variables to constrain them in optim, if needed
   is.trans = FALSE
   if(length(trans) > 0 & length(backtrans) > 0){
+    cat("performing transformation on starting parameters\n")
     stopifnot(length(trans) == length(backtrans))
     stopifnot(names(trans) == names(backtrans))
     stopifnot(all(names(trans) %in% c(names(start), names(fixed))))
     is.trans = TRUE
     for(n in names(trans)){
+      trans.fun = match.fun(trans[[n]])
       if(n %in% names(start)){
-        start[n] = do.call(trans[[n]], list(start[n]))
+        match.par = start[n]
+        start[n] = do.call(trans.fun, list(match.par))
       }
       if(n %in% names(fixed)){
-        fixed[n] = do.call(trans[[n]], list(fixed[n]))
+        match.par = fixed[n]
+        fixed[n] = do.call(trans[[n]], list(match.par))
       }
     }
+    if(debug){
+      cat("transformed starting parameters:\n")
+      print(c(start, fixed))
+    }
   }
+
 
   # create a list of arguments to pass to do.call
   arg.list <- list(par = start[! names(start) %in% names(fixed)], #parameters to optimze
@@ -170,19 +185,31 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
 
   # back-transform the parameter values to their original scale
   if(is.trans){
+    if(debug){cat("backtransforming parameters.\n")}
     for(n in names(backtrans)){
+      back.fun = match.fun(backtrans[[n]])
       if(n %in% names(opt.out$par)){
-        opt.out$par[n] = do.call(backtrans[[n]], list(opt.out$par[n]))
+        match.par = opt.out$par[n]
+        opt.out$par[n] = do.call(back.fun, list(match.par))
       }
       if(n %in% names(start)){
-        start[n] = do.call(backtrans[[n]], list(start[n]))
+        match.par = start[n]
+        start[n] = do.call(back.fun, list(match.par))
       }
       if(n %in% names(fixed)){
-        fixed[n] = do.call(backtrans[[n]], list(fixed[n]))
+        match.par = fixed[n]
+        fixed[n] = do.call(back.fun, list(match.par))
       }
+    }
+    if(debug){
+      cat("\nbacktransformed starting parameters:\n")
+      print(c(start, fixed))
     }
   }
 
+  if(debug){
+    cat("\noutput:\n")
+  }
   if(opt.only){
     return(opt.out)
   } else {
@@ -255,7 +282,9 @@ fitGLS_opt_FUN <- function(op, fp, formula, data = NULL, coords, covar_FUN = "co
       stop("backtrans mut be a list with element names matching names in op or fp")
     }
     for (n in names(backtrans)){
-      all.pars[n] = do.call(backtrans[[n]], list(all.pars[n]))
+      back.fun = match.fun(backtrans[[n]])
+      match.par = all.pars[n]
+      all.pars[n] = do.call(back.fun, list(match.par))
     }
   }
 
