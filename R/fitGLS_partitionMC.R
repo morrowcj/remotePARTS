@@ -154,6 +154,8 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS
   stopifnot("MC_partGLS" %in% class(object))
 
   ## Setup output to be like fitGLS_parititon
+  if(length(object[[1]]$partGLS$coefficients) > 1) {
+
   part = list(coefficients = t(sapply(object, function(x)x$partGLS$coefficients)),
               SEs = t(sapply(object, function(x)x$partGLS$SE)),
               tstats = t(sapply(object, function(x)x$partGLS$tstat)),
@@ -166,6 +168,22 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS
                                MSRs = sapply(object, function(x)x$partGLS$MSR),
                                Fstats = sapply(object, function(x)x$partGLS$Fstat),
                                Fpvals = sapply(object, function(x)x$partGLS$pval_F)))
+  } else {
+    part = list(coefficients = cbind(sapply(object, function(x)x$partGLS$coefficients)),
+                SEs = cbind(sapply(object, function(x)x$partGLS$SE)),
+                tstats = cbind(sapply(object, function(x)x$partGLS$tstat)),
+                tpvals = cbind(sapply(object, function(x)x$partGLS$pval_t)),
+                nuggets = sapply(object, function(x)x$partGLS$nugget),
+                covar.pars = covar.pars,
+                modstats = cbind(LLs = sapply(object, function(x)x$partGLS$logLik),
+                                 SSEs = sapply(object, function(x)x$partGLS$SSE),
+                                 MSEs = sapply(object, function(x)x$partGLS$MSE),
+                                 MSRs = sapply(object, function(x)x$partGLS$MSR),
+                                 Fstats = sapply(object, function(x)x$partGLS$Fstat),
+                                 Fpvals = sapply(object, function(x)x$partGLS$pval_F)))
+    rownames(part$coefficients) = rownames(part$SEs) = rownames(part$tstats) =
+      rownames(part$tpvals) = NULL
+  }
 
   p = ncol(part$coefficients)
   p0 = length(object[[1]]$partGLS$coefficients0)
