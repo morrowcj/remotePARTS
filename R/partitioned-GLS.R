@@ -636,6 +636,9 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
 #' part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK10000)
 #'
 part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("lng", "lat")){
+  if(missing(data)){
+    stop("missing argument 'data'. 'data' required for function part_data()")
+  }
   stopifnot(is.data.frame(data) | (is.matrix(data) & is.numeric(data)))
 
   if(is.null(formula0)){
@@ -647,7 +650,14 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
   cols = unique(rownames(attr(terms.formula(as.formula(formula)), "factors")),
                 rownames(attr(terms.formula(as.formula(formula0)), "factors")))
 
-  return(list(data = as.data.frame(data[index, cols]),
+  if(length(cols) < 1){
+    cols = as.character(as.formula(formula)[[2]])
+  }
+
+  df = as.data.frame(data[index, cols])
+  names(df) = cols
+
+  return(list(data = df,
               coords = data[index, coord.names]))
 }
 
@@ -688,12 +698,20 @@ part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng
   cols = unique(rownames(attr(terms.formula(as.formula(formula)), "factors")),
                 rownames(attr(terms.formula(as.formula(formula0)), "factors")))
 
+  if(length(cols) < 1){
+    cols = as.character(as.formula(formula)[[2]])
+  }
+
   PartDF = data.frame(part = index)
   df = sqldf::read.csv.sql(file = file,
                            sql = "select file.* from file join PartDF on file.rowid = PartDF.part",
                            dbname = tempfile(),
                            header = TRUE)
-  return(list(data =  df[, cols],
+
+  df.cols <- as.data.frame(df[, cols])
+  names(df.cols) <- cols
+
+  return(list(data =  df.cols,
               coords = df[, coord.names]))
 }
 
