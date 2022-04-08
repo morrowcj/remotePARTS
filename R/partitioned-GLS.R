@@ -239,6 +239,8 @@
 #' ## 0 intercept (produces NAs) and gives an error in statistical tests
 #' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 #'
+#' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0)
+#'
 #' ## hypothesis tests
 #' chisqr(partGLS) # explanatory power of model
 #' t.test(partGLS) # significance of predictors
@@ -251,6 +253,8 @@
 #' ## fully parallel, using 2 cores
 #' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
 #'                  ncores = 2, parallel = TRUE, debug = FALSE)
+#' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
+#'                  parallel = TRUE, ncores = 2)
 #' }
 #' }
 #' @export
