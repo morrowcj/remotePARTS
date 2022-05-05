@@ -336,6 +336,10 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
             matrix(NA, nrow = npart, ncol = p,
                    dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
           nuggets = LLs = SSEs = MSEs = MSRs = Fstats = Fpvals = rep(NA, times = npart)
+#~~~~
+          covar_coefs = array(NA, dim = c(p, p, npart),
+                   dimnames = list(names(partGLS[[1]]$coefficients),names(partGLS[[1]]$coefficients), NULL))
+#~~~~
           ## cross stats
           rSSRs = rSSEs = rep(NA, npairs)
           rcoefs = matrix(NA, nrow = npairs, ncol = p,
@@ -344,6 +348,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         ## collect some stats
         coefs[i, ] = partGLS[[i]]$coefficients
         SEs[i, ] = partGLS[[i]]$SE
+#~~~~
+        covar_coefs[ , , i] = partGLS[[i]]$covar_coef
+#~~~~
         tstats[i, ] = partGLS[[i]]$tstat
         tpvals[i, ] = partGLS[[i]]$pval_t
         nuggets[i] = partGLS[[i]]$nugget
@@ -379,6 +386,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
           ## collect some stats
           coefs[j, ] = partGLS[[j]]$coefficients
           SEs[j, ] = partGLS[[j]]$SE
+#~~~~
+          covar_coefs[ , , j] = partGLS[[j]]$covar_coef
+#~~~~
           tstats[j, ] = partGLS[[j]]$tstat
           tpvals[j, ] = partGLS[[j]]$pval_t
           nuggets[j] = partGLS[[j]]$nugget
@@ -392,7 +402,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         ## which cross are we on?
         cross = which( (cross.pairs[,1] == i) & (cross.pairs[, 2] == j) )
         if (debug) {cat( "cross #", cross, "\n")}
-        ## calculate inverse cholesky it needed
+        ## calculate inverse cholesky if needed
         if (is.null(partGLS[[j]]$invcholV)){
           Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
           partGLS[[j]]$invcholV <- invert_chol(Vj)
@@ -436,7 +446,10 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     ## collect and format output
     outlist = list(call = call,
                    GLS = if(save.GLS){partGLS}else{NULL},
-                   part = list(coefficients = coefs, SEs = SEs, tstats = tstats,
+                   part = list(coefficients = coefs, SEs = SEs,
+#~~~~
+                               covar_coefs = covar_coefs, tstats = tstats,
+#~~~~
                                pvals_t = tpvals, nuggets = nuggets,
                                covar.pars = covar.pars,
                                modstats = cbind(LLs = LLs, SSEs = SSEs,
