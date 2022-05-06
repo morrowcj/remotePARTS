@@ -27,10 +27,12 @@
 #' @param nug_j nugget from partition j
 #' @param df1 first degree of freedom
 #' @param df2 second degree of freedom
+#' @param Vcoef logical indicating if the coefficient covariance matrix
+#' should be returned
 #' @param ncores integer indicating nubmer of cores to use
 #'
-.crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, ncores) {
-    .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, ncores)
+.crosspart_worker_cpp <- function(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, Vcoef, ncores) {
+    .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, Vcoef, ncores)
 }
 
 #' Fit GLS to remote sensing data

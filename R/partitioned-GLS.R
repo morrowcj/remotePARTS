@@ -425,6 +425,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                               nug_i = partGLS[[i]]$nugget,
                               nug_j = partGLS[[j]]$nugget,
                               df1 = dfs[1], df2 = dfs[2],
+#--- CM
+                              small = FALSE, # return Vcoefij for use in correlations
+#---
                               ncores = ncores)
         ## delete large matrix for j
         partGLS[[j]]$invcholV = NULL
@@ -539,6 +542,7 @@ calc_dfpart <- function(partsize, p, p0){
 #'     \item{rcoefij}{}
 #'     \item{rSSRij}{}
 #'     \item{rSSEij}{}
+#'     \item{Vcoefij}{}
 #' }
 #'
 #' If \code{small = FALSE}, the list only contains the necessary elements
@@ -616,8 +620,10 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
   stopifnot(all.equal(ncol(xxi0), ncol(xxj0)))
   # stopifnot(all(check_posdef(V)))
 
+  vcoef = ifelse(small, FALSE, TRUE)
+
   outlist <- .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
-                   invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2, ncores)
+                   invChol_i, invChol_j, Vsub, nug_i, nug_j,df1, df2, vcoef, ncores)
   if(small){
     return(list(rcoefij = outlist$rcoefij,
                 rSSRij = outlist$rSSRij,

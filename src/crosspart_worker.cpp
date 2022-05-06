@@ -26,6 +26,8 @@
 //' @param nug_j nugget from partition j
 //' @param df1 first degree of freedom
 //' @param df2 second degree of freedom
+//' @param Vcoef logical indicating if the coefficient covariance matrix
+//' should be returned
 //' @param ncores integer indicating nubmer of cores to use
 //'
 // [[Rcpp::export(.crosspart_worker_cpp)]]
@@ -40,6 +42,7 @@ List crosspart_worker_cpp(const MapMatd& xxi,
                           double nug_j,
                           int df1,
                           int df2,
+                          bool Vcoef,
                           int ncores){
   Eigen::setNbThreads(ncores);
 
@@ -153,6 +156,10 @@ List crosspart_worker_cpp(const MapMatd& xxi,
                               Named("rcoefij") = rcoefij,
                               Named("rSSRij") = rSSRij.matrix(),
                               Named("rSSEij") = rSSEij.matrix());
+
+  if(Vcoef){
+    out_lst.push_back(Vcoefij, "Vcoefij");
+  }
 
   return out_lst;
 }
