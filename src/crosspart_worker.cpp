@@ -142,8 +142,9 @@ List crosspart_worker_cpp(const MapMatd& xxi,
 
   // calculate rcoef
   MatrixXd Vcoefij = Wi * (xxi.adjoint() * Rij * xxj) * Wj.adjoint();
-  MatrixXd rcoefij = Vcoefij.diagonal().array() *
-    pow(Wi.diagonal().array() * Wj.diagonal().array(), -0.5);
+  MatrixXd rcoefij = Vcoefij.array() * pow(Wi.array()*Wj.array(), -0.5);
+  // MatrixXd rcoefij = Vcoefij.diagonal().array() *
+  //   pow(Wi.diagonal().array() * Wj.diagonal().array(), -0.5);
 
   // output ----
   List out_lst = List::create(Named("Rij") = Rij,
