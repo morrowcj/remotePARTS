@@ -430,6 +430,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                               small = FALSE, # return Vcoefij for use in correlations
 #---
                               ncores = ncores)
+
         ## delete large matrix for j
         partGLS[[j]]$invcholV = NULL
         if(debug){crosspartGLS[[cross]] = rGLS}
@@ -448,7 +449,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       }
     }
 
-    ## make the coefficients
+    ## make the matrix of correlations among coefficients
     rcoefficients = apply(rcoefs, MARGIN=c(2,3), FUN = function(x){mean(x, na.rm = TRUE)})
 
     ## collect and format output
@@ -467,7 +468,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                    cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
                    overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
                                   # rcoefficients = colMeans(rcoefs, na.rm = TRUE),
-                                  rcoefficients = apply(rcoefs, MARGIN=c(2,3), FUN = function(x){mean(x, na.rm = TRUE)}),
+                                  rcoefficients = rcoefficients,
                                   rSSR = mean(rSSRs, na.rm = TRUE),
                                   rSSE = mean(rSSEs, na.rm = TRUE),
                                   Fstat = mean(Fstats, na.rm = TRUE),
@@ -481,9 +482,11 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                              warning = function(w){warning("warning in chisqr()")})
     }
     if(do.t.test){
-      outlist$overall$t.test = tryCatch(t.test(outlist),
-                                        error = function(e){warning("error in t.test()")},
-                                        warning = function(w){warning("warning in t.test()")})
+      test.output = tryCatch(t.test(outlist),
+                        error = function(e){warning("error in t.test()")},
+                        warning = function(w){warning("warning in t.test()")})
+      outlist$overall$t.test = test.output$p.t
+      outlist$overall$covar_coef = test.output$covar_coef
     }
     close(pb)
   }
