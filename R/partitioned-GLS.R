@@ -342,9 +342,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 #~~~~
           ## cross stats
           rSSRs = rSSEs = rep(NA, npairs)
-          rcoefs = array(NA, dim = c(npairs, p, p), dimnames = list(NULL, names(partGLS[[1]]$coefficients), names(partGLS[[1]]$coefficients)))
-          # rcoefs = matrix(NA, nrow = npairs, ncol = p,
-          #                 dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
+          # rcoefs = array(NA, dim = c(npairs, p, p), dimnames = list(NULL, names(partGLS[[1]]$coefficients), names(partGLS[[1]]$coefficients)))
+          rcoefs = matrix(NA, nrow = npairs, ncol = p,
+                          dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
         }
         ## collect some stats
         coefs[i, ] = partGLS[[i]]$coefficients
@@ -434,7 +434,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         partGLS[[j]]$invcholV = NULL
         if(debug){crosspartGLS[[cross]] = rGLS}
         ## collect stats
-        rcoefs[cross, ,] <- rGLS$rcoefij
+        # rcoefs[cross, ,] <- rGLS$rcoefij
+        rcoefs[cross, ] <- as.vector(rGLS$rcoefij)
         rSSRs[cross] <- ifelse(is.na(rGLS$rSSRij) | is.infinite(rGLS$rSSRij),
                                NA,
                                rGLS$rSSRij)
@@ -449,7 +450,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     }
 
     ## make the coefficients
-    rcoefficients = apply(rcoefs, MARGIN=c(2,3), FUN = function(x){mean(x, na.rm = TRUE)})
+    # rcoefficients = apply(rcoefs, MARGIN=c(2,3), FUN = function(x){mean(x, na.rm = TRUE)})
+    rcoefficients = apply(rcoefs, MARGIN = 2, FUN = function(x){mean(x, na.rm = TRUE)})
 
     ## collect and format output
     outlist = list(call = call,
@@ -467,7 +469,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                    cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
                    overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
                                   # rcoefficients = colMeans(rcoefs, na.rm = TRUE),
-                                  rcoefficients = apply(rcoefs, MARGIN=c(2,3), FUN = function(x){mean(x, na.rm = TRUE)}),
+                                  rcoefficients =rcoefficients,
                                   rSSR = mean(rSSRs, na.rm = TRUE),
                                   rSSE = mean(rSSEs, na.rm = TRUE),
                                   Fstat = mean(Fstats, na.rm = TRUE),

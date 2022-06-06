@@ -142,7 +142,13 @@ List crosspart_worker_cpp(const MapMatd& xxi,
 
   // calculate rcoef
   MatrixXd Vcoefij = Wi * (xxi.adjoint() * Rij * xxj) * Wj.adjoint();
-  MatrixXd rcoefij = Vcoefij.array() * pow(Wi.array()*Wj.array(), -0.5);
+
+  // -- Changes from Tony 06-June-2022 --
+  MatrixXd sqrtdiag_i = pow(Wi.diagonal().array(), -0.5);
+  MatrixXd sqrtdiag_j = pow(Wj.diagonal().array(), -0.5);
+  MatrixXd rcoefij = sqrtdiag_i.diagonal() * Vcoefij * sqrtdiag_j.diagonal();
+  // -- Older --
+  // MatrixXd rcoefij = Vcoefij.array() * pow(Wi.array()*Wj.array(), -0.5);
   // MatrixXd rcoefij = Vcoefij.diagonal().array() *
   //   pow(Wi.diagonal().array() * Wj.diagonal().array(), -0.5);
 
