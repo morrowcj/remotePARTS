@@ -93,20 +93,41 @@ chisqr.partGLS <- function(x, ...){
 #' @param npart number of partitions
 #'
 #' @return coefficient table with estimates, standard errors, t-statistics, and p-values
-part_ttest <- function(coefs, part.SEs, rcoef, df2, npart){
+# part_ttest <- function(coefs, part.SEs, rcoef, df2, npart){
+#   secoef <- matrix(NA, length(coefs), 1)
+#   for(i in seq_len(length(coefs))){
+#     R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1, npart, npart)
+#     secoef[i, ] <- (part.SEs[,i] %*% R %*% part.SEs[, i])^.5/npart
+#   }
+#
+#   tscore <- coefs/secoef
+#   pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = FALSE)
+#
+#   ttest <- cbind(coefs, secoef, tscore, pvalue)
+#   colnames(ttest) <- c("Est", "SE", "t.stat", "pval.t")
+#
+#   return(p.t = ttest)
+# }
+part_ttest <- function(coefs, part.covar_coef, rcoefficients, df2, npart){
   secoef <- matrix(NA, length(coefs), 1)
   for(i in seq_len(length(coefs))){
-    R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1, npart, npart)
-    secoef[i, ] <- (part.SEs[,i] %*% R %*% part.SEs[, i])^.5/npart
+    R <- (1 - rcoefficients[i,i]) * diag(npart) + rcoefficients[i,i] * matrix(1, npart, npart)
+    part.SEs <- part.covar_coef[i,i,]^.5
+    secoef[i, ] <- (part.SEs %*% R %*% part.SEs)^.5/npart
   }
 
+  covar_coef <- matrix(NA, length(coefs), length(coefs))
+  for(i in seq_len(length(coefs))) for(j in seq_len(length(coefs))){
+    covar_coef[i, j] <- sum(part.covar_coef[i,j,])*(1 + rcoefficients[i,j]*(npart-1))/npart^2
+  }
+
+  # secoef <- diag(covar_coef)^.5
   tscore <- coefs/secoef
   pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = FALSE)
 
   ttest <- cbind(coefs, secoef, tscore, pvalue)
   colnames(ttest) <- c("Est", "SE", "t.stat", "pval.t")
-
-  return(p.t = ttest)
+  return(list(p.t = ttest, covar_coef = covar_coef))
 }
 
 #' @title Conduct a t-test of "partGLS" object
@@ -120,8 +141,15 @@ part_ttest <- function(coefs, part.SEs, rcoef, df2, npart){
 #'
 #' @method t.test partGLS
 #' @export
+# t.test.partGLS <- function(x, ...){
+#   part_ttest(coefs = x$overall$coefficients, part.SEs = x$part$SEs,
+#              rcoef = x$overall$rcoefficients, df2 = x$overall$dfs[2],
+#              npart = x$overall$partdims["npart"])
+# }
 t.test.partGLS <- function(x, ...){
-  part_ttest(coefs = x$overall$coefficients, part.SEs = x$part$SEs,
-             rcoef = x$overall$rcoefficients, df2 = x$overall$dfs[2],
-             npart = x$overall$partdims["npart"])
+  part_ttest(coefs = x$overall$coefficients,
+                  part.covar_coef = x$part$covar_coef,
+                  rcoefficients = x$overall$rcoefficients,
+                  df2 = x$overall$dfs[2],
+                  npart = x$overall$partdims["npart"])
 }

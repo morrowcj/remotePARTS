@@ -1,19 +1,30 @@
 Package: remotePARTS
-Title: Spatio-Temporal Auto-Regression for Remote Sensing Data
-Version: 0.2.0.9000
+Title: Spatiotemporal Autoregression Analyses for Large Data Sets
+Version: 1.0.0
 Authors@R: 
     c(person(given = "Clay",
            family = "Morrow",
            role = c("aut", "cre"),
-           email = "morrow5@wisc.edu",
+           email = "morrowcj@outlook.com",
            comment = c(ORCID = "0000-0002-3069-3296")),
       person(given = "Anthony",
            family = "Ives",
            role = c("aut"),
            email = "arives@wisc.edu",
            comment = c(ORCID = "0000-0001-9375-9523")))
-Description: "remotePARTS is a set of tools for analyzing sets of spatially 
-  correlated time series data, collected via remote sensing methods."
+Description: 
+  These tools were created to test map-scale hypotheses about trends in large 
+  remotely sensed data sets but any data with spatial and temporal variation
+  can be analyzed. Tests are conducted using the PARTS method for analyzing spatially
+  autocorrelated time series 
+  (Ives et al., 2021: <doi:10.1016/j.rse.2021.112678>). 
+  The method's unique approach can handle extremely large data sets that other 
+  spatiotemporal models cannot, while still appropriately accounting for 
+  spatial and temporal autocorrelation. This is done by partitioning the data 
+  into smaller chunks, analyzing chunks separately and then combining the 
+  separate analyses into a single, correlated test of the map-scale hypotheses.
+URL: https://github.com/morrowcj/remotePARTS
+BugReports: https://github.com/morrowcj/remotePARTS/issues
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: TRUE

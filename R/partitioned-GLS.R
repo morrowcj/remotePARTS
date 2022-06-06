@@ -430,6 +430,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                               small = FALSE, # return Vcoefij for use in correlations
 #---
                               ncores = ncores)
+
         ## delete large matrix for j
         partGLS[[j]]$invcholV = NULL
         if(debug){crosspartGLS[[cross]] = rGLS}
@@ -469,7 +470,11 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                    cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
                    overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
                                   # rcoefficients = colMeans(rcoefs, na.rm = TRUE),
+<<<<<<< HEAD
                                   rcoefficients =rcoefficients,
+=======
+                                  rcoefficients = rcoefficients,
+>>>>>>> 68b8823fd93885a5ff812478bb80b6c27720f196
                                   rSSR = mean(rSSRs, na.rm = TRUE),
                                   rSSE = mean(rSSEs, na.rm = TRUE),
                                   Fstat = mean(Fstats, na.rm = TRUE),
@@ -483,9 +488,11 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                              warning = function(w){warning("warning in chisqr()")})
     }
     if(do.t.test){
-      outlist$overall$t.test = tryCatch(t.test(outlist),
-                                        error = function(e){warning("error in t.test()")},
-                                        warning = function(w){warning("warning in t.test()")})
+      test.output = tryCatch(t.test(outlist),
+                        error = function(e){warning("error in t.test()")},
+                        warning = function(w){warning("warning in t.test()")})
+      outlist$overall$t.test = test.output$p.t
+      outlist$overall$covar_coef = test.output$covar_coef
     }
     close(pb)
   }
