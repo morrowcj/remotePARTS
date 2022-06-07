@@ -337,7 +337,7 @@ pm = sample_partitions(nrow(df), npart = 3)
 
 ## fit GLS with fixed nugget
 partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-                           data = df, nugget = 0)
+                           data = df, nugget = 0, do.t.test = TRUE)
 
 ## now with a numeric predictor
 fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)

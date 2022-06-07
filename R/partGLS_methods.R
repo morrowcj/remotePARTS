@@ -87,27 +87,14 @@ chisqr.partGLS <- function(x, ...){
 ## correlated t-test
 #' @title Correlated t-test for paritioned GLS
 #' @param coefs vector average GLS coefficients
-#' @param part.SEs matrix of partition SEs for each coefficient (columns)
-#' @param rcoef correlation among partition regression coefficients
+#' @param part.covar_coef an array of covar_coef from each partition
+#' @param rcoefficients an rcoefficeints array, one for each partition
 #' @param df2 second degree of freedom from partitioned GLS
 #' @param npart number of partitions
 #'
-#' @return coefficient table with estimates, standard errors, t-statistics, and p-values
-# part_ttest <- function(coefs, part.SEs, rcoef, df2, npart){
-#   secoef <- matrix(NA, length(coefs), 1)
-#   for(i in seq_len(length(coefs))){
-#     R <- (1 - rcoef[i]) * diag(npart) + rcoef[i] * matrix(1, npart, npart)
-#     secoef[i, ] <- (part.SEs[,i] %*% R %*% part.SEs[, i])^.5/npart
-#   }
-#
-#   tscore <- coefs/secoef
-#   pvalue <- 2 * pt(abs(tscore), df=df2 * npart, lower.tail = FALSE)
-#
-#   ttest <- cbind(coefs, secoef, tscore, pvalue)
-#   colnames(ttest) <- c("Est", "SE", "t.stat", "pval.t")
-#
-#   return(p.t = ttest)
-# }
+#' @return a list whose first element is a coefficient table with estimates,
+#' standard errors, t-statistics, and p-values and whose second element is a
+#' matrix of correlations among coefficients.
 part_ttest <- function(coefs, part.covar_coef, rcoefficients, df2, npart){
   secoef <- matrix(NA, length(coefs), 1)
   for(i in seq_len(length(coefs))){
@@ -137,15 +124,12 @@ part_ttest <- function(coefs, part.covar_coef, rcoefficients, df2, npart){
 #' @param x "partGLS" object
 #' @param ... additional arguments passed to print
 #'
-#' @return a coefficient table with estimates, standard errors, t-statistics, and p-values
+#' @return a list whose first element is a coefficient table with estimates,
+#' standard errors, t-statistics, and p-values and whose second element is a
+#' matrix of correlations among coefficients.
 #'
 #' @method t.test partGLS
 #' @export
-# t.test.partGLS <- function(x, ...){
-#   part_ttest(coefs = x$overall$coefficients, part.SEs = x$part$SEs,
-#              rcoef = x$overall$rcoefficients, df2 = x$overall$dfs[2],
-#              npart = x$overall$partdims["npart"])
-# }
 t.test.partGLS <- function(x, ...){
   part_ttest(coefs = x$overall$coefficients,
                   part.covar_coef = x$part$covar_coef,
