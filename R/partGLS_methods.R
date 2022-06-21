@@ -108,8 +108,8 @@ part_ttest <- function(coefs, part.covar_coef, rcoefficients, df2, npart){
     covar_coef[i, j] <- (sum(part.covar_coef[i, j, ]) + 
             rcoefficients[i, j] * (npart - 1) * abs(sum(part.covar_coef[i, j, ])))/npart^2
   }
-  rownames(covar_coef) <- rownames(coefs)
-  colnames(covar_coef) <- rownames(coefs)
+  rownames(covar_coef) <- names(coefs)
+  colnames(covar_coef) <- names(coefs)
 
   # secoef <- diag(covar_coef)^.5
   tscore <- coefs/secoef
