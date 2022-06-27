@@ -105,8 +105,11 @@ part_ttest <- function(coefs, part.covar_coef, rcoefficients, df2, npart){
 
   covar_coef <- matrix(NA, length(coefs), length(coefs))
   for(i in seq_len(length(coefs))) for(j in seq_len(length(coefs))){
-    covar_coef[i, j] <- sum(part.covar_coef[i,j,])*(1 + rcoefficients[i,j]*(npart-1))/npart^2
+    covar_coef[i, j] <- (sum(part.covar_coef[i, j, ]) + 
+            rcoefficients[i, j] * (npart - 1) * abs(sum(part.covar_coef[i, j, ])))/npart^2
   }
+  rownames(covar_coef) <- names(coefs)
+  colnames(covar_coef) <- names(coefs)
 
   # secoef <- diag(covar_coef)^.5
   tscore <- coefs/secoef
