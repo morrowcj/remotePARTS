@@ -613,7 +613,7 @@ The model was fit with this code:
 partGLS_ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
                                    partmat = pm, covar_FUN = "covar_exp", 
                                    covar.pars = list(range = range.opt),
-                                   nugget = nug.opt)
+                                   nugget = nug.opt, ncores = 4)
 ```
 
 ```{r save_partitioned_GLS, eval = FALSE, echo = FALSE, purl = FALSE}
@@ -630,7 +630,7 @@ Here are the t-tests, that show that land cover class does not significantly
 affect NDVI trend:
 
 ```{r partitioned_t_test}
-partGLS_ndviAK$overall$t_test
+partGLS_ndviAK$overall$t.test
 ```
 
 It is **highly** recommended that users read the full documentation 

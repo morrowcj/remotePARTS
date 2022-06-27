@@ -251,6 +251,8 @@
 #' partGLS.opt$part$nuggets # ML nuggets
 #' \dontrun{
 #' ## fully parallel, using 2 cores
+#' (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
+#'                  ncores = 2, parallel = TRUE, debug = FALSE))
 #' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
 #'                  ncores = 2, parallel = TRUE, debug = FALSE)
 #' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
@@ -292,8 +294,13 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                        covar_FUN = covar_FUN, covar.pars = covar.pars,
                        nugget = nugget, ncross = ncross, save.GLS = save.GLS,
                        ncores = ncores, debug = debug, ...)
+    # MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
+    #                    part_FUN = part_FUN, distm_FUN = distm_FUN,
+    #                    covar_FUN = covar_FUN, covar.pars = covar.pars,
+    #                    nugget = nugget, ncross = ncross, save.GLS = save.GLS,
+    #                    ncores = ncores, debug = debug, data = df)
     if(debug){cat("compiling parallel output into partGLS object\n")}
-    outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat),
+    outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat), npart = ncol(partmat),
                             save.GLS = save.GLS, do.t.test = do.t.test, do.chisqr.test = do.chisqr.test,
                             debug = debug)
     outlist$call <- call
@@ -479,9 +486,13 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     if(debug){outlist$crossGLS = crosspartGLS}
     class(outlist) <- append("partGLS", class(outlist))
     if(do.chisqr.test){
+      if(as.formula(formula) == as.formula(formula0)){
+        warning("chisqr test not valid when formula == formula0")
+      } else {
       outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
                                              error = function(e){warning("error in chisqr()")},
                                              warning = function(w){warning("warning in chisqr()")})
+      }
     }
     if(do.t.test){
       test.output = tryCatch(t.test(outlist),

@@ -8,7 +8,7 @@
 #' \dontrun{
 #' ## read data
 #' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
+#' df = ndvi_AK10000[seq_len(2000), ] # first 1000 rows
 #'
 #' ## create partition matrix
 #' pm = sample_partitions(nrow(df), npart = 3)
@@ -17,7 +17,12 @@
 #' MCpartGLS = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 0 + land, partmat = pm,
 #'                                      data = df, nugget = 0, ncores = 2L)
 #'
-#' (partGLS.mc = remotePARTS:::MC_to_partGLS(MCpartGLS, partsize = nrow(pm)))
+#' (partGLS.mc = remotePARTS:::MC_to_partGLS(MCpartGLS, partsize = nrow(pm), npart = ncol(pm)))
+#'
+#' MCpartGLS2 = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ lat, partmat = pm,
+#'                                      data = df, nugget = 0, ncores = 2L)
+#'
+#' (partGLS2.mc = remotePARTS:::MC_to_partGLS(MCpartGLS2, partsize = nrow(pm), npart = ncol(pm)))
 #' }
 MC_GLSpart <- function(formula, partmat, formula0 = NULL,
                                part_FUN = "part_data",
@@ -147,9 +152,11 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL,
 #'
 #' @param object "MC_partGLS" object
 #' @param partsize number of pixels per partition
+#' @param npart number of partitions
 #'
 #' @rdname partGLS
-MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS = FALSE,
+MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, npart,
+                          save.GLS = FALSE,
                           do.t.test = TRUE, do.chisqr.test = TRUE, debug = FALSE){
   stopifnot("MC_partGLS" %in% class(object))
 
@@ -158,6 +165,7 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS
 
   part = list(coefficients = t(sapply(object, function(x)x$partGLS$coefficients)),
               SEs = t(sapply(object, function(x)x$partGLS$SE)),
+              covar_coefs = NULL,
               tstats = t(sapply(object, function(x)x$partGLS$tstat)),
               tpvals = t(sapply(object, function(x)x$partGLS$pval_t)),
               nuggets = sapply(object, function(x)x$partGLS$nugget),
@@ -170,7 +178,8 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS
                                Fpvals = sapply(object, function(x)x$partGLS$pval_F)))
   } else {
     part = list(coefficients = cbind(sapply(object, function(x)x$partGLS$coefficients)),
-                SEs = cbind(sapply(object, function(x)x$partGLS$SE)),
+                SEs = NULL,
+                covar_coefs = t(sapply(object, function(x)x$partGLS$covar_coef)),
                 tstats = cbind(sapply(object, function(x)x$partGLS$tstat)),
                 tpvals = cbind(sapply(object, function(x)x$partGLS$pval_t)),
                 nuggets = sapply(object, function(x)x$partGLS$nugget),
@@ -190,21 +199,39 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS
 
   rSSRs <- NULL
   rSSEs <- NULL
-  rcoefs <- NULL
+  # rcoefs <- NULL
+  npairs = sum(sapply(object, function(x)length(x$crossGLS)))
+
+  rcoefs = array(NA, dim = c(npairs, p, p), dimnames = list(NULL, names(object[[1]]$partGLS$coefficients), names(object[[1]]$partGLS$coefficients)))
+  covar_coefs = array(NA, dim = c(p, p, npart), dimnames = list(names(object[[1]]$partGLS$coefficients), names(object[[1]]$partGLS$coefficients), NULL))
+
+  m = 0
   for(i in seq_len(length(object))){
     x = object[[i]]
+    colnames(x$partGLS$covar_coef) = colnames(part$coefficients)
+    covar_coefs[, , i] = x$partGLS$covar_coef
+
     if (length(x$crossGLS) < 1) {break()}
     for(j in seq_len(length(x$crossGLS))){
       rSSRs = c(rSSRs, x$crossGLS[[j]]$rSSRij)
       rSSEs = c(rSSEs, x$crossGLS[[j]]$rSSEij)
-      rcoefs = rbind(rcoefs, t(x$crossGLS[[j]]$rcoefij))
+      m = m + 1
+      rcoefs[m, ,] = x$crossGLS[[j]]$rcoefij
     }
   }
+
+
   colnames(rcoefs) = colnames(part$coefficients)
   cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs)
 
+  rcoefficients = apply(cross$rcoefs, MARGIN = c(2, 3), FUN = function(x){mean(x, na.rm = TRUE)})
+  dimnames(rcoefficients)[[1]] = dimnames(rcoefficients)[[2]] = dimnames(rcoefs)[[2]]
+
+  dimnames(covar_coefs)[[1]] = dimnames(covar_coefs)[[2]] = dimnames(rcoefs)[[2]]
+  part$covar_coefs = covar_coefs
+
   overall = list(coefficients = colMeans(part$coefficients, na.rm = TRUE),
-                 rcoefficients = colMeans(rcoefs, na.rm = TRUE),
+                 rcoefficients = rcoefficients,
                  rSSR = mean(rSSRs, na.rm = TRUE),
                  rSSE = mean(rSSEs, na.rm = TRUE),
                  Fstat = mean(part$modstats[, "Fstats"], na.rm = TRUE),
@@ -220,9 +247,13 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, save.GLS
   if(debug){outlist$crossGLS = lapply(object, function(x)x$crossGLS)}
   class(outlist) <- append("partGLS", class(outlist))
   if(do.chisqr.test){
+    if(as.formula(object[[1]]$partGLS$formula) == as.formula(object[[1]]$partGLS$formula0)){
+      warning("chisqr test not valid when formula == formula0")
+    } else {
     outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
                                            error = function(e){warning("error in chisqr()")},
                                            warning = function(w){warning("warning in chisqr()")})
+    }
   }
   if(do.t.test){
     outlist$overall$t.test = tryCatch(t.test(outlist),
