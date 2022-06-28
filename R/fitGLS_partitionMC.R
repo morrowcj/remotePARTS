@@ -256,9 +256,11 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, npart,
     }
   }
   if(do.t.test){
-    outlist$overall$t.test = tryCatch(t.test(outlist),
-                                      error = function(e){warning("error in t.test()")},
-                                      warning = function(w){warning("warning in t.test()")})
+    test.output = tryCatch(t.test(outlist),
+                           error = function(e){warning("error in t.test()")},
+                           warning = function(w){warning("warning in t.test()")})
+    outlist$overall$t.test = test.output$p.t
+    outlist$overall$covar_coef = test.output$covar_coef
   }
 
   return(outlist)
