@@ -205,18 +205,21 @@ MC_to_partGLS <- function(object, covar.pars = c(range = .1), partsize, npart,
   rcoefs = array(NA, dim = c(npairs, p, p), dimnames = list(NULL, names(object[[1]]$partGLS$coefficients), names(object[[1]]$partGLS$coefficients)))
   covar_coefs = array(NA, dim = c(p, p, npart), dimnames = list(names(object[[1]]$partGLS$coefficients), names(object[[1]]$partGLS$coefficients), NULL))
 
+  tmp <- lapply(object, function(x)x$partGLS$covar_coef)
+
   m = 0
   for(i in seq_len(length(object))){
     x = object[[i]]
-    colnames(x$partGLS$covar_coef) = colnames(part$coefficients)
-    covar_coefs[, , i] = x$partGLS$covar_coef
+    # covar_coefs[, , i] = x$partGLS$covar_coef
+    covar_coefs[,,i] = tmp[[i]]
 
-    if (length(x$crossGLS) < 1) {break()}
-    for(j in seq_len(length(x$crossGLS))){
-      rSSRs = c(rSSRs, x$crossGLS[[j]]$rSSRij)
-      rSSEs = c(rSSEs, x$crossGLS[[j]]$rSSEij)
-      m = m + 1
-      rcoefs[m, ,] = x$crossGLS[[j]]$rcoefij
+    if (!length(x$crossGLS) < 1){
+      for(j in seq_len(length(x$crossGLS))){
+        rSSRs = c(rSSRs, x$crossGLS[[j]]$rSSRij)
+        rSSEs = c(rSSEs, x$crossGLS[[j]]$rSSEij)
+        m = m + 1
+        rcoefs[m, ,] = x$crossGLS[[j]]$rcoefij
+      }
     }
   }
 
