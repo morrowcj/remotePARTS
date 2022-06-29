@@ -28,6 +28,7 @@ MC_to_partGLS(
   object,
   covar.pars = c(range = 0.1),
   partsize,
+  npart,
   save.GLS = FALSE,
   do.t.test = TRUE,
   do.chisqr.test = TRUE,
@@ -91,6 +92,8 @@ cross-partition statistics}
 \item{object}{"MC_partGLS" object}
 
 \item{partsize}{number of pixels per partition}
+
+\item{npart}{number of partitions}
 
 \item{do.t.test}{logical: should a t-test of the GLS coefficients be conducted?}
 
@@ -316,7 +319,7 @@ copies of data.
 \dontrun{
 ## read data
 data(ndvi_AK10000)
-df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
+df = ndvi_AK10000[seq_len(2000), ] # first 1000 rows
 
 ## create partition matrix
 pm = sample_partitions(nrow(df), npart = 3)
@@ -325,7 +328,12 @@ pm = sample_partitions(nrow(df), npart = 3)
 MCpartGLS = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 0 + land, partmat = pm,
                                      data = df, nugget = 0, ncores = 2L)
 
-(partGLS.mc = remotePARTS:::MC_to_partGLS(MCpartGLS, partsize = nrow(pm)))
+(partGLS.mc = remotePARTS:::MC_to_partGLS(MCpartGLS, partsize = nrow(pm), npart = ncol(pm)))
+
+MCpartGLS2 = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ lat, partmat = pm,
+                                     data = df, nugget = 0, ncores = 2L)
+
+(partGLS2.mc = remotePARTS:::MC_to_partGLS(MCpartGLS2, partsize = nrow(pm), npart = ncol(pm)))
 }
 \donttest{
 ## read data
@@ -337,7 +345,7 @@ pm = sample_partitions(nrow(df), npart = 3)
 
 ## fit GLS with fixed nugget
 partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-                           data = df, nugget = 0)
+                           data = df, nugget = 0, do.t.test = TRUE)
 
 ## now with a numeric predictor
 fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
@@ -357,6 +365,8 @@ t.test(partGLS) # significance of predictors
 partGLS.opt$part$nuggets # ML nuggets
 \dontrun{
 ## fully parallel, using 2 cores
+(MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
+                 ncores = 2, parallel = TRUE, debug = FALSE))
 fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
                  ncores = 2, parallel = TRUE, debug = FALSE)
 fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,

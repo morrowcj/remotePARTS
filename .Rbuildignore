@@ -24,3 +24,8 @@ README.Rmd
 ## ignore the obsolete data
 data/ndvi_AK\.rda
 data/ndvi_AK3000\.rda
+
+# ignore cran comments
+cran-comments\.md
+
+README\.html

@@ -13,8 +13,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // crosspart_worker_cpp
-List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& invCholV_i, const MapMatd& invCholV_j, const MapMatd& Vsub, double nug_i, double nug_j, int df1, int df2, int ncores);
-RcppExport SEXP _remotePARTS_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP invCholV_iSEXP, SEXP invCholV_jSEXP, SEXP VsubSEXP, SEXP nug_iSEXP, SEXP nug_jSEXP, SEXP df1SEXP, SEXP df2SEXP, SEXP ncoresSEXP) {
+List crosspart_worker_cpp(const MapMatd& xxi, const MapMatd& xxj, const MapMatd& xxi0, const MapMatd& xxj0, const MapMatd& invCholV_i, const MapMatd& invCholV_j, const MapMatd& Vsub, double nug_i, double nug_j, int df1, int df2, bool Vcoef, int ncores);
+RcppExport SEXP _remotePARTS_crosspart_worker_cpp(SEXP xxiSEXP, SEXP xxjSEXP, SEXP xxi0SEXP, SEXP xxj0SEXP, SEXP invCholV_iSEXP, SEXP invCholV_jSEXP, SEXP VsubSEXP, SEXP nug_iSEXP, SEXP nug_jSEXP, SEXP df1SEXP, SEXP df2SEXP, SEXP VcoefSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -29,8 +29,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type nug_j(nug_jSEXP);
     Rcpp::traits::input_parameter< int >::type df1(df1SEXP);
     Rcpp::traits::input_parameter< int >::type df2(df2SEXP);
+    Rcpp::traits::input_parameter< bool >::type Vcoef(VcoefSEXP);
     Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
-    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, ncores));
+    rcpp_result_gen = Rcpp::wrap(crosspart_worker_cpp(xxi, xxj, xxi0, xxj0, invCholV_i, invCholV_j, Vsub, nug_i, nug_j, df1, df2, Vcoef, ncores));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -96,7 +97,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 12},
+    {"_remotePARTS_crosspart_worker_cpp", (DL_FUNC) &_remotePARTS_crosspart_worker_cpp, 13},
     {"_remotePARTS_fitGLS_cpp", (DL_FUNC) &_remotePARTS_fitGLS_cpp, 16},
     {"_remotePARTS_invchol_cpp", (DL_FUNC) &_remotePARTS_invchol_cpp, 3},
     {"_remotePARTS_optimize_nugget_cpp", (DL_FUNC) &_remotePARTS_optimize_nugget_cpp, 11},

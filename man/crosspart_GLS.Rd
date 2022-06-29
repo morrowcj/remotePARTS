@@ -65,6 +65,7 @@ If \code{small = FALSE}, the list contains the following elements
     \item{rcoefij}{}
     \item{rSSRij}{}
     \item{rSSEij}{}
+    \item{Vcoefij}{}
 }
 
 If \code{small = FALSE}, the list only contains the necessary elements

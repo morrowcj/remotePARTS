@@ -163,13 +163,13 @@ dim(pm)
 #  partGLS_ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df,
 #                                     partmat = pm, covar_FUN = "covar_exp",
 #                                     covar.pars = list(range = range.opt),
-#                                     nugget = nug.opt)
+#                                     nugget = nug.opt, ncores = 4)
 
 ## ----load_partitioned_GLS-----------------------------------------------------
 data(partGLS_ndviAK)
 
 ## ----partitioned_t_test-------------------------------------------------------
-partGLS_ndviAK$overall$t_test
+partGLS_ndviAK$overall$t.test
 
 ## ----chisqr_test--------------------------------------------------------------
 partGLS_ndviAK$overall$pval.chisqr
