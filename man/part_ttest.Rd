@@ -4,21 +4,23 @@
 \alias{part_ttest}
 \title{Correlated t-test for paritioned GLS}
 \usage{
-part_ttest(coefs, part.SEs, rcoef, df2, npart)
+part_ttest(coefs, part.covar_coef, rcoefficients, df2, npart)
 }
 \arguments{
 \item{coefs}{vector average GLS coefficients}
 
-\item{part.SEs}{matrix of partition SEs for each coefficient (columns)}
+\item{part.covar_coef}{an array of covar_coef from each partition}
 
-\item{rcoef}{correlation among partition regression coefficients}
+\item{rcoefficients}{an rcoefficeints array, one for each partition}
 
 \item{df2}{second degree of freedom from partitioned GLS}
 
 \item{npart}{number of partitions}
 }
 \value{
-coefficient table with estimates, standard errors, t-statistics, and p-values
+a list whose first element is a coefficient table with estimates,
+standard errors, t-statistics, and p-values and whose second element is a
+matrix of correlations among coefficients.
 }
 \description{
 Correlated t-test for paritioned GLS

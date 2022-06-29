@@ -231,7 +231,7 @@
 #'
 #' ## fit GLS with fixed nugget
 #' partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#'                            data = df, nugget = 0)
+#'                            data = df, nugget = 0, do.t.test = TRUE)
 #'
 #' ## now with a numeric predictor
 #' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
@@ -251,6 +251,8 @@
 #' partGLS.opt$part$nuggets # ML nuggets
 #' \dontrun{
 #' ## fully parallel, using 2 cores
+#' (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
+#'                  ncores = 2, parallel = TRUE, debug = FALSE))
 #' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
 #'                  ncores = 2, parallel = TRUE, debug = FALSE)
 #' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
@@ -292,8 +294,13 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                        covar_FUN = covar_FUN, covar.pars = covar.pars,
                        nugget = nugget, ncross = ncross, save.GLS = save.GLS,
                        ncores = ncores, debug = debug, ...)
+    # MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
+    #                    part_FUN = part_FUN, distm_FUN = distm_FUN,
+    #                    covar_FUN = covar_FUN, covar.pars = covar.pars,
+    #                    nugget = nugget, ncross = ncross, save.GLS = save.GLS,
+    #                    ncores = ncores, debug = debug, data = df)
     if(debug){cat("compiling parallel output into partGLS object\n")}
-    outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat),
+    outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat), npart = ncol(partmat),
                             save.GLS = save.GLS, do.t.test = do.t.test, do.chisqr.test = do.chisqr.test,
                             debug = debug)
     outlist$call <- call
@@ -336,14 +343,22 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
             matrix(NA, nrow = npart, ncol = p,
                    dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
           nuggets = LLs = SSEs = MSEs = MSRs = Fstats = Fpvals = rep(NA, times = npart)
+#~~~~
+          covar_coefs = array(NA, dim = c(p, p, npart),
+                   dimnames = list(names(partGLS[[1]]$coefficients),names(partGLS[[1]]$coefficients), NULL))
+#~~~~
           ## cross stats
           rSSRs = rSSEs = rep(NA, npairs)
-          rcoefs = matrix(NA, nrow = npairs, ncol = p,
-                          dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
+          rcoefs = array(NA, dim = c(npairs, p, p), dimnames = list(NULL, names(partGLS[[1]]$coefficients), names(partGLS[[1]]$coefficients)))
+          # rcoefs = matrix(NA, nrow = npairs, ncol = p,
+          #                 dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
         }
         ## collect some stats
         coefs[i, ] = partGLS[[i]]$coefficients
         SEs[i, ] = partGLS[[i]]$SE
+#~~~~
+        covar_coefs[ , , i] = partGLS[[i]]$covar_coef
+#~~~~
         tstats[i, ] = partGLS[[i]]$tstat
         tpvals[i, ] = partGLS[[i]]$pval_t
         nuggets[i] = partGLS[[i]]$nugget
@@ -379,6 +394,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
           ## collect some stats
           coefs[j, ] = partGLS[[j]]$coefficients
           SEs[j, ] = partGLS[[j]]$SE
+#~~~~
+          covar_coefs[ , , j] = partGLS[[j]]$covar_coef
+#~~~~
           tstats[j, ] = partGLS[[j]]$tstat
           tpvals[j, ] = partGLS[[j]]$pval_t
           nuggets[j] = partGLS[[j]]$nugget
@@ -392,7 +410,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         ## which cross are we on?
         cross = which( (cross.pairs[,1] == i) & (cross.pairs[, 2] == j) )
         if (debug) {cat( "cross #", cross, "\n")}
-        ## calculate inverse cholesky it needed
+        ## calculate inverse cholesky if needed
         if (is.null(partGLS[[j]]$invcholV)){
           Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
           partGLS[[j]]$invcholV <- invert_chol(Vj)
@@ -415,12 +433,17 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                               nug_i = partGLS[[i]]$nugget,
                               nug_j = partGLS[[j]]$nugget,
                               df1 = dfs[1], df2 = dfs[2],
+#--- CM
+                              small = FALSE, # return Vcoefij for use in correlations
+#---
                               ncores = ncores)
+
         ## delete large matrix for j
         partGLS[[j]]$invcholV = NULL
         if(debug){crosspartGLS[[cross]] = rGLS}
         ## collect stats
-        rcoefs[cross, ] <- rGLS$rcoefij
+        rcoefs[cross, ,] <- rGLS$rcoefij
+        # rcoefs[cross, ] <- as.vector(rGLS$rcoefij)
         rSSRs[cross] <- ifelse(is.na(rGLS$rSSRij) | is.infinite(rGLS$rSSRij),
                                NA,
                                rGLS$rSSRij)
@@ -433,10 +456,18 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         setTxtProgressBar(pb, i)
       }
     }
+
+    ## make the coefficients
+    rcoefficients = apply(rcoefs, MARGIN=c(2,3), FUN = function(x){mean(x, na.rm = TRUE)})
+    # rcoefficients = apply(rcoefs, MARGIN = 2, FUN = function(x){mean(x, na.rm = TRUE)})
+
     ## collect and format output
     outlist = list(call = call,
                    GLS = if(save.GLS){partGLS}else{NULL},
-                   part = list(coefficients = coefs, SEs = SEs, tstats = tstats,
+                   part = list(coefficients = coefs, SEs = SEs,
+#~~~~
+                               covar_coefs = covar_coefs, tstats = tstats,
+#~~~~
                                pvals_t = tpvals, nuggets = nuggets,
                                covar.pars = covar.pars,
                                modstats = cbind(LLs = LLs, SSEs = SSEs,
@@ -445,7 +476,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                                 pvals_F = Fpvals)),
                    cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs),
                    overall = list(coefficients = colMeans(coefs, na.rm = TRUE),
-                                  rcoefficients = colMeans(rcoefs, na.rm = TRUE),
+                                  # rcoefficients = colMeans(rcoefs, na.rm = TRUE),
+                                  rcoefficients =rcoefficients,
                                   rSSR = mean(rSSRs, na.rm = TRUE),
                                   rSSE = mean(rSSEs, na.rm = TRUE),
                                   Fstat = mean(Fstats, na.rm = TRUE),
@@ -454,14 +486,20 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     if(debug){outlist$crossGLS = crosspartGLS}
     class(outlist) <- append("partGLS", class(outlist))
     if(do.chisqr.test){
+      if(as.formula(formula) == as.formula(formula0)){
+        warning("chisqr test not valid when formula == formula0")
+      } else {
       outlist$overall$pval.chisqr = tryCatch(chisqr(outlist),
                                              error = function(e){warning("error in chisqr()")},
                                              warning = function(w){warning("warning in chisqr()")})
+      }
     }
     if(do.t.test){
-      outlist$overall$t.test = tryCatch(t.test(outlist),
-                                        error = function(e){warning("error in t.test()")},
-                                        warning = function(w){warning("warning in t.test()")})
+      test.output = tryCatch(t.test(outlist),
+                        error = function(e){warning("error in t.test()")},
+                        warning = function(w){warning("warning in t.test()")})
+      outlist$overall$t.test = test.output$p.t
+      outlist$overall$covar_coef = test.output$covar_coef
     }
     close(pb)
   }
@@ -526,6 +564,7 @@ calc_dfpart <- function(partsize, p, p0){
 #'     \item{rcoefij}{}
 #'     \item{rSSRij}{}
 #'     \item{rSSEij}{}
+#'     \item{Vcoefij}{}
 #' }
 #'
 #' If \code{small = FALSE}, the list only contains the necessary elements
@@ -603,8 +642,10 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
   stopifnot(all.equal(ncol(xxi0), ncol(xxj0)))
   # stopifnot(all(check_posdef(V)))
 
+  vcoef = ifelse(small, FALSE, TRUE)
+
   outlist <- .Call(`_remotePARTS_crosspart_worker_cpp`, xxi, xxj, xxi0, xxj0,
-                   invChol_i, invChol_j, Vsub, nug_i, nug_j,  df1, df2, ncores)
+                   invChol_i, invChol_j, Vsub, nug_i, nug_j,df1, df2, vcoef, ncores)
   if(small){
     return(list(rcoefij = outlist$rcoefij,
                 rSSRij = outlist$rSSRij,

@@ -12,7 +12,9 @@
 \item{...}{additional arguments passed to print}
 }
 \value{
-a coefficient table with estimates, standard errors, t-statistics, and p-values
+a list whose first element is a coefficient table with estimates,
+standard errors, t-statistics, and p-values and whose second element is a
+matrix of correlations among coefficients.
 }
 \description{
 Conduct a correlated t-test of a partitioned GLS
