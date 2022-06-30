@@ -32,7 +32,6 @@ RoxygenNote: 7.1.1
 Depends: R (>= 4.0)
 Imports: 
   stats,
-  graphics,
   geosphere (>= 1.5.10), 
   Rcpp (>= 1.0.5), 
   CompQuadForm,
@@ -43,16 +42,12 @@ Imports:
 Suggests: 
     dplyr (>= 1.0.0),
     data.table,
-    tinytest,
-    raster,
     knitr,
     rmarkdown,
     markdown,
-    microbenchmark,
     sqldf,
     devtools,
     ggplot2,
-    lemon,
     reshape2
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr

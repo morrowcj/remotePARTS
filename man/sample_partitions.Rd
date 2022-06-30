@@ -4,7 +4,13 @@
 \alias{sample_partitions}
 \title{Randomly sample a partition matrix for partitioned GLS}
 \usage{
-sample_partitions(npix, npart = 10, partsize = NA, pixels = NA, verbose = TRUE)
+sample_partitions(
+  npix,
+  npart = 10,
+  partsize = NA,
+  pixels = NA,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{npix}{number of pixels in full dataset}
@@ -44,7 +50,7 @@ sample_partitions(npix = nrow(dat.M), npart = 4)
 sample_partitions(npix = nrow(dat.M), partsize = 10)
 
 # 4 partitions each with 10 pixels (non-exhaustive)
-sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
+# sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
 
 # index of 50 pixels to subset
 sub.indx <- c(1:10, 21:25, 30:62, 70:71)

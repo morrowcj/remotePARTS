@@ -11,7 +11,7 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 <!-- [![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) -->
 
 [![Lifecycle:
-stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://www.tidyverse.org/lifecycle/#stable)
+stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 
 <!-- [![Travis build status](https://travis-ci.com/morrowcj/remotePARTS.svg?branch=master)](https://travis-ci.com/morrowcj/remotePARTS) -->
 <!-- [![Travis build status](https://travis-ci.com/morrowcj/remotePARTS.svg?branch=master)](https://travis-ci.org/github/morrowcj/remotePARTS) -->
