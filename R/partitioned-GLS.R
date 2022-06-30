@@ -797,7 +797,7 @@ part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng
 #' sample_partitions(npix = nrow(dat.M), partsize = 10)
 #'
 #' # 4 partitions each with 10 pixels (non-exhaustive)
-#' sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
+#' # sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
 #'
 #' # index of 50 pixels to subset
 #' sub.indx <- c(1:10, 21:25, 30:62, 70:71)
@@ -807,7 +807,7 @@ part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng
 #'
 #' @export
 sample_partitions <- function(npix, npart = 10, partsize = NA,
-                              pixels = NA, verbose = TRUE){
+                              pixels = NA, verbose = FALSE){
 
   if(all(!is.na(pixels)) & (length(pixels) > 1)){
     npix = length(pixels)
@@ -817,7 +817,7 @@ sample_partitions <- function(npix, npart = 10, partsize = NA,
   }
 
   ## check which npart of partsize was given
-  no.partsize <- (missing(partsize) || is.na(partsize) | is.null(partsize))
+  no.partsize <- (is.na(partsize) | is.null(partsize))
   no.npart <- (is.na(npart) | is.null(npart))
 
   ## caclulate partition size

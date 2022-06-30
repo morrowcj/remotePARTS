@@ -12,7 +12,7 @@
 
 <meta name="author" content="Clay Morrow" />
 
-<meta name="date" content="2022-06-27" />
+<meta name="date" content="2022-06-29" />
 
 <title>Alaska</title>
 
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
   div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
   ul.task-list{list-style: none;}
     </style>
+
 
 
 <style type="text/css">
@@ -334,7 +335,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">Alaska</h1>
 <h3 class="subtitle">NDVI analysis {remotePARTS}</h3>
 <h4 class="author">Clay Morrow</h4>
-<h4 class="date">2022-06-27</h4>
+<h4 class="date">2022-06-29</h4>
 
 
 
@@ -360,8 +361,7 @@ for visualizing the data:</p>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The following objects are masked from &#39;package:base&#39;:</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="do">##     intersect, setdiff, setequal, union</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Warning: package &#39;ggplot2&#39; was built under R version 4.0.5</span></span></code></pre></div>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
 </div>
 <div id="alaska-datasets" class="section level1">
 <h1>Alaska datasets</h1>
@@ -927,9 +927,8 @@ Each of these 20 samples (partitions) are non-overlapping, containing no
 repeats. Setting <code>npart = NA</code> will automatically give the
 maximum number of partitions possible (i.e., 20).</p>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">sample_partitions</span>(<span class="at">npix =</span> <span class="fu">nrow</span>(df), <span class="at">partsize =</span> <span class="dv">1500</span>, <span class="at">npart =</span> <span class="cn">NA</span>)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] &quot;calculating npart&quot;</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(pm)</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 1500    6</span></span></code></pre></div>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(pm)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 1500    6</span></span></code></pre></div>
 <p>Once we have our partition matrix, <code>fitGLS_parititon()</code>
 performs steps (2)-(4) of the analyses. The input is similar to
 <code>fitGLS</code>. For this example, we specify (i) a formula, (ii)
