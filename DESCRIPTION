@@ -28,7 +28,7 @@ BugReports: https://github.com/morrowcj/remotePARTS/issues
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: TRUE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.2
 Depends: R (>= 4.0)
 Imports: 
   stats,
