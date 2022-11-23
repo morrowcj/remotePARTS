@@ -2,8 +2,6 @@
 #'
 #' @rdname partGLS
 #'
-#' @return
-#'
 #' @examples
 #' \dontrun{
 #' ## read data

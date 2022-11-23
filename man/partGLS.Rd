@@ -115,8 +115,6 @@ more information}
 \item{file}{a text string indicating the csv file from which to read data}
 }
 \value{
-
-
 \code{fitGLS_partition} returns a list object of class "partGLS" which
 contains at least the following elements:
 

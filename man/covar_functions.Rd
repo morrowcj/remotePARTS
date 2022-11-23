@@ -27,9 +27,9 @@ subtracted from \code{cor}.}
 \value{
 a tapered-spherical transformation of d is returned.
 
+the exponential covariance (v)
 
-
-
+exponential-power covariance (v)
 }
 \description{
 Tapered-spherical distance-based covariance function

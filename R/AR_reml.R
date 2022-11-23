@@ -221,21 +221,21 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
 
     # important stats
     MSE <- as.numeric(s2) #MSE
-    s2beta <- MSE * solve(t(X) %*% iV %*% X) #SE
+    s2beta <- MSE * solve(t(X) %*% iV %*% X) #Variance
     t.stat = (abs(beta) / diag(s2beta)^0.5)
     pval = 2 * stats::pt(q = t.stat, df = n.obs - q,
                          lower.tail = FALSE )
 
     yhat = X %*% beta
 
-    # log likelihood without constants (i.e. s2) - no parameter dependancy
+    # log likelihood without constants (i.e. s2) - no parameter dependency
     logLik <- 0.5 * (n.obs - q) * log(2 * pi) +
       determinant(t(X) %*% X)$modulus[1] - logLik
 
     # collect output
     out.list <- list(call = call,
                      coefficients = beta[, 1],
-                     SE = diag(s2beta),
+                     SE = diag(s2beta)^0.5, # standard error
                      tstat = t.stat[, 1],
                      pval = pval[, 1],
                      MSE = MSE,
