@@ -6,7 +6,7 @@
 #' \dontrun{
 #' ## read data
 #' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(2000), ] # first 1000 rows
+#' df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
 #'
 #' ## create partition matrix
 #' pm = sample_partitions(nrow(df), npart = 3)
@@ -21,6 +21,13 @@
 #'                                      data = df, nugget = 0, ncores = 2L)
 #'
 #' (partGLS2.mc = remotePARTS:::MC_to_partGLS(MCpartGLS2, partsize = nrow(pm), npart = ncol(pm)))
+#'
+#' MCpartGLS_int = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 1, partmat = pm,
+#'                                          data = df, nugget = 0, ncores = 2L)
+#'
+#' (partGLS_int.mc = remotePARTS:::MC_to_partGLS(MCpartGLS_int, partsize = nrow(pm),
+#'                                               npart = ncol(pm), do.chisqr.test = FALSE))
+#'
 #' }
 MC_GLSpart <- function(formula, partmat, formula0 = NULL,
                                part_FUN = "part_data",

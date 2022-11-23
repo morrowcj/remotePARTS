@@ -11,10 +11,24 @@
 print.partGLS <- function(x, ...){
   cat("\nCoefficients:\n")
   print(x$overall$coefficients, ...)
+
   cat("\nCross coefficients:\n")
   print(x$overall$rcoefficients, ...)
+
   cat("\nCross-partition statistics:\n")
+  cross_stats = c("rSSE" = x$overall$rSSE)
+  if(!is.na(x$overall$rSSR) | !is.null(x$overall$rSSR)){
+    cross_stats["rSSR"] = x$overall$rSSR
+  }
+  if(!is.na(x$overall$Fstat) | !is.null(x$overall$Fstat)){
+    cross_stats["Fstat"] = x$overall$Fstat
+  }
   print(c(rSSR = x$overall$rSSR, rSSE = x$overall$rSSE, Fstat = x$overall$Fstat), ...)
+
+  if(!is.null(x$overall$t.test)){
+    cat("\nT-test results:\n")
+    print(x$overall$t.test)
+  }
 }
 
 ## Correlated chisqr test ----
@@ -105,7 +119,7 @@ part_ttest <- function(coefs, part.covar_coef, rcoefficients, df2, npart){
 
   covar_coef <- matrix(NA, length(coefs), length(coefs))
   for(i in seq_len(length(coefs))) for(j in seq_len(length(coefs))){
-    covar_coef[i, j] <- (sum(part.covar_coef[i, j, ]) + 
+    covar_coef[i, j] <- (sum(part.covar_coef[i, j, ]) +
             rcoefficients[i, j] * (npart - 1) * abs(sum(part.covar_coef[i, j, ])))/npart^2
   }
   rownames(covar_coef) <- names(coefs)

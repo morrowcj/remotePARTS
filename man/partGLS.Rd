@@ -317,7 +317,7 @@ copies of data.
 \dontrun{
 ## read data
 data(ndvi_AK10000)
-df = ndvi_AK10000[seq_len(2000), ] # first 1000 rows
+df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
 
 ## create partition matrix
 pm = sample_partitions(nrow(df), npart = 3)
@@ -332,6 +332,13 @@ MCpartGLS2 = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ lat, partmat = pm,
                                      data = df, nugget = 0, ncores = 2L)
 
 (partGLS2.mc = remotePARTS:::MC_to_partGLS(MCpartGLS2, partsize = nrow(pm), npart = ncol(pm)))
+
+MCpartGLS_int = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 1, partmat = pm,
+                                         data = df, nugget = 0, ncores = 2L)
+
+(partGLS_int.mc = remotePARTS:::MC_to_partGLS(MCpartGLS_int, partsize = nrow(pm),
+                                              npart = ncol(pm), do.chisqr.test = FALSE))
+
 }
 \donttest{
 ## read data
@@ -351,7 +358,8 @@ fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
 ## 0 intercept (produces NAs) and gives an error in statistical tests
 fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 
-fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0)
+fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
+                 do.chisqr.test = FALSE)
 
 ## hypothesis tests
 chisqr(partGLS) # explanatory power of model
@@ -368,7 +376,7 @@ partGLS.opt$part$nuggets # ML nuggets
 fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
                  ncores = 2, parallel = TRUE, debug = FALSE)
 fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
-                 parallel = TRUE, ncores = 2)
+                 parallel = TRUE, ncores = 2, do.chisqr.test = FALSE)
 }
 }
 
