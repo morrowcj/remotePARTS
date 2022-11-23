@@ -123,7 +123,7 @@ covar_taper <- function(d, theta, cor = NULL){
 #'
 #' \code{v = exp(-d/range)}
 #'
-#' @return
+#' @return the exponential covariance (v)
 #'
 #' @examples
 #'
@@ -156,7 +156,7 @@ covar_exp <- function(d, range){
 #' Note that \code{covar_exppow(..., shape = 1)} is equivalent to
 #' \code{covar_exp()} but is needed as a separate function for use with \code{fitCor}.
 #'
-#' @return
+#' @return exponential-power covariance (v)
 #'
 #' @examples
 #'
