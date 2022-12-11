@@ -2,11 +2,12 @@
 % Please edit documentation in R/fitGLS_partitionMC.R, R/partitioned-GLS.R
 \name{MC_GLSpart}
 \alias{MC_GLSpart}
-\alias{MC_to_partGLS}
+\alias{MCGLS_partsummary}
+\alias{multicore_fitGLS_partition}
 \alias{fitGLS_partition}
 \alias{part_data}
 \alias{part_csv}
-\title{fit a parallel parititoned GLS}
+\title{fit a parallel partitioned GLS}
 \usage{
 MC_GLSpart(
   formula,
@@ -24,15 +25,29 @@ MC_GLSpart(
   ...
 )
 
-MC_to_partGLS(
-  object,
+MCGLS_partsummary(
+  MCpartGLS,
   covar.pars = c(range = 0.1),
-  partsize,
-  npart,
   save.GLS = FALSE,
+  partsize
+)
+
+multicore_fitGLS_partition(
+  formula,
+  partmat,
+  formula0 = NULL,
+  part_FUN = "part_data",
+  distm_FUN = "distm_scaled",
+  covar_FUN = "covar_exp",
+  covar.pars = c(range = 0.1),
+  nugget = NA,
+  ncross = 6,
+  save.GLS = FALSE,
+  ncores = parallel::detectCores(logical = FALSE) - 1,
   do.t.test = TRUE,
   do.chisqr.test = TRUE,
-  debug = FALSE
+  debug = FALSE,
+  ...
 )
 
 fitGLS_partition(
@@ -89,11 +104,9 @@ cross-partition statistics}
 
 \item{...}{arguments passed to \code{part_FUN}}
 
-\item{object}{"MC_partGLS" object}
+\item{MCpartGLS}{object resulting from MC_partGLS()}
 
-\item{partsize}{number of pixels per partition}
-
-\item{npart}{number of partitions}
+\item{partsize}{number of locations per partition}
 
 \item{do.t.test}{logical: should a t-test of the GLS coefficients be conducted?}
 
@@ -115,6 +128,10 @@ more information}
 \item{file}{a text string indicating the csv file from which to read data}
 }
 \value{
+a "partGLS" object
+
+"partGLS" object
+
 \code{fitGLS_partition} returns a list object of class "partGLS" which
 contains at least the following elements:
 
@@ -249,7 +266,8 @@ processing is available natively in \code{fitGLS_partition}. There are a few
 different specifications that will result in different behavior:
 
 When \code{parallel = TRUE} and \code{ncores > 1}, all calculations are done
-completely in parallel. In this case, parallelization is implemented with the
+completely in parallel (via \code{multicore_fitGLS_partition()}).
+In this case, parallelization is implemented with the
 \code{parallel}, \code{doParallel}, and \code{foreach} packages. In this version,
 all matrix operations are serialized on each worker but multiple operations
 can occur simultaneously..
@@ -326,18 +344,17 @@ pm = sample_partitions(nrow(df), npart = 3)
 MCpartGLS = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 0 + land, partmat = pm,
                                      data = df, nugget = 0, ncores = 2L)
 
-(partGLS.mc = remotePARTS:::MC_to_partGLS(MCpartGLS, partsize = nrow(pm), npart = ncol(pm)))
+(partGLS.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS, partsize = nrow(pm)))
 
 MCpartGLS2 = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ lat, partmat = pm,
                                      data = df, nugget = 0, ncores = 2L)
 
-(partGLS2.mc = remotePARTS:::MC_to_partGLS(MCpartGLS2, partsize = nrow(pm), npart = ncol(pm)))
+(partGLS2.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS2, partsize = nrow(pm)))
 
 MCpartGLS_int = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 1, partmat = pm,
                                          data = df, nugget = 0, ncores = 2L)
 
-(partGLS_int.mc = remotePARTS:::MC_to_partGLS(MCpartGLS_int, partsize = nrow(pm),
-                                              npart = ncol(pm), do.chisqr.test = FALSE))
+(partGLS_int.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS_int, partsize = nrow(pm)))
 
 }
 \donttest{
@@ -356,7 +373,7 @@ partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
 
 ## 0 intercept (produces NAs) and gives an error in statistical tests
-fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
+# fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 
 fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
                  do.chisqr.test = FALSE)
@@ -369,6 +386,13 @@ t.test(partGLS) # significance of predictors
 (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
                                 data = df, nugget = NA))
 partGLS.opt$part$nuggets # ML nuggets
+
+## Explicitly use multicore_fitGLS_partition()
+(multicore_fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
+                           data = df, nugget = 0, ncores = 2L))
+(multicore_fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, ncores = 2L,
+                            data = df, nugget = 0, do.chisqr.test = FALSE))
+
 \dontrun{
 ## fully parallel, using 2 cores
 (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
