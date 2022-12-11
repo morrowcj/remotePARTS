@@ -91,7 +91,8 @@
 #' different specifications that will result in different behavior:
 #'
 #' When \code{parallel = TRUE} and \code{ncores > 1}, all calculations are done
-#' completely in parallel. In this case, parallelization is implemented with the
+#' completely in parallel (via \code{multicore_fitGLS_partition()}).
+#' In this case, parallelization is implemented with the
 #' \code{parallel}, \code{doParallel}, and \code{foreach} packages. In this version,
 #' all matrix operations are serialized on each worker but multiple operations
 #' can occur simultaneously..
@@ -237,7 +238,7 @@
 #' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
 #'
 #' ## 0 intercept (produces NAs) and gives an error in statistical tests
-#' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
+#' # fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
 #'
 #' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
 #'                  do.chisqr.test = FALSE)
@@ -250,6 +251,13 @@
 #' (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 #'                                 data = df, nugget = NA))
 #' partGLS.opt$part$nuggets # ML nuggets
+#'
+#' ## Explicitly use multicore_fitGLS_partition()
+#' (multicore_fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
+#'                            data = df, nugget = 0, ncores = 2L))
+#' (multicore_fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, ncores = 2L,
+#'                             data = df, nugget = 0, do.chisqr.test = FALSE))
+#'
 #' \dontrun{
 #' ## fully parallel, using 2 cores
 #' (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
@@ -290,21 +298,28 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   ## Decide if calculations should be parallelized
   if(!is.na(ncores) && parallel & ncores > 1){
     if(debug){cat("Conducting parallel paritioned GLS\n")}
-    MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
-                       part_FUN = part_FUN, distm_FUN = distm_FUN,
-                       covar_FUN = covar_FUN, covar.pars = covar.pars,
-                       nugget = nugget, ncross = ncross, save.GLS = save.GLS,
-                       ncores = ncores, debug = debug, ...)
+    outlist = multicore_fitGLS_partition(formula = formula, partmat = partmat,
+                                         formula0 = formula0, part_FUN = part_FUN,
+                                         distm_FUN = distm_FUN, covar_FUN = covar_FUN,
+                                         covar.pars = covar.pars, nugget = nugget,
+                                         ncross = ncross, save.GLS = save.GLS,
+                                         do.chisqr.test = do.chisqr.test,
+                                         ...)
     # MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
     #                    part_FUN = part_FUN, distm_FUN = distm_FUN,
     #                    covar_FUN = covar_FUN, covar.pars = covar.pars,
     #                    nugget = nugget, ncross = ncross, save.GLS = save.GLS,
-    #                    ncores = ncores, debug = debug, data = df)
-    if(debug){cat("compiling parallel output into partGLS object\n")}
-    outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat), npart = ncol(partmat),
-                            save.GLS = save.GLS, do.t.test = do.t.test, do.chisqr.test = do.chisqr.test,
-                            debug = debug)
-    outlist$call <- call
+    #                    ncores = ncores, debug = debug, ...)
+    # # MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
+    # #                    part_FUN = part_FUN, distm_FUN = distm_FUN,
+    # #                    covar_FUN = covar_FUN, covar.pars = covar.pars,
+    # #                    nugget = nugget, ncross = ncross, save.GLS = save.GLS,
+    # #                    ncores = ncores, debug = debug, data = df)
+    # if(debug){cat("compiling parallel output into partGLS object\n")}
+    # outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat), npart = ncol(partmat),
+    #                         save.GLS = save.GLS, do.t.test = do.t.test, do.chisqr.test = do.chisqr.test,
+    #                         debug = debug)
+    outlist$call <- call # update call
   } else {
     if(debug){cat("Conducting partitioned GLS\n")}
     if(is.na(ncores)){
@@ -346,11 +361,18 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
           nuggets = LLs = SSEs = MSEs = MSRs = Fstats = Fpvals = rep(NA, times = npart)
 #~~~~
           covar_coefs = array(NA, dim = c(p, p, npart),
-                   dimnames = list(names(partGLS[[1]]$coefficients),names(partGLS[[1]]$coefficients), NULL))
+                   dimnames = list(names(partGLS[[1]]$coefficients),
+                                   names(partGLS[[1]]$coefficients),
+                                   NULL))
 #~~~~
+          # ---- TODO: GitHub Issue #3
           ## cross stats
           rSSRs = rSSEs = rep(NA, npairs)
-          rcoefs = array(NA, dim = c(npairs, p, p), dimnames = list(NULL, names(partGLS[[1]]$coefficients), names(partGLS[[1]]$coefficients)))
+          rcoefs = array(NA, dim = c(npairs, p, p),
+                         dimnames = list(NULL,
+                                         names(partGLS[[1]]$coefficients),
+                                         names(partGLS[[1]]$coefficients)))
+          # ---- END
           # rcoefs = matrix(NA, nrow = npairs, ncol = p,
           #                 dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
         }
