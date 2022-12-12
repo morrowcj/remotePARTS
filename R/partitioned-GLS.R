@@ -305,20 +305,6 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                          ncross = ncross, save.GLS = save.GLS,
                                          do.chisqr.test = do.chisqr.test,
                                          ...)
-    # MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
-    #                    part_FUN = part_FUN, distm_FUN = distm_FUN,
-    #                    covar_FUN = covar_FUN, covar.pars = covar.pars,
-    #                    nugget = nugget, ncross = ncross, save.GLS = save.GLS,
-    #                    ncores = ncores, debug = debug, ...)
-    # # MCGLS = MC_GLSpart(formula = formula, partmat = partmat, formula0 = NULL,
-    # #                    part_FUN = part_FUN, distm_FUN = distm_FUN,
-    # #                    covar_FUN = covar_FUN, covar.pars = covar.pars,
-    # #                    nugget = nugget, ncross = ncross, save.GLS = save.GLS,
-    # #                    ncores = ncores, debug = debug, data = df)
-    # if(debug){cat("compiling parallel output into partGLS object\n")}
-    # outlist = MC_to_partGLS(object = MCGLS, covar.pars = covar.pars, partsize = nrow(partmat), npart = ncol(partmat),
-    #                         save.GLS = save.GLS, do.t.test = do.t.test, do.chisqr.test = do.chisqr.test,
-    #                         debug = debug)
     outlist$call <- call # update call
   } else {
     if(debug){cat("Conducting partitioned GLS\n")}
@@ -339,7 +325,6 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       if (debug) {cat("i =", i, "\n")}
       ## partition data
       idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, ...)
-      # idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, data = data)
 
       ## Calculate GLS, if not already done
       if (is.null(partGLS[[i]])){
@@ -359,29 +344,21 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
             matrix(NA, nrow = npart, ncol = p,
                    dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
           nuggets = LLs = SSEs = MSEs = MSRs = Fstats = Fpvals = rep(NA, times = npart)
-#~~~~
           covar_coefs = array(NA, dim = c(p, p, npart),
                    dimnames = list(names(partGLS[[1]]$coefficients),
                                    names(partGLS[[1]]$coefficients),
                                    NULL))
-#~~~~
-          # ---- TODO: GitHub Issue #3
           ## cross stats
           rSSRs = rSSEs = rep(NA, npairs)
           rcoefs = array(NA, dim = c(npairs, p, p),
                          dimnames = list(NULL,
                                          names(partGLS[[1]]$coefficients),
                                          names(partGLS[[1]]$coefficients)))
-          # ---- END
-          # rcoefs = matrix(NA, nrow = npairs, ncol = p,
-          #                 dimnames = list(NULL, names(partGLS[[1]]$coefficients)))
         }
         ## collect some stats
         coefs[i, ] = partGLS[[i]]$coefficients
         SEs[i, ] = partGLS[[i]]$SE
-#~~~~
         covar_coefs[ , , i] = partGLS[[i]]$covar_coef
-#~~~~
         tstats[i, ] = partGLS[[i]]$tstat
         tpvals[i, ] = partGLS[[i]]$pval_t
         nuggets[i] = partGLS[[i]]$nugget
@@ -398,11 +375,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         partGLS[[i]]$invcholV <- invert_chol(Vi)
       }
       if (i < ncross) for (j in (i+1):ncross) {
-        # if (i < ncross) for (j in 2) {
         if (debug) {cat("j =", j, "\n")}
         ## parition data
         jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
-        # jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, data = data)
 
         ## calculate GLS, if not already done
         if (is.null(partGLS[[j]])){
@@ -417,9 +392,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
           ## collect some stats
           coefs[j, ] = partGLS[[j]]$coefficients
           SEs[j, ] = partGLS[[j]]$SE
-#~~~~
           covar_coefs[ , , j] = partGLS[[j]]$covar_coef
-#~~~~
           tstats[j, ] = partGLS[[j]]$tstat
           tpvals[j, ] = partGLS[[j]]$pval_t
           nuggets[j] = partGLS[[j]]$nugget
@@ -456,9 +429,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                               nug_i = partGLS[[i]]$nugget,
                               nug_j = partGLS[[j]]$nugget,
                               df1 = dfs[1], df2 = dfs[2],
-#--- CM
                               small = FALSE, # return Vcoefij for use in correlations
-#---
                               ncores = ncores)
 
         ## delete large matrix for j
@@ -488,9 +459,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     outlist = list(call = call,
                    GLS = if(save.GLS){partGLS}else{NULL},
                    part = list(coefficients = coefs, SEs = SEs,
-#~~~~
                                covar_coefs = covar_coefs, tstats = tstats,
-#~~~~
                                pvals_t = tpvals, nuggets = nuggets,
                                covar.pars = covar.pars,
                                modstats = cbind(LLs = LLs, SSEs = SSEs,
