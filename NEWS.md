@@ -1,3 +1,10 @@
+# v1.0.2
+
+* fixed a bug where `fitCor()` was calculating a full distance matrix instead
+of one among only the sampled pixels.
+* added option to suppress saving the `nls` model in `fitCor()`
+* added $\rho$ to the output of `fitAR_map()`
+
 # v1.0.1
 
 fixed bug where `fitGLS_partition` would not work properly when `ncores > 1` and
