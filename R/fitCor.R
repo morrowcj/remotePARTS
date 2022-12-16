@@ -48,18 +48,26 @@
 #' results, we recommend taking a random sample of pixels manually and passing in
 #' those values as \code{index}.
 #'
-#' Parameter estimates always match the scale of distances calculated by \code{distm_FUN}.
-#' It is very important that these estimates are re-scaled these estimates if needed. For example,
+#' Caution: Note that a distance matrix, of size \eqn{n \times n} must be fit to the
+#' sampled data where \eqn{n} is either \code{fit.n} or \code{length(index)}.
+#' Take your computer's memory and processing time into consideration when choosing
+#' this size.
+#'
+#' Parameter estimates are always returned in the same scale of distances
+#' calculated by \code{distm_FUN}. It is very important that these estimates
+#' are re-scaled by users if output of \code{distm_FUN} use units different from
+#' the desired scale. For example,
 #' if the function \code{covar_FUN = function(d, r, a){-(d/r)^a}} is used
 #' with \code{distm_FUN = "distm_scaled"}, the estimated range parameter \code{r}
-#' can be re-scaled to units of your map by multiplying \code{r} by the
-#' \code{max.distance} (calculated internally by \code{max_distance}.
-#' The shape parameter \code{a} would not need re-scaling. If the
-#' \code{distm_FUN} is on the scale of your map (e.g., "distm_km"), re-scaling
-#' is not needed.
+#' will be based on a unit-map. Users will likely want to re-scaled it to map
+#' units by multiplying \code{r} by the maximum distance among points on your map.
 #'
-#' note that when \code{distm_FUN = "distm_scaled"}, \code{max.distance} is
-#' the maximum distance before re-scaling (in km by default).
+#' If the \code{distm_FUN} is on the scale of your map (e.g., "distm_km"),
+#' re-scaling is not needed but may be preferable, since it is scaled to the
+#' maximum distance among the sampled data rather than the true maximum
+#' distance. For example, dividing the range parameter by \code{max.distance}
+#' and then multiplying it by the true max distance may provide a better range
+#' estimate.
 #'
 #' @return \code{fitCor} returns a list object of class "remoteCor", which contains
 #' these elements:
@@ -68,7 +76,7 @@
 #'      \item{call}{the function call}
 #'      \item{mod}{the \code{nls} fit object, if \code{save_mod=TRUE}}
 #'      \item{spcor}{a vector of the estimated spatial correlation parameters}
-#'      \item{max.distance}{the maximum distance between pixels. Units are determined by \code{distm_FUN}}
+#'      \item{max.distance}{the maximum distance among the sampled pixels, as calculated by \code{dist_FUN}.}
 #'      \item{logLik}{the log-likelihood of the fit}
 #' }
 #'
@@ -133,9 +141,6 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
     deparse(substitute(covar_FUN)) # set covar.f to that string
   }
 
-  # calculate max distance before subsetting data
-  max.d = max_dist(coords, dist_FUN = distm_FUN)
-
   # subset the pixels for fit
   if (!missing(index)){ # specified pixels
     sub.inx = index
@@ -154,6 +159,7 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
 
   # calculate scaled distance
   D = dist.f(coords)
+  max_d = max(D) # max distance among sub-samples
 
   # convert matrices to vectors and combine to data frame
   w = data.frame(dist =  D[upper.tri(D, diag = TRUE)],
@@ -173,13 +179,14 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
   if (err.bool) {
     stop("nls failed to find a solution with the following error: ", "'", err$message, "'",
          "\n  Are values given by start on the same scale as distances calculated with distm_FUN?",
-         "\n  If so, try different starting values or a different covar_FUN")
+         "\n  If so, try different starting values or a different covar_FUN.",
+         "\n  Simply re-running the funciton with different samples may also yield a solution.")
   }
 
   spcor = coef(fit)
 
   out <- list(call = call, mod = if(save_mod){fit}else{NULL}, spcor = spcor,
-              max.distance = max.d, logLik = logLik(fit))
+              max.distance = max_d, logLik = logLik(fit))
   class(out) <- append("remoteCor", class(out))
   return(out)
 }

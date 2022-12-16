@@ -45,7 +45,7 @@ these elements:
      \item{call}{the function call}
      \item{mod}{the \code{nls} fit object, if \code{save_mod=TRUE}}
      \item{spcor}{a vector of the estimated spatial correlation parameters}
-     \item{max.distance}{the maximum distance between pixels. Units are determined by \code{distm_FUN}}
+     \item{max.distance}{the maximum distance among the sampled pixels, as calculated by \code{dist_FUN}.}
      \item{logLik}{the log-likelihood of the fit}
 }
 }
@@ -83,18 +83,26 @@ parameter estimates will be different for each call of the function. For reprodu
 results, we recommend taking a random sample of pixels manually and passing in
 those values as \code{index}.
 
-Parameter estimates always match the scale of distances calculated by \code{distm_FUN}.
-It is very important that these estimates are re-scaled these estimates if needed. For example,
+Caution: Note that a distance matrix, of size \eqn{n \times n} must be fit to the
+sampled data where \eqn{n} is either \code{fit.n} or \code{length(index)}.
+Take your computer's memory and processing time into consideration when choosing
+this size.
+
+Parameter estimates are always returned in the same scale of distances
+calculated by \code{distm_FUN}. It is very important that these estimates
+are re-scaled by users if output of \code{distm_FUN} use units different from
+the desired scale. For example,
 if the function \code{covar_FUN = function(d, r, a){-(d/r)^a}} is used
 with \code{distm_FUN = "distm_scaled"}, the estimated range parameter \code{r}
-can be re-scaled to units of your map by multiplying \code{r} by the
-\code{max.distance} (calculated internally by \code{max_distance}.
-The shape parameter \code{a} would not need re-scaling. If the
-\code{distm_FUN} is on the scale of your map (e.g., "distm_km"), re-scaling
-is not needed.
+will be based on a unit-map. Users will likely want to re-scaled it to map
+units by multiplying \code{r} by the maximum distance among points on your map.
 
-note that when \code{distm_FUN = "distm_scaled"}, \code{max.distance} is
-the maximum distance before re-scaling (in km by default).
+If the \code{distm_FUN} is on the scale of your map (e.g., "distm_km"),
+re-scaling is not needed but may be preferable, since it is scaled to the
+maximum distance among the sampled data rather than the true maximum
+distance. For example, dividing the range parameter by \code{max.distance}
+and then multiplying it by the true max distance may provide a better range
+estimate.
 }
 \examples{
 

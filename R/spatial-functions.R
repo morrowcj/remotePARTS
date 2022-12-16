@@ -191,8 +191,6 @@ covar_exppow <- function(d, range, shape){
 #' @return The maximum distance between two points (units determined by
 #' \code{dist_FUN})
 #'
-#' @export
-#'
 #' @examples
 #' coords <- matrix(stats::rnorm(20e6), ncol = 2)  # cloud of 20 million pixels
 #' max_dist(coords)
