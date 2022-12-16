@@ -14,6 +14,7 @@
 #' @param start a named list of starting parameter values for \code{covar_FUN}, passed to \code{nls}
 #' @param fit.n an integer indicating how many pixels should be used to estimate parameters.
 #' @param index an optional index of pixels to use for parameter estimation
+#' @param save_mod logical: should the nls model be saved in the output?
 #' @param ... additional arguments passed to \code{nls}.
 #'
 #' @details
@@ -62,7 +63,7 @@
 #'
 #' \describe{
 #'      \item{call}{the function call}
-#'      \item{mod}{the \code{nls} fit object}
+#'      \item{mod}{the \code{nls} fit object, if \code{save_mod=TRUE}}
 #'      \item{spcor}{a vector of the estimated spatial correlation parameters}
 #'      \item{max.distance}{the maximum distance between pixels. Units are determined by \code{distm_FUN}}
 #'      \item{logLik}{the log-likelihood of the fit}
@@ -111,7 +112,7 @@
 #'
 #' @export
 fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "covar_exp",
-                   start = list(r = .1), fit.n = 1000, index, ...
+                   start = list(r = .1), fit.n = 1000, index, save_mod = TRUE, ...
                    ){
   call = match.call()
 
@@ -180,7 +181,8 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
 
   spcor = coef(fit)
 
-  out <- list(call = call, mod = fit, spcor = spcor, max.distance = max.d, logLik = logLik(fit))
+  out <- list(call = call, mod = if(save_mod){fit}else{NULL}, spcor = spcor,
+              max.distance = max.d, logLik = logLik(fit))
   class(out) <- append("remoteCor", class(out))
   return(out)
 }
