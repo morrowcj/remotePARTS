@@ -12,6 +12,7 @@ fitCor(
   start = list(r = 0.1),
   fit.n = 1000,
   index,
+  save_mod = TRUE,
   ...
 )
 }
@@ -32,6 +33,8 @@ rows corresponding to each pixel}
 
 \item{index}{an optional index of pixels to use for parameter estimation}
 
+\item{save_mod}{logical: should the nls model be saved in the output?}
+
 \item{...}{additional arguments passed to \code{nls}.}
 }
 \value{
@@ -40,7 +43,7 @@ these elements:
 
 \describe{
      \item{call}{the function call}
-     \item{mod}{the \code{nls} fit object}
+     \item{mod}{the \code{nls} fit object, if \code{save_mod=TRUE}}
      \item{spcor}{a vector of the estimated spatial correlation parameters}
      \item{max.distance}{the maximum distance between pixels. Units are determined by \code{distm_FUN}}
      \item{logLik}{the log-likelihood of the fit}
