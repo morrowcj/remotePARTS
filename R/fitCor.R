@@ -181,7 +181,7 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
 
   spcor = coef(fit)
 
-  out <- list(call = call, mod = ifelse(save_mod, fit, NULL), spcor = spcor,
+  out <- list(call = call, mod = if(save_mod){fit}else{NULL}, spcor = spcor,
               max.distance = max.d, logLik = logLik(fit))
   class(out) <- append("remoteCor", class(out))
   return(out)
