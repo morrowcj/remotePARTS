@@ -27,7 +27,7 @@ This is a fast, simple way of determining the maximum distance.
 }
 \examples{
 coords <- matrix(stats::rnorm(20e6), ncol = 2)  # cloud of 20 million pixels
-max_dist(coords)
+remotePARTS:::max_dist(coords)
 
-max_dist(coords, dist_FUN = "distm_scaled")
+remotePARTS:::max_dist(coords, dist_FUN = "distm_scaled")
 }

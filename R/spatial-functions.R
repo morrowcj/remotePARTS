@@ -193,9 +193,9 @@ covar_exppow <- function(d, range, shape){
 #'
 #' @examples
 #' coords <- matrix(stats::rnorm(20e6), ncol = 2)  # cloud of 20 million pixels
-#' max_dist(coords)
+#' remotePARTS:::max_dist(coords)
 #'
-#' max_dist(coords, dist_FUN = "distm_scaled")
+#' remotePARTS:::max_dist(coords, dist_FUN = "distm_scaled")
 max_dist <- function(coords, dist_FUN = "distm_km"){
   convex_hull = grDevices::chull(coords)
   boundary_coords = coords[convex_hull, ]
