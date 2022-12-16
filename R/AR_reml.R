@@ -302,6 +302,7 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
 #'    \item{SEs}{a numeric matrix of coefficient standard errors}
 #'    \item{tstats}{a numeric matrix of t-statistics for coefficients}
 #'    \item{pvals}{a numeric matrix of p-values for coefficients t-tests}
+#'    \item{rhos}{a vector of rho values for each pixel}
 #'    \item{MSEs}{a numeric vector of MSEs}
 #'    \item{logLiks}{a numeric vector of log-likelihoods}
 #'    \item{fitted.values}{a numeric matrix of fitted values}
@@ -416,6 +417,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
                          dimnames = list(NULL, names(ar$tstat)))
         pvals <- matrix(NA, nrow = n.pix, ncol = length(ar$pval),
                         dimnames = list(NULL, names(ar$pval)))
+        rhos <- rep(NA, times = n.pix)
         MSEs <- vector("numeric", n.pix)
         logLiks <- vector("numeric", n.pix)
         fitted.values <- matrix(NA, nrow = n.pix, ncol = length(ar$fitted.values))
@@ -428,6 +430,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
       MSEs[i] <- ar$MSE
       logLiks[i] <- ar$logLik
       fitted.values[i, ] <- ar$fitted.values
+      rhos[i] <- ar$rho
     }
   }
 
@@ -436,7 +439,7 @@ fitAR_map <- function(Y, coords, formula = "y ~ t",
     out <- list(call = call, coords = coords, residuals = residuals)
     attr(out, "resids.only") = TRUE
   } else {
-    out <- list(call = call, coords = coords, coefficients = coefficients, SEs = SEs, tstats = tstats,
+    out <- list(call = call, coords = coords, coefficients = coefficients, rhos = rhos, SEs = SEs, tstats = tstats,
                 pvals = pvals, MSEs = MSEs, logLiks = logLiks, fitted.values = fitted.values,
                 residuals = residuals)
     attr(out, "resids.only") = FALSE

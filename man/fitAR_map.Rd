@@ -53,6 +53,7 @@ correspond to time points and vector elements correspond to pixels.
    \item{SEs}{a numeric matrix of coefficient standard errors}
    \item{tstats}{a numeric matrix of t-statistics for coefficients}
    \item{pvals}{a numeric matrix of p-values for coefficients t-tests}
+   \item{rhos}{a vector of rho values for each pixel}
    \item{MSEs}{a numeric vector of MSEs}
    \item{logLiks}{a numeric vector of log-likelihoods}
    \item{fitted.values}{a numeric matrix of fitted values}
