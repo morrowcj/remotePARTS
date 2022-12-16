@@ -22,7 +22,7 @@
 #' For accurate results, \code{resids} and \code{coords} must be paired matrices.
 #' Rows of both matrices should correspond to the same pixels.
 #'
-#' Distances between pixels are calculated with the function specified by
+#' Distances between sapmled pixels are calculated with the function specified by
 #' \code{distm_FUN}. This function can be any that takes a coordinate
 #' matrix as input and returns a distance matrix between points. Some options
 #' provided by \code{remotePARTS} are \code{distm_km()}, which returns distances
@@ -49,11 +49,14 @@
 #' those values as \code{index}.
 #'
 #' Parameter estimates always match the scale of distances calculated by \code{distm_FUN}.
-#' It is very important that you re-scale these estimates if needed. For example,
+#' It is very important that these estimates are re-scaled these estimates if needed. For example,
 #' if the function \code{covar_FUN = function(d, r, a){-(d/r)^a}} is used
 #' with \code{distm_FUN = "distm_scaled"}, the estimated range parameter \code{r}
 #' can be re-scaled to units of your map by multiplying \code{r} by the
-#' \code{max.distance}. The shape parameter \code{a} would not need re-scaling.
+#' \code{max.distance} (calculated internally by \code{max_distance}.
+#' The shape parameter \code{a} would not need re-scaling. If the
+#' \code{distm_FUN} is on the scale of your map (e.g., "distm_km"), re-scaling
+#' is not needed.
 #'
 #' note that when \code{distm_FUN = "distm_scaled"}, \code{max.distance} is
 #' the maximum distance before re-scaling (in km by default).

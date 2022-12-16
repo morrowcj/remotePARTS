@@ -199,7 +199,7 @@ covar_exppow <- function(d, range, shape){
 #'
 #' max_dist(coords, dist_FUN = "distm_scaled")
 max_dist <- function(coords, dist_FUN = "distm_km"){
-  convex_hull = chull(coords)
+  convex_hull = grDevices::chull(coords)
   boundary_coords = coords[convex_hull, ]
   # match distance function
   dist.f = match.fun(dist_FUN)
