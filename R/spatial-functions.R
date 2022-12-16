@@ -176,3 +176,34 @@ covar_exppow <- function(d, range, shape){
   exp(-(d/range)^shape)
 }
 
+
+#' calculate maximum distance among a table of coordinates
+#'
+#' @param coords the coordinate matrix (or dataframe) from which a maximum distance is desired.
+#' @param dist_FUN the distance function used to calculate distances
+#'
+#' @details First the outermost points are found by fitting a convex hull in
+#' Euclidean space. Then, the distances between these outer points is calculated
+#' with \code{dist_FUN}, and the maximum of these distances is returned
+#'
+#' This is a fast, simple way of determining the maximum distance.
+#'
+#' @return The maximum distance between two points (units determined by
+#' \code{dist_FUN})
+#'
+#' @export
+#'
+#' @examples
+#' coords <- matrix(stats::rnorm(20e6), ncol = 2)  # cloud of 20 million pixels
+#' max_dist(coords)
+#'
+#' max_dist(coords, dist_FUN = "distm_scaled")
+max_dist <- function(coords, dist_FUN = "distm_km"){
+  convex_hull = chull(coords)
+  boundary_coords = coords[convex_hull, ]
+  # match distance function
+  dist.f = match.fun(dist_FUN)
+  D = dist.f(boundary_coords)
+  max_d = max(D)
+  return(max(D))
+}

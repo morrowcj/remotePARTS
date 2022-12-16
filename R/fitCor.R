@@ -130,23 +130,17 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
     deparse(substitute(covar_FUN)) # set covar.f to that string
   }
 
+  # calculate max distance before subsetting data
+  max.d = max_dist(coords, dist_FUN = distm_FUN)
+
   # subset the pixels for fit
   if (!missing(index)){ # specified pixels
     sub.inx = index
   } else { # random pixels
     # dimensions
-    n = nrow(resids); p = ncol(resids)
-    fit.n = ifelse(fit.n < n, fit.n, n)
-
-    # max distance
-    max.d = dist.f(coords)
-    if("max.dist" %in% names(attributes(max.d))){
-      max.d = attr(max.d, "max.dist")
-    } else {
-      max.d = max(max.d, na.rm = TRUE)
-    }
-
-    # subset
+    n = nrow(resids)
+    fit.n = min(fit.n, n)  # prevent fit.n > n
+    # random subset
     sub.inx = sample.int(n, fit.n)
   }
   resids = resids[sub.inx, ]
