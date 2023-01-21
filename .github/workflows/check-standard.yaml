@@ -45,15 +45,7 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
-      - name: Check
-        if: runner.os != "macos"
-        uses: r-lib/actions/check-r-package@v2
+      - uses: r-lib/actions/check-r-package@v2
         with:
-          upload-snapshots: true
-
-      - name: Check Mac
-        if: runner.os == "macos"
-        uses: r-lib/actions/check-r-package@v2
-        with:
-          upload-snapshots: true
           error-on: '"error"'
+          upload-snapshots: true
