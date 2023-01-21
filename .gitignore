@@ -15,3 +15,7 @@ data-raw
 /Meta/
 
 README.html
+
+# built versions of the package
+builds/
+figure/
