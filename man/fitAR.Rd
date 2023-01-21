@@ -111,18 +111,18 @@ coefficients(AR)
 
 
 # simulate dummy data
-# x = rnorm(31)
-# time = 1:30
-# x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-# U = stats::model.matrix(formula(x ~ time))
+x = rnorm(31)
+time = 1:30
+x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
+U = stats::model.matrix(formula(x ~ time))
 
 # fit an AR
-# remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
+remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
 
 # get the partial logLik of the AR parameter, given the data.
-# remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
+remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
 
-# # show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
+# show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
 # n = 100
 # out.mat = matrix(NA, nrow = n, ncol = 3,
 #                  dimnames = list(NULL, c("par", "logLik", "partialLL")))

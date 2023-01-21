@@ -81,6 +81,13 @@ tools are up to date.
 The vignette is also available online:
 <https://morrowcj.github.io/remotePARTS/Alaska.html>.
 
+## Bugs and feature requests
+
+If you find any bugs, have a feature or improvement to suggest, or any
+other feedback about the `remotePARTS` package, please submit a GitHub
+Issue [here](https://github.com/morrowcj/remotePARTS/issues). We really
+appreciate any and all feedback.
+
 # References
 
 Ives, Anthony R., et al. “Statistical inference for trends in

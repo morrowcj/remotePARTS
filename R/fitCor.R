@@ -103,18 +103,18 @@
 #'
 #' # using pre-defined covariance function
 #' ## exponential covariance
-#' # fitCor(AR.map$residuals, coords, covar_FUN = "covar_exp", start = list(range = .1))
+#' fitCor(AR.map$residuals, coords, covar_FUN = "covar_exp", start = list(range = .1))
 #' ## exponential-power covariance
-#' # fitCor(AR.map$residuals, coords, covar_FUN = "covar_exppow", start = list(range = .1, shape = .2))
+#' fitCor(AR.map$residuals, coords, covar_FUN = "covar_exppow", start = list(range = .1, shape = .2))
 #'
 #' # user-specified covariance function
-#' # fitCor(AR.map$residuals, coords, covar_FUN = function(d, r){d^r}, start = list(r = .1))
+#' fitCor(AR.map$residuals, coords, covar_FUN = function(d, r){d^r}, start = list(r = .1))
 #'
 #' # un-scaled distances:
-#' # fitCor(AR.map$residuals, coords, distm_FUN = "distm_km", start = list(r = 106))
+#' fitCor(AR.map$residuals, coords, distm_FUN = "distm_km", start = list(r = 106))
 #'
 #' # specify which pixels to use, for reproducibility
-#' # fitCor(AR.map$residuals, coords, index = 1:64)$spcor #all
+#' fitCor(AR.map$residuals, coords, index = 1:64)$spcor #all
 #' # fitCor(AR.map$residuals, coords, index = 1:20)$spcor #first 20
 #' # fitCor(AR.map$residuals, coords, index = 21:64)$spcor # last 43
 #' # randomly select pixels
