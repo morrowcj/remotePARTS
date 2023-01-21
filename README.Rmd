@@ -83,6 +83,12 @@ up to date.
 The vignette is also available online: 
 https://morrowcj.github.io/remotePARTS/Alaska.html.
 
+## Bugs and feature requests
+
+If you find any bugs, have a feature or improvement to suggest, or any other feedback about the `remotePARTS` package,
+please submit a GitHub Issue [here](https://github.com/morrowcj/remotePARTS/issues). We really appreciate any and all
+feedback.
+
 # References
 
 Ives, Anthony R., et al. "Statistical inference for trends in spatiotemporal data." Remote Sensing of Environment 266 (2021): 112678. https://doi.org/10.1016/j.rse.2021.112678 

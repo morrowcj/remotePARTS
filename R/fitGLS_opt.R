@@ -180,8 +180,16 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
   # append arguments given by ... to the argument list
   arg.list = append(arg.list, list(...)) # add additional arguments to arg list
 
+  if(debug){
+    cat("optimizing...\n")
+  }
+
   # call optim, and pass arguments
   opt.out <- do.call(optim, args = arg.list)
+
+  if(debug){
+    cat("solution found\n")
+  }
 
   # back-transform the parameter values to their original scale
   if(is.trans){
@@ -207,9 +215,6 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
     }
   }
 
-  if(debug){
-    cat("\noutput:\n")
-  }
   if(opt.only){
     return(opt.out)
   } else {
@@ -299,9 +304,13 @@ fitGLS_opt_FUN <- function(op, fp, formula, data = NULL, coords, covar_FUN = "co
   args = append(list(d = V), as.list(sp.pars))
   V = do.call(cov.f, args) # replace with covariance
   ## Calculate log-likelihood
-  logLik = suppressWarnings(fitGLS(formula = formula, data = data, V = V, formula0 = NULL,
-                  save.xx = FALSE, save.invchol = FALSE, logLik.only = TRUE, no.F = TRUE,
-                  nugget = nug))
+  logLik = suppressWarnings(
+    tryCatch(expr = {fitGLS(formula = formula, data = data, V = V,
+                            formula0 = NULL, save.xx = FALSE,
+                            save.invchol = FALSE, logLik.only = TRUE,
+                            no.F = TRUE, nugget = nug)},
+             error = function(e){return(NA)})
+  )
   return(-logLik)
 }
 

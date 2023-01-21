@@ -1,3 +1,9 @@
+# v1.0.3
+* fixed bug where `fitGLS_opt()` would fail if one of the iterations in the 
+optimization loop raises an error.
+* added explicit call to "BFGS" method while using `fitGLS_opt()` in the 
+vignette and lowered tolerance to improve speed.
+
 # v1.0.2
 
 * fixed a bug where `fitCor()` was calculating a full distance matrix instead

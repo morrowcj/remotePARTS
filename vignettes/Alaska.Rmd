@@ -253,8 +253,7 @@ this covariance function.
 ```{r visualize_range, fig.asp = 1, fig.width = 4.5, include = FALSE}
 curve(covar_exp(x, r = .1), xlab = "distance", ylab = "covar_exp(d, r)")
 curve(covar_exp(x, r = .2), add = TRUE, col = "red")
-legend("topright", legend = c("0.1", "0.2"), title = "r", 
-       col = c("black", "red"), lty = 1)
+legend("topright", legend = c("0.1", "0.2"), title = "r", col = c("black", "red"), lty = 1)
 ```
 
 `V` represents the correlation among points if all variation is accounted for.
@@ -267,8 +266,7 @@ $I$ is the identity matrix.
 nugget <- .3
 curve(covar_exp(x, r = .1), xlab = "distance", ylab = "covar_exp(d, r)")
 curve((1-nugget)*covar_exp(x, r = .1), add = TRUE, col = "red")
-legend("topright", legend = c(0, .2), title = expression(eta), 
-       col = c("black", "red"), lty = 1)
+legend("topright", legend = c(0, .2), title = expression(eta), col = c("black", "red"), lty = 1)
 ```
 
 If we know the range parameter $r$, we can calculate `V` from `D` with `covar_exp()`:
@@ -381,9 +379,8 @@ at 0.1. For this example, we will also specify `fit.n = 3000`, which ensures
 that all pixels are used to estimate spatial parameters. 
 
 ```{r fit_range_parameter}
-corfit <- fitCor(resids = residuals(ARfit), coords = coords, 
-                covar_FUN = "covar_exp", start = list(range = 0.1), 
-                fit.n = 3000)
+corfit <- fitCor(resids = residuals(ARfit), coords = coords, covar_FUN = "covar_exp", 
+                 start = list(range = 0.1), fit.n = 3000)
 (range.opt = corfit$spcor)
 ```
 
@@ -397,9 +394,8 @@ map:
 
 ```{r fit_range_km, eval = FALSE}
 max.dist <- max(distm_km(coords))
-corfit.km <- fitCor(resids = residuals(ARfit), coords = coords, 
-                   covar_FUN = "covar_exp", start = list(range = max.dist*0.1),
-                   distm_FUN = "distm_km", fit.n = 3000)
+corfit.km <- fitCor(resids = residuals(ARfit), coords = coords, covar_FUN = "covar_exp", 
+                    start = list(range = max.dist*0.1), distm_FUN = "distm_km", fit.n = 3000)
 ```
 
 Note that, depending on the covariance function used, not all parameters will 
@@ -428,8 +424,7 @@ so that F-tests are calculated. For the F-tests, the default reduced model is th
 it is also possible to specify alternative reduced models as a formula in the `formula0` option.
 
 ```{r optimized_nugget}
-GLS.opt <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, nugget = NA, 
-                 no.F = FALSE)
+GLS.opt <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, nugget = NA, no.F = FALSE)
 (nug.opt = GLS.opt$nugget)
 coefficients(GLS.opt)
 ```
@@ -457,16 +452,19 @@ This task is computationally slower than optimizing `nugget` alone with
 
 ```{r optimized_GLS, eval = FALSE}
 fitopt <- fitGLS_opt(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, 
-                       coords = ndvi_AK3000[, c("lng", "lat")], 
-                       covar_FUN = "covar_exp", 
-                       start = c(range = .1, nugget = .2))
+                     coords = ndvi_AK3000[, c("lng", "lat")], 
+                     covar_FUN = "covar_exp", 
+                     start = c(range = .1, nugget = .2),
+                     method = "BFGS", # use BFGS algorightm (see ?stats::optim())
+                     control = list(reltol = 1e-5)  # lower the convergence tolerance (see ?stats::optim()) 
+                     )
 fitopt$opt$par
-##      range     nugget 
-## 0.03660171 0.26859993 
+#      range     nugget 
+# 0.02497874 0.17914929 
 fitopt$GLS$logLik
-## [1] 13276.15
+# [1] 12824.77
 fitopt$GLS$MSE
-## [1] 1.720775e-05
+# [1] 2.475972e-05
 ```
 
 Note that, because `fitGLS_opt()` does not require time series residuals, 
@@ -525,8 +523,7 @@ Finally, to test the hypothesis that "temporal trends in NDVI differ with
 latitude", we can regress the AR coefficient on latitude in our GLS model:
 
 ```{r fit_GLS_latitude}
-(GLS.lat <- fitGLS(AR_coef ~ 1 + lat, data = ndvi_AK3000, V = V.opt, nugget = nug.opt,
-                   no.F = FALSE))
+(GLS.lat <- fitGLS(AR_coef ~ 1 + lat, data = ndvi_AK3000, V = V.opt, nugget = nug.opt, no.F = FALSE))
 ```
 
 The t-tests show that temporal trends in NDVI did not differ with latitude. 

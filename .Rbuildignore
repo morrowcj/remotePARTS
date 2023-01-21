@@ -29,3 +29,11 @@ data/ndvi_AK3000\.rda
 cran-comments\.md
 
 README\.html
+
+# build pipeline
+build.R
+render_vignette.R
+check_pkg.R
+build_pipeline.R
+builds/
+figure/
