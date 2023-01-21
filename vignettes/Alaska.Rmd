@@ -457,16 +457,19 @@ This task is computationally slower than optimizing `nugget` alone with
 
 ```{r optimized_GLS, eval = FALSE}
 fitopt <- fitGLS_opt(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, 
-                       coords = ndvi_AK3000[, c("lng", "lat")], 
-                       covar_FUN = "covar_exp", 
-                       start = c(range = .1, nugget = .2))
+                     coords = ndvi_AK3000[, c("lng", "lat")], 
+                     covar_FUN = "covar_exp", 
+                     start = c(range = .1, nugget = .2),
+                     method = "BFGS", # use BFGS algorightm (see ?stats::optim())
+                     control = list(reltol = 1e-5)  # lower the convergence tolerance (see ?stats::optim()) 
+                     )
 fitopt$opt$par
-##      range     nugget 
-## 0.03660171 0.26859993 
+#      range     nugget 
+# 0.02497874 0.17914929 
 fitopt$GLS$logLik
-## [1] 13276.15
+# [1] 12824.77
 fitopt$GLS$MSE
-## [1] 1.720775e-05
+# [1] 2.475972e-05
 ```
 
 Note that, because `fitGLS_opt()` does not require time series residuals, 
