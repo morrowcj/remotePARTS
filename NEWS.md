@@ -1,3 +1,11 @@
+# v1.0.4
+
+* fixed bug where R would crash if 0-intercept model given
+
+* fixed bug where CPU usage would not respect `ncores` for some functions
+
+* updated comments to cran to reflect new tests in preparation for submission.
+
 # v1.0.3
 * fixed bug where `fitGLS_opt()` would fail if one of the iterations in the 
 optimization loop raises an error.
