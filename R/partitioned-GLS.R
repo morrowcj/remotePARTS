@@ -11,7 +11,7 @@
 #'
 #' @param formula a formula, passed to \code{part_FUN} and \code{fitGLS}
 #' @param partmat a numeric partition matrix, with values containing indices of locations.
-#' @param formula0 a formula for the null model, passed to \code{part_FUN} and \code{fitGLS}
+#' @param formula0 a formula for the null model, passed to \code{part_FUN} and \code{fitGLS}.
 #' @param part_FUN a function to partition individual data. See details for more
 #' information about requirements for this function.
 #' @param distm_FUN a function to calculate distances from a coordinate matrix
@@ -295,6 +295,20 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     formula0 = as.formula(formula0)
   }
 
+  # Check for problematic or invalid formula objects ====
+  ## formula are identical
+  if(formula == formula0){
+    warning("formula and formula0 are identical, which prevents model comparison calulations.",
+            "\ndo.chisqr.test set to FALSE")
+    do.chisqr.test = FALSE
+  } else {
+  }
+  ## no right-hand side (i.e., formula(x ~ 0) or update(form, . ~ 0))
+  if(formula[-2]=="~0" | formula0[-2]=="~0" | formula[-2]=="~1 - 1" | formula0[-2]=="~1 - 1"){
+    stop("invalid formula: the right hand side may not be empty ('~0')")
+  }
+  # ====
+
   ## Decide if calculations should be parallelized
   if(!is.na(ncores) && parallel & ncores > 1){
     if(debug){cat("Conducting parallel paritioned GLS\n")}
@@ -334,7 +348,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
                                nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
                                no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
-                               ncores = ncores)
+                               ncores = ncores, suppress_compare_warning = TRUE)
         ## build some empty stat tables on first loop
         if (i == 1){
           p = ncol(partGLS[[1]]$xx)
@@ -365,7 +379,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
         LLs[i] = partGLS[[i]]$logLik
         SSEs[i] = partGLS[[i]]$SSE
         MSEs[i] = partGLS[[i]]$MSE
-        MSRs[i] = partGLS[[i]]$MSR
+        MSRs[i] = ifelse(is.null(partGLS[[i]]$MSR) | length(partGLS[[i]]$MSR) == 0, NA, partGLS[[i]]$MSR)
         Fstats[i] = partGLS[[i]]$Fstat
         Fpvals [i] = partGLS[[i]]$pval_F
       }
@@ -385,7 +399,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
           partGLS[[j]] <- fitGLS(formula = formula, data = jdat$data, V = Vj,
                                  nugget = nugget, formula0 = formula0, save.xx = TRUE,
                                  no.F = FALSE, save.invchol = TRUE, logLik.only= FALSE,
-                                 ncores = ncores)
+                                 ncores = ncores, suppress_compare_warning = TRUE)
           if(length(partGLS[[j]]$coefficients) != ncol(coefs)){
             stop("dimension mismatch: different number of coefficients between parts i and j. Filter data or try different partition matrix.")
           }
