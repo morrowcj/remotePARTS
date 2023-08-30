@@ -50,6 +50,7 @@ double optimize_nugget_cpp(const MapMatd& X, const MapMatd& X0, const MapMatd& V
                            double lower, double upper, double tol,
                            const MapMatd& invchol, bool use_invchol,
                            bool debug, int ncores){
+  Eigen::setNbThreads(ncores);
 
   // varible declaration
   double ax = lower;

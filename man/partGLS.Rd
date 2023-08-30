@@ -274,7 +274,8 @@ can occur simultaneously..
 
 When \code{parallel = FALSE} and \code{ncores > 1}, then most calculations
 are done on a single core but matrix opperations use multiple cores. In this
-case, \code{ncores} is passed to fitGLS.
+case, \code{ncores} is passed to fitGLS. In this option, it is suggested
+to not exceed the number of physical cores (not threads).
 
 When \code{ncores <= 1}, then the calculations are completely serialized
 

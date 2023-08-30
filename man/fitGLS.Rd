@@ -20,6 +20,7 @@ fitGLS(
   covar.pars,
   invCholV,
   ncores = NA,
+  suppress_compare_warning = FALSE,
   ...
 )
 }
@@ -65,6 +66,9 @@ of \code{V}}
 
 \item{ncores}{an optional integer indicating how many CPU threads to use for
 matrix calculations.}
+
+\item{suppress_compare_warning}{an optional variable to suppress warning that
+arises from identical \code{formula} and \code{formula0}.}
 
 \item{...}{additional arguments passed to \code{optimize_nugget}, which are
 only used if if \code{nugget = NA}}

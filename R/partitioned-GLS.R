@@ -99,7 +99,8 @@
 #'
 #' When \code{parallel = FALSE} and \code{ncores > 1}, then most calculations
 #' are done on a single core but matrix opperations use multiple cores. In this
-#' case, \code{ncores} is passed to fitGLS.
+#' case, \code{ncores} is passed to fitGLS. In this option, it is suggested
+#' to not exceed the number of physical cores (not threads).
 #'
 #' When \code{ncores <= 1}, then the calculations are completely serialized
 #'
@@ -317,13 +318,13 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
                                          distm_FUN = distm_FUN, covar_FUN = covar_FUN,
                                          covar.pars = covar.pars, nugget = nugget,
                                          ncross = ncross, save.GLS = save.GLS,
-                                         do.chisqr.test = do.chisqr.test,
+                                         do.chisqr.test = do.chisqr.test, ncores = ncores,
                                          ...)
     outlist$call <- call # update call
   } else {
     if(debug){cat("Conducting partitioned GLS\n")}
     if(is.na(ncores)){
-      ncores = 0L
+      ncores = 0L  # Tell C++ to use machine (OpenMP) configured cores
     } else {
       ncores = as.integer(ncores)
     }

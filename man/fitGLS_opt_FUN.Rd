@@ -13,7 +13,8 @@ fitGLS_opt_FUN(
   covar_FUN = "covar_exp",
   distm_FUN = "distm_scaled",
   is.trans = FALSE,
-  backtrans = list()
+  backtrans = list(),
+  ncores = NA
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ transformed, needing back-transformation?}
 \item{backtrans}{optional: a named list of functions used to backtransform any element
 of \code{op} or \code{fp}. Names must correspond to names in \code{op}
 or \code{fp}.}
+
+\item{ncores}{an optional integer indicating how many CPU threads to use for calculations.}
 }
 \value{
 \code{fitGLS_opt_FUN} returns the negative log likelihood of a GLS,
