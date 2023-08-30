@@ -31,6 +31,6 @@ cran-comments\.md
 README\.html
 
 # build pipeline
-build.R
+build_pipeline/
 builds/
 figure/
