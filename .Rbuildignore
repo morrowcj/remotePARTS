@@ -19,7 +19,7 @@ data-raw/
 ^Meta$
 
 LICENSE\.md
-README.Rmd
+README\.Rmd
 
 ## ignore the obsolete data
 data/ndvi_AK\.rda
@@ -31,9 +31,6 @@ cran-comments\.md
 README\.html
 
 # build pipeline
-build.R
-render_vignette.R
-check_pkg.R
-build_pipeline.R
+build_pipeline/
 builds/
 figure/

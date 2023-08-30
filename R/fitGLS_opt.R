@@ -25,6 +25,7 @@
 #' @param backtrans optional list of functions for back-transforming parameters
 #' to their correct scale (for use with \code{trans})
 #' @param debug logical: debug mode (for use with \code{trans} and \code{backtrans})
+#' @param ncores an optional integer indicating how many CPU threads to use for calculations.
 #' @param ... additional arguments passed to \code{stats::optim()}
 #'
 #' @details \code{fitGLS_opt} fits a GLS by estimating spatial parameters from
@@ -130,9 +131,15 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
                        formula0 = NULL, save.xx = FALSE, save.invchol = FALSE,
                        no.F = TRUE,
                        trans = list(), backtrans = list(),
-                       debug = TRUE,
+                       debug = TRUE, ncores = NA,
                        ...){
   call = match.call()
+
+  if(is.na(ncores)){
+    ncores = 0L
+  } else {
+    ncores = as.integer(ncores)
+  }
 
   if(debug){
     cat("initial paramters:\n")
@@ -227,7 +234,7 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
                      save.xx = save.xx, save.invchol = save.invchol,
                      logLik.only = FALSE, no.F = no.F, coords = coords,
                      distm_FUN = distm_FUN ,covar_FUN = covar_FUN,
-                     nugget = nug, covar.pars = spars)
+                     nugget = nug, covar.pars = spars, ncores = ncores)
     GLS.out$call = call
     return(list(opt = opt.out, GLS = GLS.out))
   }
@@ -247,6 +254,7 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
 #' @param backtrans optional: a named list of functions used to backtransform any element
 #' of \code{op} or \code{fp}. Names must correspond to names in \code{op}
 #' or \code{fp}.
+#' @param ncores an optional integer indicating how many CPU threads to use for calculations.
 #'
 #' @return \code{fitGLS_opt_FUN} returns the negative log likelihood of a GLS,
 #' given the parameters in \code{op} and \code{fp}
@@ -278,7 +286,7 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
 #'                              backtrans = list(nugget = inv_logit, range = inv_logit))
 #' }
 fitGLS_opt_FUN <- function(op, fp, formula, data = NULL, coords, covar_FUN = "covar_exp", distm_FUN = "distm_scaled",
-                           is.trans = FALSE, backtrans = list()){
+                           is.trans = FALSE, backtrans = list(), ncores = NA){
   ## combine the optimized and fixed parameters into one vector
   all.pars <- if(missing(fp)){op}else{c(op, fp)}
 
@@ -308,7 +316,7 @@ fitGLS_opt_FUN <- function(op, fp, formula, data = NULL, coords, covar_FUN = "co
     tryCatch(expr = {fitGLS(formula = formula, data = data, V = V,
                             formula0 = NULL, save.xx = FALSE,
                             save.invchol = FALSE, logLik.only = TRUE,
-                            no.F = TRUE, nugget = nug)},
+                            no.F = TRUE, nugget = nug, ncores = ncores)},
              error = function(e){return(NA)})
   )
   return(-logLik)

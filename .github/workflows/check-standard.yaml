@@ -47,5 +47,7 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          error-on: '"error"'
+          args: 'c("--no-manual", "--as-cran")'
+          error-on: '"warning"'
+          check-dir: '"check"'
           upload-snapshots: true

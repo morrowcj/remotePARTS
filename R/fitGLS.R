@@ -31,6 +31,8 @@
 #' of \code{V}
 #' @param ncores an optional integer indicating how many CPU threads to use for
 #' matrix calculations.
+#' @param suppress_compare_warning an optional variable to suppress warning that
+#' arises from identical \code{formula} and \code{formula0}.
 #' @param ... additional arguments passed to \code{optimize_nugget}, which are
 #' only used if if \code{nugget = NA}
 #'
@@ -177,6 +179,7 @@
 fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALSE,
                    save.invchol = FALSE, logLik.only = FALSE, no.F = FALSE,
                    coords, distm_FUN ,covar_FUN, covar.pars, invCholV, ncores = NA,
+                   suppress_compare_warning = FALSE,
                    ...){
 
   if(is.na(ncores)){
@@ -196,8 +199,9 @@ fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALS
   mf <- eval(mf, parent.frame())
   mt <- attr(mf, "terms")
   y <- as.double(stats::model.response(mf, "numeric"))
-  if (is.matrix(y)) {stop("response is a matrix: must be a vector")}
+  if (is.matrix(y)) {stop("response is a matrix: must be a vector (only 1 response)")}
   X <- stats::model.matrix(mt, mf, contrasts = NULL)
+  if (ncol(X) < 1){stop("invalid model matrix: no columns (no intercept or independent variables)")}
   rm(mf) # delete the large model frame from memory
 
   # Use invCholV if provided
@@ -239,7 +243,17 @@ fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALS
   } else {
     formula0 = as.formula(formula0)
   }
-  X0 <- if (missing(data) || is.null(data)) { # conditionally assign X0
+  # check formula objects
+  ## identical formulas, model comparison not useful
+  if (!suppress_compare_warning & formula0 == formula & no.F == FALSE){
+    warning("formula and formula0 are identical. Model comparison calculations (F-test) not possible.")
+  }
+  ## no right-hand side (i.e., formula(x ~ 0) or update(form, . ~ 0))
+  if(formula[-2]=="~0" | formula0[-2]=="~0" | formula[-2]=="~1 - 1" | formula0[-2]=="~1 - 1"){
+    stop("invalid formula: the right hand side may not be empty ('~0')")
+  }
+
+    X0 <- if (missing(data) || is.null(data)) { # conditionally assign X0
     model.matrix(formula0)
   } else {
     model.matrix(formula0, data)

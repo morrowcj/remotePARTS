@@ -1,6 +1,6 @@
 Package: remotePARTS
 Title: Spatiotemporal Autoregression Analyses for Large Data Sets
-Version: 1.0.3
+Version: 1.0.4
 Authors@R: 
     c(person(given = "Clay",
            family = "Morrow",
@@ -48,6 +48,7 @@ Suggests:
     sqldf,
     devtools,
     ggplot2,
-    reshape2
+    reshape2,
+    sf
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr

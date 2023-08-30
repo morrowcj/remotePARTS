@@ -20,6 +20,7 @@ fitGLS_opt(
   trans = list(),
   backtrans = list(),
   debug = TRUE,
+  ncores = NA,
   ...
 )
 }
@@ -56,6 +57,8 @@ for final GLS output}
 to their correct scale (for use with \code{trans})}
 
 \item{debug}{logical: debug mode (for use with \code{trans} and \code{backtrans})}
+
+\item{ncores}{an optional integer indicating how many CPU threads to use for calculations.}
 
 \item{...}{additional arguments passed to \code{stats::optim()}}
 }

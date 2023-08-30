@@ -72,8 +72,8 @@ require the `build_vignettes = TRUE` argument when installing with
 
 If you’re having trouble installing or building the package, you may
 need to double check that the R build tools are properly installed on
-your machine: [official Rstudio development
-prerequisites](https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites)
+your machine: official Rstudio development
+prerequisites\](<https://support.posit.co/hc/en-us/articles/200486498-Package-Development-Prerequisites>)
 To do this, use `pkgbuild::has_build_tools(debug = TRUE)` and
 `pkgbuild::check_build_tools(debug = TRUE)` to unsure that your build
 tools are up to date.

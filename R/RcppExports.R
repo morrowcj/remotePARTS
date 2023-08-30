@@ -93,7 +93,7 @@
 #' @param nugget numeric nugget to add to variance matrix
 #' @param ncores integer indicating number of cores to use
 #'
-.invchol_cpp <- function(V, nugget = 0., ncores = 0L) {
+.invchol_cpp <- function(V, nugget, ncores) {
     .Call(`_remotePARTS_invchol_cpp`, V, nugget, ncores)
 }
 

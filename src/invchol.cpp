@@ -7,7 +7,7 @@
 //' @param ncores integer indicating number of cores to use
 //'
 // [[Rcpp::export(.invchol_cpp)]]
-MatrixXd invchol_cpp(const MapMatd& V, double nugget = 0., int ncores = 0L){
+MatrixXd invchol_cpp(const MapMatd& V, double nugget, int ncores){
 
   Eigen::setNbThreads(ncores);
 
