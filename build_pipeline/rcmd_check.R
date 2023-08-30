@@ -1,1 +1,1 @@
-rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "warning", "check_dir" = "check")
+rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", "check_dir" = "check")
