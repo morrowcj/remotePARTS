@@ -48,6 +48,7 @@ Suggests:
     sqldf,
     devtools,
     ggplot2,
-    reshape2
+    reshape2,
+    sf
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
