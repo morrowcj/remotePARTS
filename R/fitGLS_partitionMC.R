@@ -2,32 +2,8 @@
 #'
 #' @rdname partGLS
 #'
-#' @examples
-#' \dontrun{
-#' ## read data
-#' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
+#' @return a "MC_partGLS", which is a precursor to a "partGLS" object
 #'
-#' ## create partition matrix
-#' pm = sample_partitions(nrow(df), npart = 3)
-#'
-#' ## fit GLS with fixed nugget
-#' MCpartGLS = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 0 + land, partmat = pm,
-#'                                      data = df, nugget = 0, ncores = 2L)
-#'
-#' (partGLS.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS, partsize = nrow(pm)))
-#'
-#' MCpartGLS2 = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ lat, partmat = pm,
-#'                                      data = df, nugget = 0, ncores = 2L)
-#'
-#' (partGLS2.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS2, partsize = nrow(pm)))
-#'
-#' MCpartGLS_int = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 1, partmat = pm,
-#'                                          data = df, nugget = 0, ncores = 2L)
-#'
-#' (partGLS_int.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS_int, partsize = nrow(pm)))
-#'
-#' }
 MC_GLSpart <- function(formula, partmat, formula0 = NULL, part_FUN = "part_data",
                        distm_FUN = "distm_scaled", covar_FUN = "covar_exp",
                        covar.pars = c(range = .1), nugget = NA, ncross = 6,

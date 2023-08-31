@@ -31,8 +31,7 @@
 #' and \eqn{\rho}{rho} is the AR(1) autoregression parameter
 #'
 #' \code{fitAR} estimates the parameter via mathematical optimization
-#' of the restricted log-likelihood function calculated by the workhorse function
-#' \code{remotePARTS:::AR_fun()}.
+#' of the restricted log-likelihood function.
 #'
 #' @references
 #'
@@ -151,32 +150,6 @@ fitAR <- function(formula, data = NULL){
 #' linearly and negatively related to the restricted log likelihood
 #' (i.e., partial log-likelihood).
 #'
-#' @examples
-#'
-#' # simulate dummy data
-#' x = rnorm(31)
-#' time = 1:30
-#' x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-#' U = stats::model.matrix(formula(x ~ time))
-#'
-#' # fit an AR
-#' remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
-#'
-#' # get the partial logLik of the AR parameter, given the data.
-#' remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
-#'
-#' # show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
-#' # n = 100
-#' # out.mat = matrix(NA, nrow = n, ncol = 3,
-#' #                  dimnames = list(NULL, c("par", "logLik", "partialLL")))
-#' # out.mat[, "par"] = seq(-10, 10, length.out = n)
-#' # for (i in seq_len(n) ) {
-#' #    p = out.mat[i, "par"]
-#' #    out.mat[i, "logLik"] = remotePARTS:::AR_fun(par = p, y = x, X = U, logLik.only = TRUE)
-#' #    out.mat[i, "partialLL"] = remotePARTS:::AR_fun(par = p, y = x, X = U,
-#' #                                                   logLik.only = FALSE)$logLik
-#' # }
-#' # plot(x = out.mat[, "partialLL"], y = out.mat[, "logLik"])
 AR_fun <- function(par, y, X, logLik.only = TRUE) {
   call = match.call()
 
@@ -319,7 +292,7 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
 #'  ## create empty spatiotemporal variables:
 #'  X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
 #'  Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
-#'  # setup first time point:
+#' # setup first time point:
 #'  Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
 #'  X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
 #'  ## project through time:
@@ -328,13 +301,13 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
 #'    X[, t] <- .2*X[, t-1] + .1*Z[, t] + .05*t + rnorm(nrow(coords), 0 , .25)
 #'  }
 #'
-#' # # visualize dummy data (NOT RUN)
-#' # library(ggplot2);library(dplyr)
-#' # data.frame(coords, X) %>%
-#' #   reshape2::melt(id.vars = c("x", "y")) %>%
-#' #   ggplot(aes(x = x, y = y, fill = value)) +
-#' #   geom_tile() +
-#' #   facet_wrap(~variable)
+#' # visualize dummy data (NOT RUN)
+#' library(ggplot2);library(dplyr)
+#' data.frame(coords, X) %>%
+#'   reshape2::melt(id.vars = c("x", "y")) %>%
+#'   ggplot(aes(x = x, y = y, fill = value)) +
+#'   geom_tile() +
+#'   facet_wrap(~variable)
 #'
 #' # fit AR, showing all output
 #' fitAR_map(X, coords, formula = y ~ t, resids.only = TRUE)

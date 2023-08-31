@@ -7,7 +7,7 @@
 ^.*\.Rproj$
 
 ## remove default C++ exported functions
-R/RcppExports.R
+R/RcppExports\.R
 
 ## raw data folder
 data-raw/
@@ -34,3 +34,6 @@ README\.html
 build_pipeline/
 builds/
 figure/
+
+# unexported examples
+R/unexported_examples\.R

@@ -11,6 +11,9 @@ chisqr(x, ...)
 
 \item{...}{additional arguments}
 }
+\value{
+results of the chi-squared test (generic)
+}
 \description{
 generic S3 method for a chi-squared test
 }

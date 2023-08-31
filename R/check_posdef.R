@@ -5,6 +5,14 @@
 #'
 #' @param M numeric matrix
 #'
+#' @return returns a named logical vector with the following elements:
+#'
+#' \describe{
+#'     \item{sqr}{logical: indicating whether \code{M} is square}
+#'     \item{sym}{logical: indicating whether \code{M} is symmetric}
+#'     \item{posdef}{logical: indicating whether \code{M} is positive-definitive}
+#' }
+#'
 #' @examples
 #'
 #' # distance matrix

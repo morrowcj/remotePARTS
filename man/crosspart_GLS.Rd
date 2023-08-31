@@ -74,53 +74,6 @@ If \code{small = FALSE}, the list only contains the necessary elements
 \description{
 Calculate cross-partition statistics between two GLS partitions
 }
-\examples{
-\dontrun{
-## read data
-data(ndvi_AK10000)
-df = ndvi_AK10000[seq_len(1000), ] # first rows
-
-# partition matrix
-pm = sample_partitions(nrow(df), npart = 2, partsize = 500)
-
-## partition data
-data.i = df[pm[, 1], ]
-data.j = df[pm[, 2], ]
-
-## partition coordinates
-coords.i = data.i[, c("lng", "lat")]
-coords.j = data.j[, c("lng", "lat")]
-
-## partition covariance
-V.i = covar_exp(distm_scaled(coords.i), range = .01)
-V.j = covar_exp(distm_scaled(coords.j), range = .01)
-
-## partition GLS
-GLS.i = fitGLS(CLS_coef ~ 0 + land, data.i, V.i, nugget = 0, save.xx = TRUE,
-               save.invchol = TRUE, no.F = FALSE)
-GLS.j = fitGLS(CLS_coef ~ 0 + land, data.j, V.j, nugget = 0, save.xx = TRUE,
-               save.invchol = TRUE, no.F = FALSE)
-
-## cross-covariance
-V.ij = covar_exp(distm_scaled(coords.i, coords.j), range = .01)
-
-## degrees of freedom
-dfs = remotePARTS:::calc_dfpart(partsize = nrow(pm), p = ncol(GLS.i$xx),
-                                p0 = ncol(GLS.i$xx0))
-
-# Calculate cross-partition statistics
-(crossGLS = remotePARTS:::crosspart_GLS(xxi = GLS.i$xx,
-                                       xxj = GLS.j$xx,
-                                       xxi0 = GLS.i$xx0,
-                                       xxj0 = GLS.j$xx0,
-                                       invChol_i = GLS.i$invcholV,
-                                       invChol_j = GLS.j$invcholV,
-                                       Vsub = V.ij,
-                                       nug_i = GLS.i$nugget,
-                                       nug_j = GLS.j$nugget,
-                                       df1 = dfs[1], df2 = dfs[2]))
-}
-}
 \seealso{
 Other partitionedGLS: 
 \code{\link{MC_GLSpart}()},
