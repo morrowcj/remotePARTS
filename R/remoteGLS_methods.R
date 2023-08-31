@@ -8,9 +8,6 @@
 #' @param no.F optional argument specifying the no.F attribute
 #' @return an empty S3 object of class "remoteGLS"
 #'
-#' @examples
-#' # tmp <- remoteGLS() #empty remoteGLS object
-#'
 remoteGLS <- function(formula, formula0, no.F = FALSE){
   # create empty list
   elements = c("call", # model info

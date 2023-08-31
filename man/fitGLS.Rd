@@ -186,7 +186,6 @@ is used).
 }
 \examples{
 
-\donttest{
 ## read data
 data(ndvi_AK10000)
 df = ndvi_AK10000[seq_len(200), ] # first 200 rows
@@ -219,5 +218,5 @@ fitGLS(CLS_coef ~ 0 + land, data = df, invCholV = invchol)
 
 ## Log-likelihood (fast)
 fitGLS(CLS_coef ~ 0 + land, data = df, V = V, logLik.only = TRUE)
-}
+
 }

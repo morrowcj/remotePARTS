@@ -13,10 +13,9 @@ calc_dfpart(partsize, p, p0)
 
 \item{p0}{number of parameters in null model}
 }
+\value{
+a named vector containing the first and second degrees of freedom ("df1" and "df2", respectively)
+}
 \description{
 calculate degrees of freedom for partitioned GLS
-}
-\examples{
-# calc_dfpart(partsize = 2000, p = 4, p0 = 1)
-
 }

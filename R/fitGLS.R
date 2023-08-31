@@ -141,7 +141,6 @@
 #'
 #' @examples
 #'
-#' \donttest{
 #' ## read data
 #' data(ndvi_AK10000)
 #' df = ndvi_AK10000[seq_len(200), ] # first 200 rows
@@ -174,7 +173,7 @@
 #'
 #' ## Log-likelihood (fast)
 #' fitGLS(CLS_coef ~ 0 + land, data = df, V = V, logLik.only = TRUE)
-#' }
+#'
 #' @export
 fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALSE,
                    save.invchol = FALSE, logLik.only = FALSE, no.F = FALSE,

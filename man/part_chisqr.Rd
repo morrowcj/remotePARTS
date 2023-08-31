@@ -21,6 +21,3 @@ a p-value for the correlated chisqr test
 \description{
 Chisqr test for partitioned GLS
 }
-\examples{
-remotePARTS:::part_chisqr(Fmean = 3.6, rSSR = .021, df1 = 2, npart = 5)
-}

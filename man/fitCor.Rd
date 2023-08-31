@@ -111,12 +111,15 @@ set.seed(19)
 time.points = 30 # time series length
 map.width = 8 # square map width
 coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
+
 ## create empty spatiotemporal variables:
 X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
 Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
-# setup first time point:
+
+## setup first time point:
 Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
 X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
+
 ## project through time:
 for(t in 2:time.points){
   Z[, t] <- Z[, t-1] + rnorm(map.width^2)
@@ -128,6 +131,7 @@ AR.map = fitAR_map(X, coords, formula = y ~ Z, X.list = list(Z = Z), resids.only
 # using pre-defined covariance function
 ## exponential covariance
 fitCor(AR.map$residuals, coords, covar_FUN = "covar_exp", start = list(range = .1))
+
 ## exponential-power covariance
 fitCor(AR.map$residuals, coords, covar_FUN = "covar_exppow", start = list(range = .1, shape = .2))
 
@@ -139,10 +143,10 @@ fitCor(AR.map$residuals, coords, distm_FUN = "distm_km", start = list(r = 106))
 
 # specify which pixels to use, for reproducibility
 fitCor(AR.map$residuals, coords, index = 1:64)$spcor #all
-# fitCor(AR.map$residuals, coords, index = 1:20)$spcor #first 20
-# fitCor(AR.map$residuals, coords, index = 21:64)$spcor # last 43
+fitCor(AR.map$residuals, coords, index = 1:20)$spcor #first 20
+fitCor(AR.map$residuals, coords, index = 21:64)$spcor # last 43
 # randomly select pixels
-# fitCor(AR.map$residuals, coords, fit.n = 20)$spcor #random 20
-# fitCor(AR.map$residuals, coords, fit.n = 20)$spcor #random 20 again
+fitCor(AR.map$residuals, coords, fit.n = 20)$spcor #random 20
+fitCor(AR.map$residuals, coords, fit.n = 20)$spcor # different random 20
 
 }

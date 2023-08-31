@@ -18,27 +18,3 @@ covar function}
 \description{
 Test passing a covariance function and arguments
 }
-\examples{
-#  # distance vector
-#  d = seq(0, 1, length.out = 10)
-#  # named parameter list
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5))
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5, shape = .5))
-#  # unnamed parameter vector
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = .5)
-#  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = c(.5, .5))
-#  # different function
-#  test_covar_fun(d = d, covar_FUN = "covar_taper", covar.pars = list(theta = .5))
-#  # user-defined function, with no extra parameters
-#  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = NULL)
-#  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = list())
-#
-#  map.width = 5 # square map width
-#  coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
-#
-#  # calculate distance
-#  D = geosphere::distm(coords) # distance matrix
-#
-#  test_covar_fun(D, covar.pars = list(range = .1*max(D)))
-
-}

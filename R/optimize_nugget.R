@@ -28,21 +28,6 @@
 #'
 #' @seealso \code{?stats::optimize()}
 #'
-#' @examples
-#' \dontrun{
-#' ## read data
-#' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(200), ] # first 200 rows
-#'
-#' ## format data
-#' X = stats::model.matrix(CLS_coef ~ 0 + land, data = df)
-#'
-#' ## fit covariance matrix
-#' V = covar_exp(distm_scaled(cbind(df$lng, df$lat)), range = .01)
-#'
-#' ## find the ML nugget
-#' remotePARTS:::optimize_nugget(X = X, V = V, y = df$CLS_coef, debug = TRUE)
-#' }
 optimize_nugget <- function(X, y, V, lower = 0.001, upper = 0.999,
                             tol = .Machine$double.eps^.25, debug = FALSE,
                             ncores = NA) {
