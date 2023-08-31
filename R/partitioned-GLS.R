@@ -223,7 +223,6 @@
 #'     MethodsX.
 #'
 #' @examples
-#' \donttest{
 #' ## read data
 #' data(ndvi_AK10000)
 #' df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
@@ -235,19 +234,14 @@
 #' partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 #'                            data = df, nugget = 0, do.t.test = TRUE)
 #'
-#' ## now with a numeric predictor
-#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
-#'
-#' ## 0 intercept (produces NAs) and gives an error in statistical tests
-#' # fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
-#'
-#' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
-#'                  do.chisqr.test = FALSE)
-#'
 #' ## hypothesis tests
 #' chisqr(partGLS) # explanatory power of model
 #' t.test(partGLS) # significance of predictors
 #'
+#' ## now with a numeric predictor
+#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
+#'
+#' \donttest{
 #' ## fit ML nugget for each partition (slow)
 #' (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
 #'                                 data = df, nugget = NA))
@@ -259,7 +253,6 @@
 #' (multicore_fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, ncores = 2L,
 #'                             data = df, nugget = 0, do.chisqr.test = FALSE))
 #'
-#' \dontrun{
 #' ## fully parallel, using 2 cores
 #' (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
 #'                  ncores = 2, parallel = TRUE, debug = FALSE))
@@ -267,7 +260,14 @@
 #'                  ncores = 2, parallel = TRUE, debug = FALSE)
 #' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
 #'                  parallel = TRUE, ncores = 2, do.chisqr.test = FALSE)
-#' }
+#'
+#' # Certain model structures may not be useful:
+#' ## 0 intercept with numeric predictor (produces NAs) and gives a warning in statistical tests
+#' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
+#'
+#' ## intercept-only, gives warning
+#' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
+#'                  do.chisqr.test = FALSE)
 #' }
 #' @export
 fitGLS_partition <- function(formula, partmat, formula0 = NULL,
@@ -521,8 +521,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 #' @param p number of predictors in alternate model
 #' @param p0 number of parameters in null model
 #'
-#' @examples
-#' # calc_dfpart(partsize = 2000, p = 4, p0 = 1)
+#' @returns a named vector containing the first and second degrees of freedom ("df1" and "df2", respectively)
 #'
 calc_dfpart <- function(partsize, p, p0){
   stopifnot(length(partsize) == 1)
@@ -577,52 +576,6 @@ calc_dfpart <- function(partsize, p, p0){
 #' If \code{small = FALSE}, the list only contains the necessary elements
 #' \code{rcoefij}, \code{rSSRij}, and \code{rSSEij}.
 #'
-#' @examples
-#' \dontrun{
-#' ## read data
-#' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(1000), ] # first rows
-#'
-#' # partition matrix
-#' pm = sample_partitions(nrow(df), npart = 2, partsize = 500)
-#'
-#' ## partition data
-#' data.i = df[pm[, 1], ]
-#' data.j = df[pm[, 2], ]
-#'
-#' ## partition coordinates
-#' coords.i = data.i[, c("lng", "lat")]
-#' coords.j = data.j[, c("lng", "lat")]
-#'
-#' ## partition covariance
-#' V.i = covar_exp(distm_scaled(coords.i), range = .01)
-#' V.j = covar_exp(distm_scaled(coords.j), range = .01)
-#'
-#' ## partition GLS
-#' GLS.i = fitGLS(CLS_coef ~ 0 + land, data.i, V.i, nugget = 0, save.xx = TRUE,
-#'                save.invchol = TRUE, no.F = FALSE)
-#' GLS.j = fitGLS(CLS_coef ~ 0 + land, data.j, V.j, nugget = 0, save.xx = TRUE,
-#'                save.invchol = TRUE, no.F = FALSE)
-#'
-#' ## cross-covariance
-#' V.ij = covar_exp(distm_scaled(coords.i, coords.j), range = .01)
-#'
-#' ## degrees of freedom
-#' dfs = remotePARTS:::calc_dfpart(partsize = nrow(pm), p = ncol(GLS.i$xx),
-#'                                 p0 = ncol(GLS.i$xx0))
-#'
-#' # Calculate cross-partition statistics
-#' (crossGLS = remotePARTS:::crosspart_GLS(xxi = GLS.i$xx,
-#'                                        xxj = GLS.j$xx,
-#'                                        xxi0 = GLS.i$xx0,
-#'                                        xxj0 = GLS.j$xx0,
-#'                                        invChol_i = GLS.i$invcholV,
-#'                                        invChol_j = GLS.j$invcholV,
-#'                                        Vsub = V.ij,
-#'                                        nug_i = GLS.i$nugget,
-#'                                        nug_j = GLS.j$nugget,
-#'                                        df1 = dfs[1], df2 = dfs[2]))
-#'}
 crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
                           nug_i, nug_j, df1, df2, small = TRUE, ncores = NA){
   if(is.na(ncores)){
@@ -680,13 +633,12 @@ crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
 #'     \item{coords}{a coordinate matrix for the subset}
 #' }
 #'
-#' @export
 #'
 #' @examples
-#'
 #' ## part_data examples
 #' part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK10000)
 #'
+#' @export
 part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("lng", "lat")){
   if(missing(data)){
     stop("missing argument 'data'. 'data' required for function part_data()")
@@ -719,12 +671,9 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #'
 #' @param file a text string indicating the csv file from which to read data
 #'
-#' @export
-#'
 #' @examples
-#' \dontrun{
-#' ## part_csv examples
-#' ## CAUTION: this example for part_csv() requires file manipulation:
+#' \donttest{
+#' ## part_csv examples - ## CAUTION: examples for part_csv() include manipulation side-effects:
 #' # first, create a .csv file from ndviAK
 #' data(ndvi_AK10000)
 #' file.path = "ndviAK10000-remotePARTS.csv"
@@ -739,6 +688,8 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #' # remove the example csv file from disk
 #' file.remove(file.path)
 #' }
+#'
+#' @export
 part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng", "lat")){
 
   if(is.null(formula0)){
@@ -803,13 +754,13 @@ part_csv <- function(index, formula, file, formula0 = NULL, coord.names = c("lng
 #' # partitions with 10 pixels each (exhaustive)
 #' sample_partitions(npix = nrow(dat.M), partsize = 10)
 #'
-#' # 4 partitions each with 10 pixels (non-exhaustive)
-#' # sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
+#' # 4 partitions each with 10 pixels (non-exhaustive, produces warning)
+#' sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
 #'
-#' # index of 50 pixels to subset
+#' # index of 50 pixels to use as subset
 #' sub.indx <- c(1:10, 21:25, 30:62, 70:71)
 #'
-#' # 5 partitions (exhaustive) using only the specified pixels
+#' # 5 partitions (exhaustive) from only the specified pixel subset
 #' sample_partitions(npix = nrow(dat.M), npart = 5, pixels = sub.indx)
 #'
 #' @export
@@ -843,8 +794,10 @@ sample_partitions <- function(npix, npart = 10, partsize = NA,
     stop("npart * partsize may not be greater than npix")
   }
 
-  remainder = npix %% partsize
-  samp <- sample(from, size = npix - remainder, replace = FALSE)
+  # remainder = npix %% partsize
+  # samp_size = npix - remainder
+  samp_size = npart * partsize
+  samp <- sample(from, size = samp_size, replace = FALSE)
 
   part.mat <- matrix(samp, ncol = npart, nrow = partsize)
   colnames(part.mat) <- paste("part",1:npart, sep = ".")

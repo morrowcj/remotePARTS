@@ -7,6 +7,8 @@
 #' @param ... additional arguments passed to print
 #'
 #' @method print partGLS
+#' @return a print-formatted version of key elements of the "partGLS" object.
+#'
 #' @export
 print.partGLS <- function(x, ...){
   cat("\nCoefficients:\n")
@@ -41,8 +43,6 @@ print.partGLS <- function(x, ...){
 #'
 #' @return a p-value for the correlated chisqr test
 #'
-#' @examples
-#' remotePARTS:::part_chisqr(Fmean = 3.6, rSSR = .021, df1 = 2, npart = 5)
 part_chisqr <- function(Fmean, rSSR, df1, npart){
   checks = c(is.na(Fmean) | is.infinite(Fmean),
              is.na(rSSR) | is.infinite(rSSR),
@@ -75,6 +75,7 @@ part_chisqr <- function(Fmean, rSSR, df1, npart){
 #'
 #' @param x object on which to conduct the test
 #' @param ... additional arguments
+#' @return results of the chi-squared test (generic)
 #'
 #' @export
 chisqr <- function(x, ...){

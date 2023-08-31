@@ -75,8 +75,7 @@ Gaussian random variable with mean zero and standard deviation
 and \eqn{\rho}{rho} is the AR(1) autoregression parameter
 
 \code{fitAR} estimates the parameter via mathematical optimization
-of the restricted log-likelihood function calculated by the workhorse function
-\code{remotePARTS:::AR_fun()}.
+of the restricted log-likelihood function.
 
 \code{AR_fun} is the work horse behind \code{fitAR} that is called
 by \code{optim} to estimate the autoregression parameter \eqn{\rho}{rho}.
@@ -109,31 +108,6 @@ summary(AR)
 residuals(AR)
 coefficients(AR)
 
-
-# simulate dummy data
-x = rnorm(31)
-time = 1:30
-x = x[2:31] + x[1:30] + 0.3*time #AR(1) process + time trend
-U = stats::model.matrix(formula(x ~ time))
-
-# fit an AR
-remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
-
-# get the partial logLik of the AR parameter, given the data.
-remotePARTS:::AR_fun(par = .2, y = x, X = U, logLik.only = FALSE)
-
-# show that minimizing the partial logLik maximizes the true logLik (NOT RUN)
-# n = 100
-# out.mat = matrix(NA, nrow = n, ncol = 3,
-#                  dimnames = list(NULL, c("par", "logLik", "partialLL")))
-# out.mat[, "par"] = seq(-10, 10, length.out = n)
-# for (i in seq_len(n) ) {
-#    p = out.mat[i, "par"]
-#    out.mat[i, "logLik"] = remotePARTS:::AR_fun(par = p, y = x, X = U, logLik.only = TRUE)
-#    out.mat[i, "partialLL"] = remotePARTS:::AR_fun(par = p, y = x, X = U,
-#                                                   logLik.only = FALSE)$logLik
-# }
-# plot(x = out.mat[, "partialLL"], y = out.mat[, "logLik"])
 }
 \references{
 Ives, A. R., K. C. Abbott, and N. L. Ziebarth. 2010. Analysis of ecological

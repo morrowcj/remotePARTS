@@ -100,7 +100,7 @@
 #' \donttest{
 #' ## read data
 #' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(200), ] # first 500 rows
+#' df = ndvi_AK10000[seq_len(200), ] # first 200 rows
 #'
 #' ## estimate nugget and range (very slow)
 #' fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,
@@ -259,32 +259,6 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
 #' @return \code{fitGLS_opt_FUN} returns the negative log likelihood of a GLS,
 #' given the parameters in \code{op} and \code{fp}
 #'
-#' @examples
-#' \dontrun{
-#' data(ndvi_AK10000)
-#' df = ndvi_AK10000[seq_len(200), ] # first 500 rows
-#' coords = df[, c("lng", "lat")]
-#' remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = .2),
-#'                              formula = CLS_coef ~ 0 + land, data = df,
-#'                              coords = coords)
-#' remotePARTS:::fitGLS_opt_FUN(op = c(range = .1), fp = c(nugget = 0),
-#'                              formula = CLS_coef ~ 0 + land, data = df,
-#'                              coords = coords)
-#'
-#' logit <- function(p) {log(p / (1 - p))}
-#' inv_logit <- function(l) {1 / (1 + exp(-l))}
-#'
-#' # input logit-transformed range parameters
-#' remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = logit(.2)),
-#'                              formula = CLS_coef ~ 0 + land, data = df,
-#'                              coords = coords, is.trans = TRUE,
-#'                              backtrans = list(nugget = inv_logit))
-#' # transformed range and nugget
-#' remotePARTS:::fitGLS_opt_FUN(op = c(range = logit(.1), nugget = logit(.2)),
-#'                              formula = CLS_coef ~ 0 + land, data = df,
-#'                              coords = coords, is.trans = TRUE,
-#'                              backtrans = list(nugget = inv_logit, range = inv_logit))
-#' }
 fitGLS_opt_FUN <- function(op, fp, formula, data = NULL, coords, covar_FUN = "covar_exp", distm_FUN = "distm_scaled",
                            is.trans = FALSE, backtrans = list(), ncores = NA){
   ## combine the optimized and fixed parameters into one vector

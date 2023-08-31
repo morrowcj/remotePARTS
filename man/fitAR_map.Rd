@@ -83,7 +83,7 @@ right side of \code{formula} are sourced from named elements in \code{X.list}.
  ## create empty spatiotemporal variables:
  X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
  Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
- # setup first time point:
+# setup first time point:
  Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
  X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
  ## project through time:
@@ -92,13 +92,13 @@ right side of \code{formula} are sourced from named elements in \code{X.list}.
    X[, t] <- .2*X[, t-1] + .1*Z[, t] + .05*t + rnorm(nrow(coords), 0 , .25)
  }
 
-# # visualize dummy data (NOT RUN)
-# library(ggplot2);library(dplyr)
-# data.frame(coords, X) \%>\%
-#   reshape2::melt(id.vars = c("x", "y")) \%>\%
-#   ggplot(aes(x = x, y = y, fill = value)) +
-#   geom_tile() +
-#   facet_wrap(~variable)
+# visualize dummy data (NOT RUN)
+library(ggplot2);library(dplyr)
+data.frame(coords, X) \%>\%
+  reshape2::melt(id.vars = c("x", "y")) \%>\%
+  ggplot(aes(x = x, y = y, fill = value)) +
+  geom_tile() +
+  facet_wrap(~variable)
 
 # fit AR, showing all output
 fitAR_map(X, coords, formula = y ~ t, resids.only = TRUE)

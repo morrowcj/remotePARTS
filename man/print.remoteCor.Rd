@@ -11,6 +11,9 @@
 
 \item{...}{additional arguments passed to print()}
 }
+\value{
+a print-formatted version of key elements of the "remoteCor" object.
+}
 \description{
 S3 print method for "remoteCor" class
 }

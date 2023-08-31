@@ -128,6 +128,8 @@ more information}
 \item{file}{a text string indicating the csv file from which to read data}
 }
 \value{
+a "MC_partGLS", which is a precursor to a "partGLS" object
+
 a "partGLS" object
 
 "partGLS" object
@@ -333,32 +335,6 @@ copies of data.
 }
 
 \examples{
-\dontrun{
-## read data
-data(ndvi_AK10000)
-df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
-
-## create partition matrix
-pm = sample_partitions(nrow(df), npart = 3)
-
-## fit GLS with fixed nugget
-MCpartGLS = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 0 + land, partmat = pm,
-                                     data = df, nugget = 0, ncores = 2L)
-
-(partGLS.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS, partsize = nrow(pm)))
-
-MCpartGLS2 = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ lat, partmat = pm,
-                                     data = df, nugget = 0, ncores = 2L)
-
-(partGLS2.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS2, partsize = nrow(pm)))
-
-MCpartGLS_int = remotePARTS:::MC_GLSpart(formula = CLS_coef ~ 1, partmat = pm,
-                                         data = df, nugget = 0, ncores = 2L)
-
-(partGLS_int.mc = remotePARTS:::MCGLS_partsummary(MCpartGLS_int, partsize = nrow(pm)))
-
-}
-\donttest{
 ## read data
 data(ndvi_AK10000)
 df = ndvi_AK10000[seq_len(1000), ] # first 1000 rows
@@ -370,19 +346,14 @@ pm = sample_partitions(nrow(df), npart = 3)
 partGLS = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
                            data = df, nugget = 0, do.t.test = TRUE)
 
-## now with a numeric predictor
-fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
-
-## 0 intercept (produces NAs) and gives an error in statistical tests
-# fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
-
-fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
-                 do.chisqr.test = FALSE)
-
 ## hypothesis tests
 chisqr(partGLS) # explanatory power of model
 t.test(partGLS) # significance of predictors
 
+## now with a numeric predictor
+fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0)
+
+\donttest{
 ## fit ML nugget for each partition (slow)
 (partGLS.opt = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
                                 data = df, nugget = NA))
@@ -394,7 +365,6 @@ partGLS.opt$part$nuggets # ML nuggets
 (multicore_fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, ncores = 2L,
                             data = df, nugget = 0, do.chisqr.test = FALSE))
 
-\dontrun{
 ## fully parallel, using 2 cores
 (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
                  ncores = 2, parallel = TRUE, debug = FALSE))
@@ -402,15 +372,20 @@ fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
                  ncores = 2, parallel = TRUE, debug = FALSE)
 fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
                  parallel = TRUE, ncores = 2, do.chisqr.test = FALSE)
-}
-}
 
+# Certain model structures may not be useful:
+## 0 intercept with numeric predictor (produces NAs) and gives a warning in statistical tests
+fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
+
+## intercept-only, gives warning
+fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
+                 do.chisqr.test = FALSE)
+}
 ## part_data examples
 part_data(1:20, CLS_coef ~ 0 + land, data = ndvi_AK10000)
 
-\dontrun{
-## part_csv examples
-## CAUTION: this example for part_csv() requires file manipulation:
+\donttest{
+## part_csv examples - ## CAUTION: examples for part_csv() include manipulation side-effects:
 # first, create a .csv file from ndviAK
 data(ndvi_AK10000)
 file.path = "ndviAK10000-remotePARTS.csv"
@@ -425,6 +400,7 @@ part_csv(sample(3000, 20), formula = CLS_coef ~ 0 + land, file = file.path)
 # remove the example csv file from disk
 file.remove(file.path)
 }
+
 }
 \references{
 Ives, A. R., L. Zhu, F. Wang, J. Zhu, C. J. Morrow, and V. C. Radeloff. in review.

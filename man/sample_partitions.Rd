@@ -49,13 +49,13 @@ sample_partitions(npix = nrow(dat.M), npart = 4)
 # partitions with 10 pixels each (exhaustive)
 sample_partitions(npix = nrow(dat.M), partsize = 10)
 
-# 4 partitions each with 10 pixels (non-exhaustive)
-# sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
+# 4 partitions each with 10 pixels (non-exhaustive, produces warning)
+sample_partitions(npix = nrow(dat.M), npart = 4, partsize = 10)
 
-# index of 50 pixels to subset
+# index of 50 pixels to use as subset
 sub.indx <- c(1:10, 21:25, 30:62, 70:71)
 
-# 5 partitions (exhaustive) using only the specified pixels
+# 5 partitions (exhaustive) from only the specified pixel subset
 sample_partitions(npix = nrow(dat.M), npart = 5, pixels = sub.indx)
 
 }
