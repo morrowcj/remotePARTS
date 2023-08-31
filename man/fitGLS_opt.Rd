@@ -137,7 +137,7 @@ provided that there is a matching back-transformation.
 \donttest{
 ## read data
 data(ndvi_AK10000)
-df = ndvi_AK10000[seq_len(200), ] # first 500 rows
+df = ndvi_AK10000[seq_len(200), ] # first 200 rows
 
 ## estimate nugget and range (very slow)
 fitGLS_opt(formula = CLS_coef ~ 0 + land, data = df,

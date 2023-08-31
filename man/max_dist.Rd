@@ -25,9 +25,3 @@ with \code{dist_FUN}, and the maximum of these distances is returned
 
 This is a fast, simple way of determining the maximum distance.
 }
-\examples{
-coords <- matrix(stats::rnorm(20e6), ncol = 2)  # cloud of 20 million pixels
-remotePARTS:::max_dist(coords)
-
-remotePARTS:::max_dist(coords, dist_FUN = "distm_scaled")
-}

@@ -263,15 +263,3 @@ smry_funV <- function(x, CL = .95, na.rm = TRUE){
   names(out) <- c("Min", "1Q", "Median", "3Q", "Max", "Mean", "CL.lower", "CL.upper")
   return(out)
 }
-
-## summary ----
-## summary.lm will work for fitCLS but NOT fitAR, so a new method should exist?
-
-## coef ----
-## coef() already works for fitAR, fitCLS, fitAR_map, and fitCLS_map
-
-## residuals ----
-## resid() already works for fitAR, fitCLS, fitAR_map, and fitCLS_map
-
-## plot methods ----
-## plot.lm will no work for either fitCLS or fitAR, so a new method should exist?

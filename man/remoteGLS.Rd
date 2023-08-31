@@ -19,7 +19,3 @@ an empty S3 object of class "remoteGLS"
 \description{
 remoteGLS constructor (S3)
 }
-\examples{
-# tmp <- remoteGLS() #empty remoteGLS object
-
-}

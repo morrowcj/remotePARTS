@@ -48,30 +48,3 @@ given the parameters in \code{op} and \code{fp}
 \description{
 Function that fitGLS_opt optimizes over
 }
-\examples{
-\dontrun{
-data(ndvi_AK10000)
-df = ndvi_AK10000[seq_len(200), ] # first 500 rows
-coords = df[, c("lng", "lat")]
-remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = .2),
-                             formula = CLS_coef ~ 0 + land, data = df,
-                             coords = coords)
-remotePARTS:::fitGLS_opt_FUN(op = c(range = .1), fp = c(nugget = 0),
-                             formula = CLS_coef ~ 0 + land, data = df,
-                             coords = coords)
-
-logit <- function(p) {log(p / (1 - p))}
-inv_logit <- function(l) {1 / (1 + exp(-l))}
-
-# input logit-transformed range parameters
-remotePARTS:::fitGLS_opt_FUN(op = c(range = .1, nugget = logit(.2)),
-                             formula = CLS_coef ~ 0 + land, data = df,
-                             coords = coords, is.trans = TRUE,
-                             backtrans = list(nugget = inv_logit))
-# transformed range and nugget
-remotePARTS:::fitGLS_opt_FUN(op = c(range = logit(.1), nugget = logit(.2)),
-                             formula = CLS_coef ~ 0 + land, data = df,
-                             coords = coords, is.trans = TRUE,
-                             backtrans = list(nugget = inv_logit, range = inv_logit))
-}
-}

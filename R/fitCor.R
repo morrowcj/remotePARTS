@@ -87,12 +87,15 @@
 #' time.points = 30 # time series length
 #' map.width = 8 # square map width
 #' coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
+#'
 #' ## create empty spatiotemporal variables:
 #' X <- matrix(NA, nrow = nrow(coords), ncol = time.points) # response
 #' Z <- matrix(NA, nrow = nrow(coords), ncol = time.points) # predictor
-#' # setup first time point:
+#'
+#' ## setup first time point:
 #' Z[, 1] <- .05*coords[,"x"] + .2*coords[,"y"]
 #' X[, 1] <- .5*Z[, 1] + rnorm(nrow(coords), 0, .05) #x at time t
+#'
 #' ## project through time:
 #' for(t in 2:time.points){
 #'   Z[, t] <- Z[, t-1] + rnorm(map.width^2)
@@ -104,6 +107,7 @@
 #' # using pre-defined covariance function
 #' ## exponential covariance
 #' fitCor(AR.map$residuals, coords, covar_FUN = "covar_exp", start = list(range = .1))
+#'
 #' ## exponential-power covariance
 #' fitCor(AR.map$residuals, coords, covar_FUN = "covar_exppow", start = list(range = .1, shape = .2))
 #'
@@ -115,11 +119,11 @@
 #'
 #' # specify which pixels to use, for reproducibility
 #' fitCor(AR.map$residuals, coords, index = 1:64)$spcor #all
-#' # fitCor(AR.map$residuals, coords, index = 1:20)$spcor #first 20
-#' # fitCor(AR.map$residuals, coords, index = 21:64)$spcor # last 43
+#' fitCor(AR.map$residuals, coords, index = 1:20)$spcor #first 20
+#' fitCor(AR.map$residuals, coords, index = 21:64)$spcor # last 43
 #' # randomly select pixels
-#' # fitCor(AR.map$residuals, coords, fit.n = 20)$spcor #random 20
-#' # fitCor(AR.map$residuals, coords, fit.n = 20)$spcor #random 20 again
+#' fitCor(AR.map$residuals, coords, fit.n = 20)$spcor #random 20
+#' fitCor(AR.map$residuals, coords, fit.n = 20)$spcor # different random 20
 #'
 #' @export
 fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "covar_exp",
@@ -195,6 +199,8 @@ fitCor <- function(resids, coords, distm_FUN = "distm_scaled", covar_FUN = "cova
 #'
 #' @param x remoteCor object to print
 #' @param ... additional arguments passed to print()
+#'
+#' @return a print-formatted version of key elements of the "remoteCor" object.
 print.remoteCor <- function(x, ...){
   # list(call = call, mod = fit, spcor = spcor, max.distance = max.d, logLik = logLik(fit))
   cat("\nCall:\n")
@@ -214,29 +220,6 @@ print.remoteCor <- function(x, ...){
 #' which must take \code{d} as its first argument
 #' @param covar.pars vector or list of parameters (other than d) passed to the
 #' covar function
-#'
-#' @examples
-#' #  # distance vector
-#' #  d = seq(0, 1, length.out = 10)
-#' #  # named parameter list
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5))
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = list(range = .5, shape = .5))
-#' #  # unnamed parameter vector
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = .5)
-#' #  test_covar_fun(d = d, covar_FUN = "covar_exppow", covar.pars = c(.5, .5))
-#' #  # different function
-#' #  test_covar_fun(d = d, covar_FUN = "covar_taper", covar.pars = list(theta = .5))
-#' #  # user-defined function, with no extra parameters
-#' #  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = NULL)
-#' #  test_covar_fun(d = d, covar_FUN = function(d){return(d)}, covar.pars = list())
-#' #
-#' #  map.width = 5 # square map width
-#' #  coords = expand.grid(x = 1:map.width, y = 1:map.width) # coordinate matrix
-#' #
-#' #  # calculate distance
-#' #  D = geosphere::distm(coords) # distance matrix
-#' #
-#' #  test_covar_fun(D, covar.pars = list(range = .1*max(D)))
 #'
 test_covar_fun <- function(d, covar_FUN = "covar_exppow", covar.pars = list(range = .5)){
   cov_f <- match.fun(covar_FUN)
