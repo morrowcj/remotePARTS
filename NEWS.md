@@ -1,3 +1,12 @@
+# v1.0.4.2
+
+* updated the parallel defaults for all functions. Now, `ncores=NA` is equivalent to `ncores=1` instead of using
+the `C++` compiler default for `Eigen`.
+
+* Additionally, we removed parallel examples from `partGLS` due to uncertainty in our understanding of CRAN's
+test setup using more cores than any of our test machines.
+
+
 # v1.0.4
 
 * fixed bug where R would crash if 0-intercept model given

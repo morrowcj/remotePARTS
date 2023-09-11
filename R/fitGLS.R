@@ -182,7 +182,7 @@ fitGLS <- function(formula, data, V, nugget = 0, formula0 = NULL, save.xx = FALS
                    ...){
 
   if(is.na(ncores)){
-    ncores = 0L
+    ncores = 1
   } else {
     ncores = as.integer(ncores)
   }

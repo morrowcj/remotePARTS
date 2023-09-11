@@ -59,7 +59,7 @@ of the systems I have personally tested with.
 (10-20 seconds total) since the functions documented in these files need to 
 invert multiple large matrices. 
 
-## Updates after intitial submission
+## Updates after intitial submission 
 
 After initial submission, I received correspondence from Benjamin Altmann at CRAN. In response to the requested 
 changes I have:
@@ -70,5 +70,12 @@ changes I have:
 * removed all `@examples` from un-exported functions
 * removed examples wrapped in `\dontrun{}` and replaced them with `\donttest{}` where necessary.
 * removed commented out code in examples
+
+### Second update:
+
+Next, it appears that the examples for `partGLS` ran on CRAN's check system using more than 2 cores. We were unable
+to replicate these results on any of our test machines (`(user + system) / elapsed < 2.5` for all test cases) . But, 
+to be safe we have removed the examples that use multiple cores (`ncores=2`) and have set the default condition to use 
+1 core instead of the `C++` compiler's default (for operations using `Eigen`). Hopefully this fixes the issue.
 
 
