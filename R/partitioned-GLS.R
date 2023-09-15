@@ -104,10 +104,7 @@
 #'
 #' When \code{ncores <= 1}, then the calculations are completely serialized
 #'
-#' When \code{ncores = NA} (the default), only matrix multiplication is done in
-#' parallel and the number of cores determined by defaults used by \code{Eigen}.
-#' Typically, if \code{OpenMP} is available, all cores are used, otherwise only
-#' 1 is used. In this case, \code{parallel} is ignored (and treated as FALSE).
+#' When \code{ncores = NA} (the default), only one core is used.
 #'
 #' In the parallel implementation of this function, a progress bar is not possible,
 #' so \code{progressbar} is ignored.
@@ -247,20 +244,6 @@
 #'                                 data = df, nugget = NA))
 #' partGLS.opt$part$nuggets # ML nuggets
 #'
-#' ## Explicitly use multicore_fitGLS_partition()
-#' (multicore_fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
-#'                            data = df, nugget = 0, ncores = 2L))
-#' (multicore_fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, ncores = 2L,
-#'                             data = df, nugget = 0, do.chisqr.test = FALSE))
-#'
-#' ## fully parallel, using 2 cores
-#' (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
-#'                  ncores = 2, parallel = TRUE, debug = FALSE))
-#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
-#'                  ncores = 2, parallel = TRUE, debug = FALSE)
-#' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
-#'                  parallel = TRUE, ncores = 2, do.chisqr.test = FALSE)
-#'
 #' # Certain model structures may not be useful:
 #' ## 0 intercept with numeric predictor (produces NAs) and gives a warning in statistical tests
 #' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
@@ -324,7 +307,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   } else {
     if(debug){cat("Conducting partitioned GLS\n")}
     if(is.na(ncores)){
-      ncores = 0L  # Tell C++ to use machine (OpenMP) configured cores
+      ncores = 1L
     } else {
       ncores = as.integer(ncores)
     }
@@ -579,7 +562,7 @@ calc_dfpart <- function(partsize, p, p0){
 crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
                           nug_i, nug_j, df1, df2, small = TRUE, ncores = NA){
   if(is.na(ncores)){
-    ncores = 0L
+    ncores = 1L
   } else {
     ncores = as.integer(ncores)
   }
@@ -676,7 +659,7 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #' ## part_csv examples - ## CAUTION: examples for part_csv() include manipulation side-effects:
 #' # first, create a .csv file from ndviAK
 #' data(ndvi_AK10000)
-#' file.path = "ndviAK10000-remotePARTS.csv"
+#' file.path = file.path(tempdir(), "ndviAK10000-remotePARTS.csv")
 #' write.csv(ndvi_AK10000, file = file.path)
 #'
 #' # build a partition from the first 30 pixels in the file

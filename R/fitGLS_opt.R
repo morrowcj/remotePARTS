@@ -136,7 +136,7 @@ fitGLS_opt <- function(formula, data = NULL, coords, distm_FUN = "distm_scaled",
   call = match.call()
 
   if(is.na(ncores)){
-    ncores = 0L
+    ncores = 1L
   } else {
     ncores = as.integer(ncores)
   }
