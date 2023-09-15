@@ -659,7 +659,7 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #' ## part_csv examples - ## CAUTION: examples for part_csv() include manipulation side-effects:
 #' # first, create a .csv file from ndviAK
 #' data(ndvi_AK10000)
-#' file.path = "ndviAK10000-remotePARTS.csv"
+#' file.path = file.path(tempdir(), "ndviAK10000-remotePARTS.csv")
 #' write.csv(ndvi_AK10000, file = file.path)
 #'
 #' # build a partition from the first 30 pixels in the file
