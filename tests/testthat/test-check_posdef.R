@@ -22,16 +22,16 @@ test_that("correct structure of check_posdef output", {
   res = check_posdef(M)
 
   # correct dimensions
-  expect_equal(length(res), 3)
+  expect_length(res, 3)
 
   # column names are right
-  expect_equal(names(res), c("sqr", "sym", "posdef"))
+  expect_named(res, c("sqr", "sym", "posdef"))
 
   # logical data type
   expect_true(is.logical(res) )
 })
 
-test_that("error handling of check_posdef", {
+test_that("check_posdef handles errors correctly", {
   M = as.data.frame(matrix(c(2, -1, 0, -1, 2, -1, 0, -1, 2), nrow = 3, byrow = TRUE))
   expect_error(check_posdef(M), "M must be a matrix")
 })

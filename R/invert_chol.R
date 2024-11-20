@@ -34,7 +34,7 @@ invert_chol <- function(M, nugget = 0, ncores = NA){
   # exception handling ----
   if(!is.matrix(M)){stop("M is not of class 'matrix'")}
   if(!is.double(M)){stop("M is not of type 'double'")}
-  if(!all(check_posdef(M))){stop("M is not positive definite")}
+  if(!all(check_posdef(M))){stop("M is not positive definitive")}
 
   # execute the C++ function ----
   # return(.invchol_cpp(M, nugget))
