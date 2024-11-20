@@ -37,3 +37,15 @@ figure/
 
 # unexported examples
 R/unexported_examples\.R
+
+# R CMD Check results and build output
+check/
+vignettes/
+
+# additional code
+code_profiling/
+
+# JOSS paper
+paper.md
+paper.bib
+joss_checklist.md

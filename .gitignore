@@ -19,3 +19,7 @@ README.html
 # built versions of the package
 builds/
 figure/
+
+# files created by the build process
+check/
+vignettes/

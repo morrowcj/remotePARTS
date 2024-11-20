@@ -49,6 +49,8 @@ Suggests:
     devtools,
     ggplot2,
     reshape2,
-    sf
+    sf,
+    testthat (>= 3.0.0)
 LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: knitr
+Config/testthat/edition: 3
