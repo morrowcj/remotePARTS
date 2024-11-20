@@ -16,3 +16,22 @@ test_that("positive definitive assessed correctly", {
   pos_def = matrix(c(2, -1, 0, -1, 2, -1, 0, -1, 2), nrow = 3, byrow = TRUE)
   expect_true(all(check_posdef(pos_def)))
 })
+
+test_that("correct structure of check_posdef output", {
+  M = matrix(runif(9), nrow = 3)
+  res = check_posdef(M)
+
+  # correct dimensions
+  expect_equal(length(res), 3)
+
+  # column names are right
+  expect_equal(names(res), c("sqr", "sym", "posdef"))
+
+  # logical data type
+  expect_true(is.logical(res) )
+})
+
+test_that("error handling of check_posdef", {
+  M = as.data.frame(matrix(c(2, -1, 0, -1, 2, -1, 0, -1, 2), nrow = 3, byrow = TRUE))
+  expect_error(check_posdef(M), "M must be a matrix")
+})
