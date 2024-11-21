@@ -122,7 +122,7 @@ coefficients(AR.map)
 
 Other remoteTS: 
 \code{\link{fitAR}()},
-\code{\link{fitCLS_map}()},
-\code{\link{fitCLS}()}
+\code{\link{fitCLS}()},
+\code{\link{fitCLS_map}()}
 }
 \concept{remoteTS}

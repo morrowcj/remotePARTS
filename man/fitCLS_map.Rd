@@ -128,8 +128,8 @@ coefficients(CLS.map)
 \code{\link{fitAR}} and \code{\link{fitAR_map}} for AR REML time series analysis.
 
 Other remoteTS: 
-\code{\link{fitAR_map}()},
 \code{\link{fitAR}()},
+\code{\link{fitAR_map}()},
 \code{\link{fitCLS}()}
 }
 \concept{remoteTS}
