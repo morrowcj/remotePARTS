@@ -26,7 +26,7 @@
 invert_chol <- function(M, nugget = 0, ncores = NA){
 
   if(is.na(ncores)){
-    ncores = 1L
+    ncores = 0L
   } else {
     ncores = as.integer(ncores)
   }

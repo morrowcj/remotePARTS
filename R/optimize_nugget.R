@@ -32,7 +32,7 @@ optimize_nugget <- function(X, y, V, lower = 0.001, upper = 0.999,
                             tol = .Machine$double.eps^.25, debug = FALSE,
                             ncores = NA) {
   if(is.na(ncores)){
-    ncores = 1L
+    ncores = 0L
   } else {
     ncores = as.integer(ncores)
   }
