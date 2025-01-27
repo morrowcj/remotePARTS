@@ -179,12 +179,14 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
   beta <- solve(t(X) %*% iV %*% X, t(X) %*% iV %*% y)
   # remove the effect of the covariates from y
   H <- y - X %*% beta
+  # get degrees of freedom
+  LL_df <- n.obs - q
   # estimate the variance
-  s2 <- (t(H) %*% iV %*% H)/(n.obs - q)
+  s2 <- (t(H) %*% iV %*% H)/LL_df
   # calculate the partial log-likelihood of b given y and X
-  logLik <- 0.5 * ((n.obs - q) * log(s2) + logdetV +
+  logLik <- 0.5 * (LL_df * log(s2) + logdetV +
                  determinant(t(X) %*% iV %*% X)$modulus[1] +
-                 (n.obs - q))
+                   LL_df)
 
   if(logLik.only){
     # return log-likelihood
@@ -196,13 +198,14 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
     MSE <- as.numeric(s2) #MSE
     s2beta <- MSE * solve(t(X) %*% iV %*% X) #Variance
     t.stat = (abs(beta) / diag(s2beta)^0.5)
-    pval = 2 * stats::pt(q = t.stat, df = n.obs - q,
+    LL_df <- n.obs - q
+    pval = 2 * stats::pt(q = t.stat, df = LL_df,
                          lower.tail = FALSE )
 
     yhat = X %*% beta
 
     # log likelihood without constants (i.e. s2) - no parameter dependency
-    logLik <- 0.5 * (n.obs - q) * log(2 * pi) +
+    logLik <- 0.5 * LL_df * log(2 * pi) +
       determinant(t(X) %*% X)$modulus[1] - logLik
 
     # collect output
@@ -213,6 +216,7 @@ AR_fun <- function(par, y, X, logLik.only = TRUE) {
                      pval = pval[, 1],
                      MSE = MSE,
                      logLik = logLik[, 1],
+                     df = LL_df,
                      residuals = as.vector(H),
                      fitted.values = as.vector(yhat))
 
