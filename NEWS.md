@@ -1,3 +1,13 @@
+# v1.0.4.3 (not yet tagged)
+
+* added tests to major functions (Jan 2025)
+
+* fixed small bug in fitGLS_partition regarding the progress bar
+
+* updated the logLik functionality for AR and CLS objects
+
+* added files for JOSS submission, including paper.bib and paper.md
+
 # v1.0.4.2
 
 * updated the parallel defaults for all functions. Now, `ncores=NA` is equivalent to `ncores=1` instead of using

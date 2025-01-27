@@ -11,9 +11,9 @@ efficiency)
 
 * [x] must be a major contributor to the software (Author and maintainer) 
 
-* [ ] Paper must **not** focus on new research results accomplished with the software
+* [x] Paper must **not** focus on new research results accomplished with the software
 
-* [ ] paper (`paper.md`) must be hosted in a Git-based repository together with your software
+* [x] paper (`paper.md`) must be hosted in a Git-based repository together with your software
 
 * [x] (Optional) paper may be in a short-lived branch that is never merged
 
@@ -27,23 +27,23 @@ efficiency)
 
 * [x] Software available in an open repository (GitHub) with an OSI approved source license
 
-* [ ] Software conforms to JOSS review criteria
+* [x] Software conforms to JOSS review criteria
 
   - [x] full-featured
   
   - [x] well-documented
   
-  - [ ] contain procedures (such as automated tests) for checking correctness
+  - [x] contain procedures (such as automated tests) for checking correctness
   
-* [ ] Write a short paper in markdown format `paper.md` with 
+* [x] Write a short paper in markdown format `paper.md` with 
   
-  - [ ] Title
+  - [x] Title
 
-  - [ ] Summary
+  - [x] Summary
   
-  - [ ] author names and affiliations
+  - [x] author names and affiliations
   
-  - [ ] key references
+  - [x] key references
   
 * [x] Optional metadata file describing the software (DESCRIPTION)
 
