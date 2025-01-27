@@ -7,11 +7,11 @@ tags:
   - hypothesis testing
   - spatiotemporal autocorrelation
 authors:
-  - Clay J. Morrow
+  - name: Clay J. Morrow
     orcid: 0000-0002-3069-3296
     corresponding: true
     affiliation: 1
-  - Anthony R. Ives
+  - name: Anthony R. Ives
     orcid: 0000-0001-9375-9523
     affiliation: 1
 affiliations:
@@ -46,7 +46,7 @@ that are small enough to facilitate this.
 
 `remotePARTS` was designed to be used in ecological and remote sensing research and has already been used in published
 research (e.g., @Lewińska:2023) but is flexible enough to be used to answer a variety of spatial and spatiotemporal 
-questions. The package contains a vignette [`@alaska`] that demonstrates the core functionality of the package and 
+questions. The package contains a vignette [@alaska] that demonstrates the core functionality of the package and 
 its most commonly used functions.
 
 # Acknowledgements
