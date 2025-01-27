@@ -6,19 +6,19 @@ tags:
   - statistics
   - hypothesis testing
   - spatiotemporal autocorrelation
+date: "27 January, 2025"
 authors:
   - name: Clay J. Morrow
-    orcid: 0000-0002-3069-3296
+    orcid: "0000-0002-3069-3296"
     corresponding: true
     affiliation: 1
   - name: Anthony R. Ives
-    orcid: 0000-0001-9375-9523
+    orcid: "0000-0001-9375-9523"
     affiliation: 1
-affiliations:
-  - name: University of Wisconsin - Madison, USA
-  - index: 1
-date: 27 January, 2025
 bibliography: paper.bib
+affiliations:
+  - name: "University of Wisconsin - Madison, USA"
+    index: 1
 ---
 
 # Summary
@@ -31,7 +31,7 @@ for during analyses. The size of these data sets, however, poses a substantive c
 testing for trends in the presence of spatial and temporal autocorrelation. Regression-type analyses that are designed to 
 test hypotheses and account for autocorrelation struggle to fit large data sets like those obtained via remote sensing 
 (e.g., millions of pixels). This is because one of the steps in these types of regressions requires inverting a distance 
-matrix with $N = n_{pixels}^2$ entries. This inversion process scales approximately with $n_{pixels}^3$, which quickly
+matrix with $N = \text{pixels}^2$ entries. This inversion process scales approximately with $\text{pixels}^3$, which quickly
 becomes unfeasible to compute without the most powerful computing resources.
 
 # Statement of need
