@@ -508,7 +508,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       outlist$overall$t.test = test.output$p.t
       outlist$overall$covar_coef = test.output$covar_coef
     }
-    close(pb)
+    if (progressbar) {
+      close(pb)
+    }
   }
   ## final return statement
   return(outlist)
