@@ -6,7 +6,7 @@ tags:
   - statistics
   - hypothesis testing
   - spatiotemporal autocorrelation
-date: "27 January, 2025"
+date: "27 January 2025"
 authors:
   - name: Clay J. Morrow
     orcid: "0000-0002-3069-3296"
