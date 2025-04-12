@@ -302,8 +302,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     warning("formula and formula0 are identical, which prevents model comparison calulations.",
             "\ndo.chisqr.test set to FALSE")
     do.chisqr.test = FALSE
-  } else {
   }
+
   ## no right-hand side (i.e., formula(x ~ 0) or update(form, . ~ 0))
   if(formula[-2]=="~0" | formula0[-2]=="~0" | formula[-2]=="~1 - 1" | formula0[-2]=="~1 - 1"){
     stop("invalid formula: the right hand side may not be empty ('~0')")
