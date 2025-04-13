@@ -28,7 +28,9 @@ data/ndvi_AK3000\.rda
 # ignore cran comments
 cran-comments\.md
 
+# README associated files
 README\.html
+README_cache
 
 # build pipeline
 build_pipeline/

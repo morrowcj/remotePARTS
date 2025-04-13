@@ -54,6 +54,11 @@ and spatiotemporal questions. The package contains a vignette [@alaska] that
 demonstrates the core functionality of the package and its most commonly used 
 functions.
 
+# Author Contributions
+
+Clay J. Morrow: Methodology, Data Curation, Software, Validation, Visualization, Writing – Original Draft, Project Administration.  
+Anthony R. Ives: Conceptualization, Methodology, Data Curation, Funding Acquisition, Writing – Review & Editing.
+
 # Acknowledgments
 
 We would like to acknowledge Volker Radeloff, Katarzyna Lewińska, Connor 
