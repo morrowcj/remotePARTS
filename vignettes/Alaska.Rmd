@@ -67,8 +67,8 @@ theme_set(theme(panel.grid = element_blank(),
 values derived from NASA's MODIS satellite for the US State of Alaska. 
 The object is `ndvi_AK10000` and, due to package size limitations, this 
 data set is a random sampling of 10,000 pixels from the full Alaska data set. 
-It is important to note, though, that `remotePARTS` can handle the full map 
-(and much larger maps).
+This is just for the sake of this vignette: `remotePARTS` can easily 
+handle the full map (and much larger maps).
 
 For this vignette, we will also create a smaller 3000 pixel subsample 
 `ndvi_AK3000` for demonstrative purposes:
@@ -85,7 +85,7 @@ estimates of the temporal ndvi trends, from pixel-level time series analyses
 (AR REML and conditional least squares, respectively). 
 These coefficient estimates have been standardized by the mean ndvi value 
 for the pixel over that time period;
-`land` is a factor representing land-cover classes; and
+`land` is a factor representing land cover classes; and
 the remaining 32 columns -- of the form `ndviYYYY` -- contain the NDVI values 
 from 1982 to 2013. These data already have rare land classes (those that 
 occur in less than 2% of pixels) removed and contain no missing values.
@@ -100,7 +100,7 @@ For this demonstration, we are interested in asking the following questions:
 
 1) Is NDVI in Alaska increasing over time?
 
-2) Are Alaska's NDVI time trends associated with land-cover classes? and 
+2) Are Alaska's NDVI time trends associated with land cover classes? and 
 
 3) Do Alaska's NDVI time trends differ with latitude?
 
@@ -118,7 +118,7 @@ tibble(ndvi_AK10000) |>
   labs(x = "Longitude", y = "Latitude", col = "ndvi", fill = "ndvi")
 ```
 
-The following figure shows how Alaska's three primary land-cover classes are 
+The following figure shows how Alaska's three primary land cover classes are 
 distributed.
 
 ```{r plot_land, fig.width = 4.5, fig.asp = .8}
@@ -232,8 +232,10 @@ ndvi_AK10000 %>%
   scale_color_viridis_c(option = "magma") +
   scale_fill_viridis_c(option = "magma") +
   guides(fill = "none") + 
-  labs(y = "Latitude", x = "Longitude", col = expression(beta[1]),
-       fill = expression(beta[1]))
+  labs(
+    y = "Latitude", x = "Longitude", col = expression(beta[1]), 
+    fill = expression(beta[1])
+  )
 ```
 
 `fitAR_map` and its conditional least-squares counterpart, `fitCLS_map`, are
@@ -260,7 +262,7 @@ D <- distm_scaled(coords)
 ```
 
 `distm_scaled()` scales distances across the spatial domain so that the
-greatest distance between two pixels is 1. Note that because `distm_scaled()`
+greatest distance between two pixels is 1. Because `distm_scaled()`
 uses `geosphere::distm()`, it treats coordinates as degrees longitude and 
 latitude on a sphere and calculates distances accordingly.
 
@@ -276,11 +278,25 @@ The function `covar_exp()` implements exponential covariance.
 
 The below figure is a semivariogram of `covar_exp` for two values of `r`.
 
-```{r visualize_range, fig.asp = 1, fig.width = 4, out.width="50%"}
-curve(covar_exp(x, r = .1), xlab = "distance", ylab = "covar_exp(distance, r)")
-curve(covar_exp(x, r = .2), add = TRUE, col = "red")
-legend("topright", legend = c("0.1", "0.2"), title = "r", 
-       col = c("black", "red"), lty = 1)
+```{r visualize_range, fig.asp = 0.9, fig.width = 3, out.width="50%"}
+ggplot() +
+  xlim(0, 1) +
+  geom_function(
+    fun = covar_exp, args = list(r = 0.05), aes(col = "0.05"), linewidth = 1
+  ) +
+  geom_function(
+    fun = covar_exp, args = list(r = 0.1), aes(col = "0.1"), linewidth = 1
+  ) +
+  geom_function(
+    fun = covar_exp, args = list(r = 0.2), aes(col = "0.2"), linewidth = 1
+  ) +
+  labs(x = "distance", y = "covar_exp(distance, r)", col = "r") +
+  theme_bw() + 
+  theme(
+    legend.position = "inside", legend.position.inside = c(1, 1),
+    legend.justification = c(1, 1), legend.background = element_blank()
+  ) +
+  scale_color_viridis_d(end = 0.95)
 ```
 
 If we know the range parameter $r$, we can calculate the covariance `V` from
@@ -297,13 +313,28 @@ unexplained and unmeasured variance (i.e., a nugget $\eta$).
 
 Here is a semivariogram, with and without a nugget component for `covar_exp`:
 
-```{r visualize_nugget, fig.asp = 1, fig.width = 4, out.width="50%"}
-nugget <- .3
-curve(covar_exp(x, r = .1), xlab = "distance", 
-      ylab = "covar_exp(distance, r=0.1)")
-curve((1-nugget)*covar_exp(x, r = .1), add = TRUE, col = "red")
-legend("topright", legend = c(0, nugget), 
-       title = expression(eta), col = c("black", "red"), lty = 1)
+```{r visualize_nugget, fig.asp = 0.9, fig.width = 3, out.width="50%"}
+ggplot() +
+  xlim(0, 1) +
+  geom_function(
+    fun = function(x, n)(1-n)*covar_exp(x, 0.2), 
+    args = list(n = 0), aes(col = "0"), linewidth = 1
+  ) +
+  geom_function(
+    fun = function(x, n)(1-n)*covar_exp(x, 0.2), 
+    args = list(n = 0.3), aes(col = "0.3"), linewidth = 1
+  ) +
+    geom_function(
+    fun = function(x, n)(1-n)*covar_exp(x, 0.2), 
+    args = list(n = 0.5), aes(col = "0.5"), linewidth = 1
+  ) +
+  labs(x = "distance", y = "covar_exp(distance, r = 0.2)", col = expression(eta)) +
+  theme_bw() + 
+  theme(
+    legend.position = "inside", legend.position.inside = c(1, 1),
+    legend.justification = c(1, 1), legend.background = element_blank()
+  ) +
+  scale_color_viridis_d(end = 0.95)
 ```
 
 We assume that the covariance structure among pixels is given 
@@ -320,10 +351,6 @@ provided by `remotePARTS` and for more information regarding their use.
 
 # GLS: 3000-pixel subset
 
-<!---- TODO: Below this point has not been revised yet (4/14/2025) ---->
-
-<!---- TODO: also, the base R plots above need to be replaced with ggplot ---->
-
 To test spatial hypotheses with `remotePARTS`, we use a generalized 
 least-squares regression model (GLS):  
 
@@ -331,111 +358,130 @@ $$\theta = X\alpha_{gls} + \gamma $$ where
 
 * $\theta$ is a vector of response values
 
-* $\alpha_{gls}$ is a vector of the effects of predictor variables $X$ on $\theta$
+* $\alpha_{gls}$ is a vector of the effects of predictor variables $X$ 
+on $\theta$
 
-* the error term $\gamma$ is spatially autocorrelated according to $\Sigma_\gamma$: $\gamma \sim N(0, \Sigma_\gamma)$
+* the error term $\gamma$ is spatially autocorrelated according to 
+$\Sigma_\gamma$: $\gamma \sim N(0, \Sigma_\gamma)$
 
-$\theta$ will usually be a regression parameter. For example, if we're interested
-in understanding trends in NDVI over time, we would use the pixel-level regression
-coefficient for the effect of time on NDVI (i.e., $\theta = \hat\beta$)
+$\theta$ will usually be a regression parameter. For example, if we're 
+interested in understanding trends in NDVI over time, we would use the 
+pixel-level regression coefficient for the effect of time on NDVI 
+(i.e., $\theta = \hat\beta$).
 
 ## Known parameters
 
-If the parameters that govern the spatial autocorrelation $\Sigma_\gamma$ are known,
-a GLS can be fit with `fitGLS()`. Here, we will fit the GLS by providing (i) a model 
-formula, (ii) a data source, (iii) our `V` matrix, which was pre-calculated with a 
-spatial parameter $r = 0.1$ and (iv) a nugget of $\eta = 0.2$. 
+If the parameters that govern the spatial autocorrelation $\Sigma_\gamma$ 
+are known, a GLS can be fit with `fitGLS()`. Here, we will fit the GLS by 
+providing (i) a model formula, (ii) a data source, (iii) our `V` matrix, 
+which was pre-calculated with a spatial parameter $r = 0.1$ and 
+(iv) a nugget of $\eta = 0.2$. 
 
-The specific task in this examples is to estimate the effect of land-cover class on our time trend.
-Because `land` is a factor, we'll also specify a no-intercept model. 
+The specific task in this examples is to estimate the effect of land cover 
+class on our time trend. Because `land` is a factor, we'll also specify a 
+no-intercept model to make interpretation clearer. 
 
-Note that the GLS fitting process requires an inversion of `V`. This means that 
-even with only the 3000-pixel subset, it will take a few minutes to finish the
-computations on most computers. 
+The GLS fitting process requires an inversion of `V`. This 
+means that even with only the 3000-pixel subset, it will take a few 
+minutes to finish the computations on most computers (but see the `ncores`
+and `parallel` arguments).
 
 ```{r fit_land_GLS}
-GLS.0 <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget = nugget)
+GLS.0 <- fitGLS(
+  formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V, nugget = nugget
+)
 ```
 
-Note also that `fitGLS` adds the nugget to `V` internally. If we wanted to do this
-ourselves, we could pass the covariance matrix `Sigma` which already contains a
-nugget component and then set the `nugget` argument of `fitGLS` to 0:
+`fitGLS` adds the nugget to `V` internally. If we wanted 
+to do this ourselves, we could pass the covariance matrix `Sigma` which 
+already contains a nugget component and then set the `nugget` argument of
+`fitGLS` to 0:
 
 ```{r alt_fit_land_GLS, eval = FALSE}
-fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = Sigma, nugget = 0) # equivalent
+# equivalently:
+fitGLS(
+  formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = Sigma, nugget = 0
+) 
 ```
 
-The estimates for our land class effects can be extracted with `coefficients()`.
+The estimates for our land class effects can be extracted with 
+`coefficients()`.
 
 ```{r extract_GLS_coefs}
 coefficients(GLS.0)
 ```
 
-The full model fit is given by
+The full model fit object looks like this:
 
 ```{r print_GLS}
 GLS.0
 ```
 
-Note that, although none of the three land-cover classes shows a statistically 
-significant time trend in (proportional) NDVI, the F-test shows that there is a 
-statistically significant difference among land-cover classes, because the model 
-including land-cover classes gives a statistically significantly better fit to 
-the data than the intercept-only model.
+Although none of the three land cover classes show a 
+statistically significant time trend in (proportional) NDVI, the F-test 
+is significant. This means that including the model including land cover
+explains the data better than than the intercept-only model: overall, 
+land cover explains significant variation in temporal trends of NDVI.
 
 ## Parameter estimation
 
 In practice, we rarely know the values of the parameters that govern 
-spatial autocorrelation (e.g., the range and nugget) in advance. Therefore,
-these parameters will need to be estimated for most data.
+spatial autocorrelation (e.g., the range and nugget) in advance. 
+Therefore, these parameters will need to be estimated for most data.
 
 ### Spatial parameters
 
 The spatial parameters of a covariance function (e.g., `covar_exp`) can be 
-estimated from residuals of pixel-level time-series models (see Ives et al. RSE, 2021). Although we conducted
-the time-series analyses as though each pixel was independent (with `fitAR_map()`),
-they are, in fact, dependent. Specifically, the correlation of the residuals from
-the pixel-level analyses is roughly proportional to the spatial autocorrelation 
-of the residuals of the spatial model, $\gamma$, if all of the variation in
-$\gamma$ is due to the spatiotemporal variation produced by $\varepsilon_i(t)$. 
+estimated from residuals of pixel-level time-series models (see Ives et 
+al. RSE, 2021). Although we conducted the time-series analyses as though 
+each pixel was independent (with `fitAR_map()`), they are, in fact, dependent. 
+Specifically, the correlation of the residuals from the pixel-level analyses 
+is roughly proportional to the spatial autocorrelation of the residuals of 
+the spatial model, $\gamma$, if all of the variation in $\gamma$ is due to 
+the spatiotemporal variation produced by $\varepsilon_i(t)$. 
 Therefore, we can estimate the range parameter for **V** as 
 $V_{ij} \approx \text{cor}\big(\varepsilon_i(t), \varepsilon_j(t)\big)$ 
 
-The function `fitCor()` performs the estimation of spatial parameters. We will 
-pass to this function (i) the time-series residuals for our map, extracted from the 
-time-series analysis output object with `residuals()`, (ii) the coordinate 
-matrix `coords`, (iii) the covariance function `covar_exp()`, and (iv) a list
-specifying that we should start the search for the optimal range parameter 
-at 0.1. For this example, we will also specify `fit.n = 3000`, which ensures 
-that all pixels are used to estimate spatial parameters. 
+The function `fitCor()` performs the estimation of spatial parameters. We 
+will pass to this function (i) the time-series residuals for our map, 
+extracted from the time-series analysis output object with `residuals()`, 
+(ii) the coordinate matrix `coords`, (iii) the covariance function 
+`covar_exp()`, and (iv) a list specifying that we should start the search for 
+the optimal range parameter at 0.1. For this example, we will also specify 
+`fit.n = 3000`, which ensures that all 3000 pixels are used to estimate 
+spatial parameters. 
 
 ```{r fit_range_parameter}
-corfit <- fitCor(resids = residuals(ARfit), coords = coords, covar_FUN = "covar_exp", 
-                 start = list(range = 0.1), fit.n = 3000)
+corfit <- fitCor(
+  resids = residuals(ARfit), coords = coords, covar_FUN = "covar_exp", 
+  start = list(range = 0.1), fit.n = 3000
+)
 (range.opt = corfit$spcor)
 ```
 
 By default, `fitCor()` uses `distm_scaled()` to calculate distances
-from the coordinate matrix, but any function that returns a distance matrix can be
-specified with the `distm_FUN` argument. It is important to scale the parameter 
-values appropriately, accounting for your distances. For example, if we instead use 
-`distm_km()` to calculate distance in km instead of relative distances, we would
-need to scale our starting range parameter by the maximum distance in km of our 
-map:
+from the coordinate matrix, but any function that returns a distance matrix 
+can be specified with the `distm_FUN` argument. It is important to scale the 
+parameter values appropriately, accounting for your distances. For example, 
+if we instead use `distm_km()` to calculate distance in km instead of 
+relative distances, we would need to scale our starting range parameter by the 
+maximum distance in km of our map:
 
 ```{r fit_range_km, eval = FALSE}
 max.dist <- max(distm_km(coords))
-corfit.km <- fitCor(resids = residuals(ARfit), coords = coords, covar_FUN = "covar_exp", 
-                    start = list(range = max.dist*0.1), distm_FUN = "distm_km", fit.n = 3000)
+corfit.km <- fitCor(
+  resids = residuals(ARfit), coords = coords, covar_FUN = "covar_exp",
+  start = list(range = max.dist*0.1), distm_FUN = "distm_km", fit.n = 3000
+)
 ```
 
-Note that, depending on the covariance function used, not all parameters will 
+Depending on the covariance function used, not all parameters will 
 need scaling. For example, `covar_exppow()` is an exponential-power covariance
 function and takes a range and shape parameter, but only the range parameter 
 should scale with distance. See `?fitCor()` for more details.
 
-After we've obtained our range parameter estimate, we can use it to re-calculate 
-the `V` matrix:
+After we've obtained our range parameter estimate, we can use it to 
+re-calculate the `V` matrix:
 
 ```{r optimized_covariance}
 V.opt <- covar_exp(D, range.opt)
@@ -444,19 +490,22 @@ V.opt <- covar_exp(D, range.opt)
 ### Nugget
 
 Similar to finding the optimal spatial parameters, the nugget can be 
-estimated by selecting a nugget that maximizes the likelihood of the GLS given 
-the data. `fitGLS()` will find this maximum-likelihood nugget when `nugget = NA` 
-is specified. Note that this type of optimization requires fitting multiple
-GLS models, which means it will be much slower than our call to `fitGLS()` 
-with a known nugget. 
+estimated by selecting a nugget that maximizes the likelihood of the 
+GLS given the data. `fitGLS()` will find this maximum-likelihood nugget 
+when `nugget = NA` is specified. This type of optimization requires 
+fitting multiple GLS models, which means it will be much slower than our 
+call to `fitGLS()` with a known nugget. 
 
 In addition to our original arguments, we'll also explicitly set `no.F = FALSE` 
-so that F-tests are calculated. For the F-tests, the default reduced model is the intercept-only model, although 
-it is also possible to specify alternative reduced models as a formula in the `formula0` option.
+so that F-tests are calculated. For the F-tests, the default reduced model is 
+the intercept-only model, although it is also possible to specify alternative 
+models as a formula in the `formula0` option.
 
 ```{r optimized_nugget}
-GLS.opt <- fitGLS(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, 
-                  nugget = NA, no.F = FALSE)
+GLS.opt <- fitGLS(
+  formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, 
+  nugget = NA, no.F = FALSE
+)
 (nug.opt = GLS.opt$nugget)
 coefficients(GLS.opt)
 ```
@@ -464,32 +513,38 @@ coefficients(GLS.opt)
 Let's compare our GLS from earlier with this one with optimized parameters:
 
 ```{r compare_GLS}
-rbind(GLS.0 = c(range = r, nugget = GLS.0$nugget, logLik = GLS.0$logLik, MSE = GLS.0$MSE),
-      GLS.opt = c(range = range.opt, nugget = GLS.opt$nugget, logLik = GLS.opt$logLik, MSE = GLS.opt$MSE))
+(mod_compare <- tribble(
+  ~mod, ~range, ~nugget, ~logLik, ~MSE,
+  "GLS.0", r, GLS.0$nugget, GLS.0$logLik, GLS.0$MSE,
+  "GLS.opt", range.opt, GLS.opt$nugget, GLS.opt$logLik, GLS.opt$MSE
+))
 ```
 
-Note that in this example, `logLik` for `GLS.opt` is not functionally different
-than `logLik` for `GLS.0`. This indicates that using the values of `range` = 0.1 
-and `nugget` = 0.2 gives a similar likelihood than the optimal model when 
-`range` is constrained to be the value calculated from `covar_exp()`, `GLS.opt`.
+In this example, `logLik` for `GLS.opt` is not functionally different
+than `logLik` for `GLS.0`. This indicates that using the values of 
+`range` = 0.1 and `nugget` = 0.2 gives a similar likelihood than the optimal 
+model when `range` value is calculated from `covar_exp()`, `GLS.opt`. The
+key difference between these models is that the MSE is higher for `GLS.opt`,
+indicative of the increased uncertainty.
 
 ### Simultaneous parameter estimation
 
 It is also possible to simultaneously estimate spatial parameters and the
 nugget without using the time-series residuals. This is done by finding the
-set of parameters describing spatial autocorrelation (e.g., `range` and 
-`nugget`) that maximizes the likelihood of a GLS given the data. 
-This task is computationally slower than optimizing `nugget` alone with
-`fitGLS()` and therefore will take some time to run.
+set of parameters (e.g., `range` and `nugget`) that maximizes the 
+likelihood of a GLS given the data. This task is computationally slower 
+than optimizing `nugget` alone with `fitGLS()` and therefore will take 
+some time to run.
 
 ```{r optimized_GLS, eval = FALSE}
-fitopt <- fitGLS_opt(formula = AR_coef ~ 0 + land, data = ndvi_AK3000, 
-                     coords = ndvi_AK3000[, c("lng", "lat")], 
-                     covar_FUN = "covar_exp", 
-                     start = c(range = .1, nugget = .2),
-                     method = "BFGS", # use BFGS algorightm (see ?stats::optim())
-                     control = list(reltol = 1e-5)  # lower the convergence tolerance (see ?stats::optim()) 
-                     )
+fitopt <- fitGLS_opt(
+  formula = AR_coef ~ 0 + land, data = ndvi_AK3000, 
+  coords = ndvi_AK3000[, c("lng", "lat")], 
+  covar_FUN = "covar_exp", 
+  start = c(range = .1, nugget = .2),
+  method = "BFGS", # use BFGS algorightm (see ?stats::optim())
+  control = list(reltol = 1e-5)  # lower the convergence tolerance (see ?stats::optim()) 
+)
 fitopt$opt$par
 #      range     nugget 
 # 0.02497874 0.17914929 
@@ -499,150 +554,160 @@ fitopt$GLS$MSE
 # [1] 2.475972e-05
 ```
 
-Note that, because `fitGLS_opt()` does not require time series residuals, 
+Because `fitGLS_opt()` does not require time series residuals, 
 it is possible to use `fitGLS_opt()` for statistical problems involving 
-only spatial variables. In other words, rather than $\theta$ being a limited 
-to a time trend, it can be a purely spatial variable as well.
+only spatial variables. In other words, rather than $\theta$ being limited 
+to spatially distributed trend coefficients, it can also be any spatial 
+variable.
 
-When time-series residuals are available, we recommend that you estimate
-spatial parameters with `fitCor()` and `fitGLS()`, rather than `fitGLS_opt()`. 
-In simulation studies, using `fitCor()` with `fitGLS()` often has better statistical 
-performance than using `fitGLS_opt()`. See `?fitGLS_opt()` for more 
-information about this function and its use.
+When time-series residuals are available, we recommend estimating
+spatial parameters with `fitCor()` and `fitGLS()`, rather than 
+`fitGLS_opt()`. The former typically has better statistical performance than 
+the latter. See `?fitGLS_opt()` for more information about this function 
+and its use.
 
 # Hypothesis testing
 
-The purpose of the tools provided by `remotePARTS` is to test map-level 
-hypotheses about spatiotemporal data sets. In this example, we will test 3 
-hypotheses using 3 different GLS models. Note that these hypothesis are framed
-as regression-style problems; indeed, `fitGLS()` is essentially regression 
-with spatially autocorrelated random errors.
+Ultimately, the purpose of the tools provided by `remotePARTS` is map-level 
+hypotheses testing. In this example, we will test 3 hypotheses using 3 
+different GLS models. 
 
 ## Intercept-only model
 
-If we want to test the hypothesis that "there was a trend in Alaska NDVI Alaska 
-from 1982-2013", we can regress the AR coefficient on an intercept-only GLS 
-model:
+If we want to test the hypothesis that "there was a trend in Alaska NDVI  
+from 1982-2013", we can fit an intercept-only GLS model:
 
 ```{r GLS_intercept_only}
-(GLS.int <- fitGLS(AR_coef ~ 1, data = ndvi_AK3000, V = V.opt, nugget = nug.opt, no.F = TRUE))
+(GLS.int <- fitGLS(
+  AR_coef ~ 1, data = ndvi_AK3000, V = V.opt, nugget = nug.opt, no.F = TRUE
+))
 ```
 
 We can see from the t-test that the intercept is not statistically different
-from zero. In other words, there is no map-level temporal trend in NDVI across
-the entire data set. We have not performed an F-test, because the full model is
-the intercept-only model and is therefore the same as the reduced model.
+from zero: there is no map-level temporal trend in NDVI across
+the entire data set.
 
-## Land-cover effects
+## land cover effects
 
 If we want to test the hypothesis that "trends in Alaskan NDVI differ by land-
-cover class", we can use `GLS.opt()` from earlier:
+cover class", we can use `GLS.opt` from earlier:
+
+```{r copy_GLSopt, eval = FALSE}
+GLS.opt <- fitGLS(
+  formula = AR_coef ~ 0 + land, data = ndvi_AK3000, V = V.opt, 
+  nugget = NA, no.F = FALSE
+)
+```
 
 ```{r GLS_land_optimized}
 GLS.opt
 ```
 
-The t-tests show that the trend in NDVI, for all land-cover classes, was not 
-statistically different from zero, meaning that NDVI did not show a statistically
-significant trend in any land-cover class. The F-test (ANOVA table), however, 
-shows that time trends in NDVI differ among the land-cover classes. The better fit
-of the model with land-cover classes can also be seen in the increase in the likelihood (`logLik`)
-compared to the intercept-only model.
+The t-tests show that the trend in NDVI, for all land cover classes, was not 
+statistically different from zero: NDVI did not exhibit a trend in any 
+land cover class. The F-test (ANOVA table), however, provides evidence
+that land class collectively explain some variation in NDVI trends.
 
 ## Latitude effects
 
 Finally, to test the hypothesis that "temporal trends in NDVI differ with 
-latitude", we can regress the AR coefficient on latitude in our GLS model:
+latitude", we can regress the AR coefficient on latitude:
 
 ```{r fit_GLS_latitude}
-(GLS.lat <- fitGLS(AR_coef ~ 1 + lat, data = ndvi_AK3000, V = V.opt, nugget = nug.opt, no.F = FALSE))
+(GLS.lat <- fitGLS(
+  AR_coef ~ 1 + lat, data = ndvi_AK3000, V = V.opt, nugget = nug.opt, 
+  no.F = FALSE
+))
 ```
 
 The t-tests show that temporal trends in NDVI did not differ with latitude. 
-Note that the p-value from the F-test is equivalent to that of the t-test p-value
-for effect of latitude. 
+The p-value from the F-test is equivalent to that of the t-test 
+p-value for effect of latitude because they are testing the same hypothesis. 
 
 ## Conclusions (ndvi_AK3000)
 
 We can see from these hypothesis tests that, at least among the 3000-pixel 
-sub-sample of Alaska, the answer to all three questions that we posed is no: there is
-no statistical evidence for an overall greening in Alaska, nor differences among
-land-cover classes or latitude.
+sub-sample of Alaska, the answer to all three questions that we posed is no: 
+there is no statistical evidence for a greening trend in Alaska, nor 
+strong differences among land cover classes or latitude.
 
-# GLS: Full dataset
+# Large data sets
 
 Until now, we have limited our analyses to the 3000-pixel subset of Alaska, 
-`ndvi_AK3000`. Calls to `fitGLS()` involve inverting `V`, and the computational 
-complexity scales with $N^3$ where $N$ is the number of pixels in
-the map. We have used the data set `ndvi_AK3000` up to now because the computation time
-for the analyses is reasonable. However, 3000 pixels means dealing with 
-distance and covariance matrices that each contain 
-$3,000 \times 3,000 = 9,000,000$ elements. This is approaching the
-upper size limit for obtaining relatively fast results.
+`ndvi_AK3000`. Calls to `fitGLS()` involve inverting `V`, and the 
+computational complexity scales with $N^3$ where $N$ is the number of 
+pixels in the map. We have used the data set `ndvi_AK3000` up to now 
+because the computation time for the analyses is reasonable. Even with 
+only 3000 pixels, we must handle distance and covariance matrices that each 
+contain $3,000 \times 3,000 = 9,000,000$ elements. This is approaching the
+upper size limit for obtaining relatively fast results on most personal
+consumer hardware.
 
-In contrast, the covariance matrix for the full `ndvi_AK10000` data set would have 
-$10,000 \times 10,000 = 100,000,000$ elements which creates a computationally 
-infeasible problem for a normal computer.
+By contrast, the covariance matrix for the larger `ndvi_AK10000` data set 
+would have $10,000 \times 10,000 = 100,000,000$ elements which creates a 
+computationally infeasible problem for a typical computer.
 
 For these reasons, `fitGLS_paritition` may be the most useful function in the
 `remotePARTS` package. This function can perform the GLS analysis on the full 
-`ndvi_AK10000` data set. In fact, `ndvi_AK10000` is quite small in comparison to many remote
-sensing data sets that could be analyzed with `fitGLS_partition()`.
+`ndvi_AK10000` data set. In fact, `ndvi_AK10000` is quite small in comparison
+to many remote sensing data sets, any of which could be analyzed with 
+`fitGLS_partition()`.
 
 ## Partitioned GLS
 
 `fitGLS_parition()` conducts GLS analyses on partitions of the data and then
 combines the results from the partitions to give overall statistical results. 
-Specifically, this process (1) breaks the data
-into smaller and more manageable pieces (partitions), (2) conducts GLS on each
-partition, (3) calculates cross-partition statistics from pairs of partitions, 
-and (4) summarizes the results with statistical tests that account for correlations
-among partitions. We will use the full `ndvi_AK10000` data set to demonstrate 
-`fitGLS_parition()`.
+Specifically, this process (1) breaks the data into smaller and more 
+manageable pieces (partitions), (2) conducts GLS on each partition, 
+(3) calculates cross-partition statistics from pairs of partitions, 
+and (4) summarizes the results with statistical tests that account for 
+correlations among partitions. We will use the full `ndvi_AK10000` data set 
+to demonstrate `fitGLS_parition()`.
 
-We have already performed the time-series analyses on the full data set so 
-you don't have to. These are in the `AR_coef` column of `ndvi_AK10000`. However, we 
-used a complete data set, so you will need to remove rare land-cover classes. 
+We have already performed the time-series analyses on the full data set.
+These are in the `AR_coef` column of `ndvi_AK10000`. 
 
-```{r remove_rare_land}
-df = ndvi_AK10000
+```{r copy_AK10000, eval = FALSE}
+data("ndvi_AK10000")
 ```
 
-Step (1) is to divide pixels up into partitions, which is done with the function 
-`sample_parition()`. Passing `sample_partitions`, the number
-of pixels in our map, and the argument `partsize = 1500` 
-will result in a partition matrix with 1,500 rows and 20 columns. 
-Columns of the resulting partition matrix `pm` each contain a random sample 
-of 1,500 pixels. Each of these 20 samples (partitions) are non-overlapping, 
-containing no repeats. Setting `npart = NA` will automatically give the maximum
-number of partitions possible (i.e., 20).
+Step (1) is to divide pixels into partitions, which is done with the 
+function `sample_parition()`. Passing the number of pixels in our map and the 
+argument `partsize = 1500` will result in a partition matrix with 1,500 rows 
+and 6 columns. Columns of the resulting partition matrix `pm` each contain a 
+random sample of 1,500 pixels. Each of these 6 samples (partitions) are 
+non-overlapping, containing no repeats. Setting `npart = NA` will automatically 
+give the maximum number of partitions possible (i.e., 6).
 
 ```{r partition_matrix}
-pm <- sample_partitions(npix = nrow(df), partsize = 1500, npart = NA)
+pm <- sample_partitions(npix = nrow(ndvi_AK10000), partsize = 1500, npart = NA)
 dim(pm)
 ```
 
 Once we have our partition matrix, `fitGLS_parititon()` performs steps 
 (2)-(4) of the analyses. The input is similar to `fitGLS`. For this example, we 
-specify (i) a formula, (ii) the data as a data.frame (`df`), (iii) the partition 
-matrix (partmat `pm`), (iv) the covariance function (`covar_FUN`), (v) a list 
-of spatial parameters `covar.pars` including our optimized range parameter, 
-and a `nugget`. If `nugget` is specified, this value is used for the calculations, 
-while if `nugget` = `NA` (the default) it is estimated for each partition separately.
+specify (i) a formula, (ii) the data as a data.frame (`AK10000`), (iii) the 
+partition matrix (`pm`), (iv) the covariance function (`covar_FUN`), 
+(v) a list of spatial parameters (`covar.pars`) including our optimized range 
+parameter, and a `nugget`. If `nugget` is specified, this value is used for 
+the calculations, while if `nugget` = `NA` (the default) it is estimated for 
+each partition separately.
 
-Note that, although the compute time
-is much faster than if we needed to invert the full covariance matrix `V`, this example
-still takes a long time to fit. Therefore, we have saved the output of 
-this code as an R object `partGLS.ndviAK` so that you can look at its output 
-without having to execute the function. 
+Although the compute time is much faster than if we needed to invert the 
+full covariance matrix `V`, this example still takes a long time to fit (but
+scales roughly linearly with number of partitions). Therefore, we have saved 
+the output of this code as an R object `partGLS.ndviAK` so that you can look 
+at its output without having to execute the function. 
 
 The model was fit with this code:
 
 ```{r partitioned_GLS, eval = FALSE}
-partGLS_ndviAK <- fitGLS_partition(formula = AR_coef ~ 0 + land, data = df, 
-                                   partmat = pm, covar_FUN = "covar_exp", 
-                                   covar.pars = list(range = range.opt),
-                                   nugget = nug.opt, ncores = 4)
+partGLS_ndviAK <- fitGLS_partition(
+  formula = AR_coef ~ 0 + land, data = AK10000, 
+  partmat = pm, covar_FUN = "covar_exp", 
+  covar.pars = list(range = range.opt),
+  nugget = nug.opt, ncores = 4
+)
 ```
 
 ```{r save_partitioned_GLS, eval = FALSE, echo = FALSE, purl = FALSE}
@@ -662,8 +727,8 @@ affect NDVI trend:
 partGLS_ndviAK$overall$t.test
 ```
 
-It is **highly** recommended that users read the full documentation 
-(`?fitGLS_parition()`) before using `fitGLS_partition` to analyze any data.
+It is highly recommended that users read the full documentation 
+(`help("fitGLS_parition")`).
 
 <!-- ##### Chisqr-test problem  -->
 
@@ -675,7 +740,7 @@ partGLS_ndviAK$overall$pval.chisqr
 ```
 
 This again, indicates that the model which includes land cover classes better
-explains variation in NDVI trends than the intercept-only model. Note that the
+explains variation in NDVI trends than the intercept-only model. The
 p-value is much lower than the p-value from the F-test conducted by `fitGLS()`.
 This is likely due to outliers in the data, which should be removed before 
 conducting any real analysis. One simple way to filter potential trend outliers 
@@ -684,12 +749,13 @@ unusually large (e.g., `SE > 4*mean(SE)`).
 
 ## Conclusions
 
-Our parititoned GLS has returned the same conclusions as our standard GLS analysis.
-No map-level trend in NDVI was found within any of the land cover classes. 
+Our partitioned GLS has returned the same conclusions as our previous GLS 
+analysis. No map-level trend in NDVI was found within any of the land cover 
+classes. 
 
 This was only one of our three hypotheses tested earlier. The remaining two 
 can easily be tested with `fitGLS_partition()`, as they were with `fitGLS`, by 
-changing the formula argument. 
+changing the formula argument accordingly. 
 
 <!-- Here's a manual test: -->
 

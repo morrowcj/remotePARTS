@@ -1,4 +1,3 @@
-
 rmarkdown::render(
   input = "vignettes/Alaska.Rmd",
   output_format = NULL,
