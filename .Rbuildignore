@@ -25,6 +25,9 @@ README\.Rmd
 data/ndvi_AK\.rda
 data/ndvi_AK3000\.rda
 
+# ignore builds folder
+builds/
+
 # ignore cran comments
 cran-comments\.md
 
