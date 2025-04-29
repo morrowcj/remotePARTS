@@ -47,6 +47,8 @@ among partitions. The package also provides tools for running full spatial and
 spatiotemporal regressions without partitioning the data, for data sets that 
 are small enough to allow this. 
 
+**TBD: how this package differs from others in this space.**
+
 `remotePARTS` was designed to be used in ecological and remote sensing research,
 and has already been used in published science (e.g., @Lewińska:2023). 
 Nonetheless, it is flexible enough to be used to answer a variety of spatial 
