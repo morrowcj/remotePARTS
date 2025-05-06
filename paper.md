@@ -47,7 +47,13 @@ among partitions. The package also provides tools for running full spatial and
 spatiotemporal regressions without partitioning the data, for data sets that 
 are small enough to allow this. 
 
-**TBD: how this package differs from others in this space.**
+The primary feature that differentiates `remotePARTS` from other statistical
+packages that can perform spatiotemporal analyses (e.g., `sdmTMB`, `spaMM`, 
+`R-INLA`, the Python `PySAL/spreg` library) is its ability to handle very large
+maps. The PARTS method can handle millions and potentially billions of pixels 
+whereas other statistical methods typically cannot, due to memory and
+computational constraints (i.e., from inverting an $N \times N$ distance 
+matrix), which are relaxed with the partitioning approach.
 
 `remotePARTS` was designed to be used in ecological and remote sensing research,
 and has already been used in published science (e.g., @Lewińska:2023). 
