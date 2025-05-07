@@ -54,3 +54,5 @@ code_profiling/
 paper.md
 paper.bib
 joss_checklist.md
+^codecov\.yml$
+^\.github$
