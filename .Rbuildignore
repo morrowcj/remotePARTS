@@ -42,6 +42,7 @@ figure/
 
 # unexported examples
 R/unexported_examples\.R
+R/scripts
 
 
 R/_example_combineGLS.R
