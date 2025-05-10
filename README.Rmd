@@ -5,8 +5,9 @@ output: github_document
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, comment = "#>",
-                      fig.path = "man/figures/README-", out.width = "100%"
+knitr::opts_chunk$set(
+  echo = TRUE, collapse = TRUE, comment = "#>",
+  fig.path = "man/figures/README-", out.width = "100%"
 )
 ```
 
@@ -17,10 +18,10 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, comment = "#>",
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R-CMD-check](https://github.com/morrowcj/remotePARTS/workflows/R-CMD-check/badge.svg)](https://github.com/morrowcj/remotePARTS/actions)
 [![status](https://joss.theoj.org/papers/c6a3da6a56aa0fb0e1f8a4f36cab12c2/status.svg)](https://joss.theoj.org/papers/c6a3da6a56aa0fb0e1f8a4f36cab12c2)
-
+[![Codecov test coverage](https://codecov.io/gh/morrowcj/remotePARTS/graph/badge.svg)](https://app.codecov.io/gh/morrowcj/remotePARTS)
 <!-- badges: end -->
 
-*remotePARTS* is an software package for the *R* statistical programming language. 
+*remotePARTS* is a software package for the *R* statistical programming language. 
 The package contains tools for analyzing spatiotemporal data, typically obtained 
 via remote sensing.
 
@@ -78,10 +79,24 @@ is strictly true anymore, but I'm going to leave it for now until I learn more. 
 
 ## Contribution, bugs, and feature requests
 
-If you wish to contribute to this package, report bugs, suggest new features
+If you wish to contribute to this package, report bugs, suggest new features, tests,
 or behavior, correct typos, update documentation, or anything else, please submit a
 [GitHub Issue](https://github.com/morrowcj/remotePARTS/issues). We welcome and
 appreciate any and all feedback.
+
+## Testing
+
+To manually run the package's unit tests from a cloned directory, 
+after installing dependencies, use
+
+```{r, eval = FALSE, echo = TRUE}
+devtools::test()  # run unit tests in tests/testthat/
+devtools::check() # full R CMD check (tests + docs)
+```
+
+Test coverage is currently low, especially among functions with 
+stochastic outcomes. As the package develops, additional tests
+will be added.
 
 ## Typical Workflow
 

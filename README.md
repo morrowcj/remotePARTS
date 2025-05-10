@@ -11,7 +11,8 @@ stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://lifecy
 v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R-CMD-check](https://github.com/morrowcj/remotePARTS/workflows/R-CMD-check/badge.svg)](https://github.com/morrowcj/remotePARTS/actions)
 [![status](https://joss.theoj.org/papers/c6a3da6a56aa0fb0e1f8a4f36cab12c2/status.svg)](https://joss.theoj.org/papers/c6a3da6a56aa0fb0e1f8a4f36cab12c2)
-
+[![Codecov test
+coverage](https://codecov.io/gh/morrowcj/remotePARTS/graph/badge.svg)](https://app.codecov.io/gh/morrowcj/remotePARTS)
 <!-- badges: end -->
 
 *remotePARTS* is an software package for the *R* statistical programming
@@ -76,10 +77,24 @@ is strictly true anymore, but I'm going to leave it for now until I learn more. 
 ## Contribution, bugs, and feature requests
 
 If you wish to contribute to this package, report bugs, suggest new
-features or behavior, correct typos, update documentation, or anything
-else, please submit a [GitHub
+features, tests, or behavior, correct typos, update documentation, or
+anything else, please submit a [GitHub
 Issue](https://github.com/morrowcj/remotePARTS/issues). We welcome and
 appreciate any and all feedback.
+
+## Testing
+
+To manually run the package’s unit tests from a cloned directory, after
+installing dependencies, use
+
+``` r
+devtools::test()  # run unit tests in tests/testthat/
+devtools::check() # full R CMD check (tests + docs)
+```
+
+Test coverage is currently low, especially among functions with
+stochastic outcomes. As the package develops, additional tests will be
+added.
 
 ## Typical Workflow
 
@@ -159,7 +174,7 @@ dat |>
   scale_fill_viridis_c(option = "magma") 
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="50%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="50%" />
 
 #### 1. Time series analysis
 
@@ -188,7 +203,7 @@ df |>
   scale_fill_viridis_c(option = "magma")
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="40%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="40%" />
 
 ``` r
 df |> 
@@ -201,7 +216,7 @@ df |>
   scale_fill_viridis_c(option = "magma")
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="50%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="50%" />
 
 #### 2. spatial analysis
 
@@ -225,11 +240,11 @@ and temporal autocorrelation:
 
 ``` r
 part_GLS$overall$t.test
-#>                          Est          SE     t.stat       pval.t
-#> (Intercept)       0.30873438 0.007175747 43.0247021 0.000000e+00
-#> coords.x          0.10018682 0.012176186  8.2280948 2.139898e-16
-#> coords.y          0.19825454 0.012191562 16.2616200 1.048738e-58
-#> coords.x:coords.y 0.02048618 0.020733363  0.9880781 3.231384e-01
+#>                          Est          SE    t.stat       pval.t
+#> (Intercept)       0.30903199 0.007183905 43.017274 0.000000e+00
+#> coords.x          0.10325420 0.012208016  8.457902 3.104167e-17
+#> coords.y          0.19481642 0.012191460 15.979745 8.939526e-57
+#> coords.x:coords.y 0.03040168 0.020736468  1.466097 1.426533e-01
 ```
 
 Note that these are are not direct estimates of the parameters used to
@@ -256,10 +271,10 @@ part_GLS1 <- fitGLS_partition(
 ``` r
 part_GLS1$overall$t.test
 #>                            Est          SE     t.stat        pval.t
-#> (Intercept)       -0.003539318 0.009918672 -0.3568339  7.212237e-01
-#> coords.x           0.501702067 0.016768463 29.9193823 1.984079e-188
-#> coords.y           1.004681795 0.016794861 59.8207865  0.000000e+00
-#> coords.x:coords.y  0.089779783 0.028473522  3.1530972  1.620272e-03
+#> (Intercept)       -0.009579372 0.009646895 -0.9930006  3.207338e-01
+#> coords.x           0.511682046 0.016403397 31.1936634 6.595125e-204
+#> coords.y           1.013086002 0.016372503 61.8772838  0.000000e+00
+#> coords.x:coords.y  0.089135553 0.027859701  3.1994439  1.381240e-03
 ```
 
 In this case, the coefficients *are* direct estimates of the spatial

@@ -15,6 +15,7 @@ data-raw
 /Meta/
 
 README.html
+README_cache
 
 # built versions of the package
 builds/
