@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/morrowcj/remotePARTS/graph/badge.svg)](https://app.codecov.io/gh/morrowcj/remotePARTS)
 <!-- badges: end -->
 
-*remotePARTS* is an software package for the *R* statistical programming language. 
+*remotePARTS* is a software package for the *R* statistical programming language. 
 The package contains tools for analyzing spatiotemporal data, typically obtained 
 via remote sensing.
 
