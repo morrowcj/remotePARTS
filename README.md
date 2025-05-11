@@ -15,7 +15,7 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 coverage](https://codecov.io/gh/morrowcj/remotePARTS/graph/badge.svg)](https://app.codecov.io/gh/morrowcj/remotePARTS)
 <!-- badges: end -->
 
-*remotePARTS* is an software package for the *R* statistical programming
+*remotePARTS* is a software package for the *R* statistical programming
 language. The package contains tools for analyzing spatiotemporal data,
 typically obtained via remote sensing.
 
@@ -33,7 +33,7 @@ smaller chunks, analyzing chunks separately and then combining the
 separate analyses into a single test, that accounts for correlations
 among chunks, of the map-scale hypotheses.
 
-## Instalation
+## Installation
 
 To install the package and it’s dependencies from CRAN, use the
 following R code:
@@ -120,6 +120,9 @@ small spatiotemporal data set for analysis:
 ``` r
 library(tibble); library(dplyr); library(tidyr); library(viridisLite)
 library(ggplot2); library(remotePARTS)
+
+# set a random seed, for reproducibility
+set.seed(42) # don't panic
 
 # simulate a spatiotemporal response variable
 sim_spatiotemp <- function(
