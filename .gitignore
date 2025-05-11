@@ -25,3 +25,6 @@ figure/
 check/
 vignettes/
 inst/doc
+
+# OS files
+.DS_store
