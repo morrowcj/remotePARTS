@@ -55,7 +55,7 @@ components. Matrices have rows that correspond to pixels and columns that
 correspond to time points and vector elements correspond to pixels.
 
 \describe{
-   \item{coefficients}{a numeric matrix of coefficeints}
+   \item{coefficients}{a numeric matrix of coefficients}
    \item{SEs}{a numeric matrix of coefficient standard errors}
    \item{tstats}{a numeric matrix of t-statistics for coefficients}
    \item{pvals}{a numeric matrix of p-values for coefficients t-tests}

@@ -119,7 +119,7 @@ This process is very computationally intensive and may take a long time to
 finish depending upon your machine and the size of the data.
 
 Sometimes \code{optim} can have a difficult time finding a reasonable solution
-and without any constraits on parameter space (with certain algorithms), results
+and without any constraints on parameter space (with certain algorithms), results
 may even be nonsensical. To combat this, \code{fitGLS_opt} has the arguments
 \code{trans} and \code{backtrans} which allow you to transform
 (and back-transform) parameters to a different scale. For example, you may

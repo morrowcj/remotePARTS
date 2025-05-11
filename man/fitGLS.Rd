@@ -45,7 +45,7 @@ comparisons be returned?}
 \item{save.invchol}{logical: should the inverse of the Cholesky matrix be
 returned?}
 
-\item{logLik.only}{logical: should calculations stop after calculating parital
+\item{logLik.only}{logical: should calculations stop after calculating partial
 log-likelihood?}
 
 \item{no.F}{logical: should F-test calculations be made?}
@@ -155,7 +155,7 @@ null model.
 
 \code{save.xx} is included to allow for manually conducting a partitioned
 GLS analyses. Because most users will not need this feature, opting instead
-to use \code{fitGLS_parition()}, \code{save.xx = FALSE} by default.
+to use \code{fitGLS_partition()}, \code{save.xx = FALSE} by default.
 
 Similarly, \code{save.invchol} is included to allow for recycling of the
 inverse cholesky matrix. Often, inverting the large cholesky matrix

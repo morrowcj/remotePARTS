@@ -57,7 +57,7 @@ variance function from the pixel-wise correlations among time series residuals.
 For accurate results, \code{resids} and \code{coords} must be paired matrices.
 Rows of both matrices should correspond to the same pixels.
 
-Distances between sapmled pixels are calculated with the function specified by
+Distances between sampled pixels are calculated with the function specified by
 \code{distm_FUN}. This function can be any that takes a coordinate
 matrix as input and returns a distance matrix between points. Some options
 provided by \code{remotePARTS} are \code{distm_km()}, which returns distances

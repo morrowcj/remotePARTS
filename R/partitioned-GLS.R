@@ -98,7 +98,7 @@
 #' can occur simultaneously..
 #'
 #' When \code{parallel = FALSE} and \code{ncores > 1}, then most calculations
-#' are done on a single core but matrix opperations use multiple cores. In this
+#' are done on a single core but matrix operations use multiple cores. In this
 #' case, \code{ncores} is passed to fitGLS. In this option, it is suggested
 #' to not exceed the number of physical cores (not threads).
 #'
@@ -145,7 +145,7 @@
 #' \code{formula0} (optional) to determine which variables to select.
 #'
 #' Both functions also use \code{coord.names} to indicate which variables contain
-#' spatial coordinates. The name of the x-coordinate column should always preceed
+#' spatial coordinates. The name of the x-coordinate column should always precede
 #' the y-coordinate column: \code{c("x", "y")}.
 #'
 #' Users are encouraged to write their own \code{part_FUN} functions to meet their
@@ -173,7 +173,7 @@
 #' \describe{
 #'     \item{coefficients}{a numeric matrix of GLS coefficients for each partition}
 #'     \item{SEs}{a numeric matrix of coefficient standard errors}
-#'     \item{tstats}{a numeric matrix of coefficient t-statstitics}
+#'     \item{tstats}{a numeric matrix of coefficient t-statistics}
 #'     \item{pvals_t}{a numeric matrix of t-test pvalues}
 #'     \item{nuggets}{a numeric vector of nuggets for each partition}
 #'     \item{covar.pars}{\code{covar.pars} input vector}
@@ -312,7 +312,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 
   ## Decide if calculations should be parallelized
   if(!is.na(ncores) && parallel & ncores > 1){
-    if(debug){cat("Conducting parallel paritioned GLS\n")}
+    if(debug){cat("Conducting parallel partitioned GLS\n")}
     outlist = multicore_fitGLS_partition(formula = formula, partmat = partmat,
                                          formula0 = formula0, part_FUN = part_FUN,
                                          distm_FUN = distm_FUN, covar_FUN = covar_FUN,
@@ -343,9 +343,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 
       ## Calculate GLS, if not already done
       if (is.null(partGLS[[i]])){
-        ## covariance of parition
+        ## covariance of partition
         Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
-        ## GLS of parition
+        ## GLS of partition
         partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
                                nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
                                no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
@@ -391,7 +391,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       }
       if (i < ncross) for (j in (i+1):ncross) {
         if (debug) {cat("j =", j, "\n")}
-        ## parition data
+        ## partition data
         jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
 
         ## calculate GLS, if not already done

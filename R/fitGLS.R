@@ -17,7 +17,7 @@
 #' comparisons be returned?
 #' @param save.invchol logical: should the inverse of the Cholesky matrix be
 #' returned?
-#' @param logLik.only logical: should calculations stop after calculating parital
+#' @param logLik.only logical: should calculations stop after calculating partial
 #' log-likelihood?
 #' @param no.F logical: should F-test calculations be made?
 #' @param coords optional coordinate matrix for calculating \code{V} internally
@@ -51,7 +51,7 @@
 #'
 #' \code{save.xx} is included to allow for manually conducting a partitioned
 #' GLS analyses. Because most users will not need this feature, opting instead
-#' to use \code{fitGLS_parition()}, \code{save.xx = FALSE} by default.
+#' to use \code{fitGLS_partition()}, \code{save.xx = FALSE} by default.
 #'
 #' Similarly, \code{save.invchol} is included to allow for recycling of the
 #' inverse cholesky matrix. Often, inverting the large cholesky matrix

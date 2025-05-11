@@ -153,7 +153,7 @@ contains at least the following elements:
 \describe{
     \item{coefficients}{a numeric matrix of GLS coefficients for each partition}
     \item{SEs}{a numeric matrix of coefficient standard errors}
-    \item{tstats}{a numeric matrix of coefficient t-statstitics}
+    \item{tstats}{a numeric matrix of coefficient t-statistics}
     \item{pvals_t}{a numeric matrix of t-test pvalues}
     \item{nuggets}{a numeric vector of nuggets for each partition}
     \item{covar.pars}{\code{covar.pars} input vector}
@@ -275,7 +275,7 @@ all matrix operations are serialized on each worker but multiple operations
 can occur simultaneously..
 
 When \code{parallel = FALSE} and \code{ncores > 1}, then most calculations
-are done on a single core but matrix opperations use multiple cores. In this
+are done on a single core but matrix operations use multiple cores. In this
 case, \code{ncores} is passed to fitGLS. In this option, it is suggested
 to not exceed the number of physical cores (not threads).
 
@@ -324,7 +324,7 @@ Both functions use \code{index} to subset rows of data and \code{formula} and
 \code{formula0} (optional) to determine which variables to select.
 
 Both functions also use \code{coord.names} to indicate which variables contain
-spatial coordinates. The name of the x-coordinate column should always preceed
+spatial coordinates. The name of the x-coordinate column should always precede
 the y-coordinate column: \code{c("x", "y")}.
 
 Users are encouraged to write their own \code{part_FUN} functions to meet their
