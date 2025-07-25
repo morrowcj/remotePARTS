@@ -50,9 +50,9 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL, part_FUN = "part_data"
     idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, ...)
     # idat <- part.f(partmat[, i], formula = formula, formula0 = formula0, data = data)
 
-    ## covariance of parition i
+    ## covariance of partition i
     Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
-    ## GLS of parition i
+    ## GLS of partition i
     partGLS.i <- fitGLS(formula = formula, data = idat$data, V = Vi,
                            nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
                            no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
@@ -62,11 +62,11 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL, part_FUN = "part_data"
     rGLS.list <- list() # empty list
     if (i < ncross) for (j in (i+1):ncross){
       j.lab <- paste0("j.",j)
-      ## parition data
+      ## partition data
       jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
       # jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, data = data)
 
-      ## Covariance of parititon j
+      ## Covariance of partition j
       Vj = do.call(covar.f, args = append(list(d = dist.f(jdat$coords)), as.list(covar.pars)))
       ## GLS of partition j
       partGLS.j <- fitGLS(formula = formula, data = jdat$data, V = Vj,
@@ -79,7 +79,7 @@ MC_GLSpart <- function(formula, partmat, formula0 = NULL, part_FUN = "part_data"
       # Cross partition
       if(dim.mismatch){
         ## output text string if dimension mistmatch
-        rGLS.list[[j.lab]] <- "Error: Dimension mistmatch between parition i and j."
+        rGLS.list[[j.lab]] <- "Error: Dimension mistmatch between partition i and j."
       } else {
         ## cross-covariance
         Vij <- do.call(covar.f, args = append(list(d = dist.f(idat$coords, jdat$coords)),
@@ -172,9 +172,9 @@ MCGLS_partsummary <- function(MCpartGLS, covar.pars = c(range = .1),
 
   # loop through each partition
   cross_counter = 0  # to keep track of which cross we're on
-  for(i in seq_len(nparts) ){ # loop through paritions
-    this_part = MCpartGLS[[i]]  # current parition
-    partGLS = this_part$partGLS  # GLS of current parition
+  for(i in seq_len(nparts) ){ # loop through partitions
+    this_part = MCpartGLS[[i]]  # current partition
+    partGLS = this_part$partGLS  # GLS of current partition
     # conditionally save GLS to the list
     if(save.GLS){
       GLS_list[[i]] <- partGLS
@@ -202,7 +202,7 @@ MCGLS_partsummary <- function(MCpartGLS, covar.pars = c(range = .1),
     if(length(cross_part) >= 1){ # loop through crosses with this partition
       for(j in seq_len(length(cross_part))){
         cross_counter = cross_counter + 1
-        # collect cross-parititon statistics
+        # collect cross-partition statistics
         rSSRs = c(rSSRs, cross_part[[j]]$rSSRij)
         rSSEs = c(rSSEs, cross_part[[j]]$rSSEij)
         rcoefs[cross_counter, ,] <- cross_part[[j]]$rcoefij
@@ -220,11 +220,11 @@ MCGLS_partsummary <- function(MCpartGLS, covar.pars = c(range = .1),
   ## collect model statistics
   modstats = cbind(LLs = LLs, SSEs = SSEs, MSEs = MSEs, MSRs = MSRs,
                    Fstats = Fstats, Fpvals = Fpvals)
-  ## parition summary
+  ## partition summary
   part = list(coefficients = coefs, SEs = SEs, tstats = tstats, tpvals = tpvals,
               nuggets = nuggets, covar.pars = covar.pars, modstats = modstats,
               covar_coefs = covar_coefs)
-  ## cross-parition summary
+  ## cross-partition summary
   rcoefficients = apply(rcoefs, MARGIN = c(2, 3),
                         FUN = function(x){mean(x, na.rm = TRUE)})
   cross = list(rcoefs = rcoefs, rSSRs = rSSRs, rSSEs = rSSEs)

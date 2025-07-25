@@ -121,12 +121,12 @@ time series analyses.
 
 Other remoteTS: 
 \code{\link{fitAR_map}()},
-\code{\link{fitCLS_map}()},
-\code{\link{fitCLS}()}
+\code{\link{fitCLS}()},
+\code{\link{fitCLS_map}()}
 
 Other remoteTS: 
 \code{\link{fitAR_map}()},
-\code{\link{fitCLS_map}()},
-\code{\link{fitCLS}()}
+\code{\link{fitCLS}()},
+\code{\link{fitCLS_map}()}
 }
 \concept{remoteTS}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/partGLS_methods.R
 \name{part_ttest}
 \alias{part_ttest}
-\title{Correlated t-test for paritioned GLS}
+\title{Correlated t-test for partitioned GLS}
 \usage{
 part_ttest(coefs, part.covar_coef, rcoefficients, df2, npart)
 }
@@ -11,7 +11,7 @@ part_ttest(coefs, part.covar_coef, rcoefficients, df2, npart)
 
 \item{part.covar_coef}{an array of covar_coef from each partition}
 
-\item{rcoefficients}{an rcoefficeints array, one for each partition}
+\item{rcoefficients}{an rcoefficients array, one for each partition}
 
 \item{df2}{second degree of freedom from partitioned GLS}
 
@@ -23,5 +23,5 @@ standard errors, t-statistics, and p-values and whose second element is a
 matrix of correlations among coefficients.
 }
 \description{
-Correlated t-test for paritioned GLS
+Correlated t-test for partitioned GLS
 }

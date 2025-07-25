@@ -11,7 +11,7 @@
 #' @importFrom iterators iter
 #' @importFrom stats t.test as.formula update anova terms terms.formula quantile
 #' @importFrom utils txtProgressBar setTxtProgressBar combn
-#' @docType package
+#' @docType _PACKAGE
 ## usethis namespace: start
 #' @useDynLib remotePARTS, .registration = TRUE
 ## usethis namespace: end

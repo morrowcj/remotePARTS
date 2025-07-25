@@ -148,6 +148,19 @@ summary.remoteTS <- function(object, digits = max(3L, getOption("digits") - 3L),
   cat("\nLog-likelihood:", round(object$logLik, digits))
 }
 
+#' Log likelihood of remoteTS objects
+#'
+#' @param object the remoteTS object
+#' @param ... additional arguments passed to the generic logLik function
+#'
+#' @export
+logLik.remoteTS <- function(object, ...){
+  LL <- object$logLik
+  class(LL) <- "logLik"
+  attr(LL, "df") <- object$df
+  LL
+}
+
 #' @title S3 print method for mapTS class
 #'
 #' @rdname TS.methods
@@ -219,6 +232,16 @@ summary.mapTS <- function(object, digits = max(3L, getOption("digits") - 3L), CL
                 LogLik = smry_funV(object$logLik, CL = CL, na.rm = na.rm)),
           digits = digits)
   }
+}
+
+#' Log-likelihood of mapTS object
+#'
+#' @param object mapTS object
+#' @param ... additional arguments to pass to the generic method
+#'
+#' @export
+logLik.mapTS <- function(object, ...){
+  object$logLik
 }
 
 #' @title helper summary function (matrix)

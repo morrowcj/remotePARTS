@@ -99,11 +99,11 @@ chisqr.partGLS <- function(x, ...){
              npart = x$overall$partdims["npart"])
 }
 
-## correlated t-test
-#' @title Correlated t-test for paritioned GLS
+## correlated t-test ----
+#' @title Correlated t-test for partitioned GLS
 #' @param coefs vector average GLS coefficients
 #' @param part.covar_coef an array of covar_coef from each partition
-#' @param rcoefficients an rcoefficeints array, one for each partition
+#' @param rcoefficients an rcoefficients array, one for each partition
 #' @param df2 second degree of freedom from partitioned GLS
 #' @param npart number of partitions
 #'

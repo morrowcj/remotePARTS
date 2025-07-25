@@ -32,6 +32,10 @@
 #'
 #' @export
 check_posdef <- function(M){
+  if (!is.matrix(M)) {
+    stop("M must be a matrix")
+  }
+
   res <- c(sqr = FALSE, sym = FALSE, posdef = FALSE)
   res["sqr"] = nrow(M) == ncol(M)
   if(res["sqr"]){

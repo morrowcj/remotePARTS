@@ -113,8 +113,8 @@ residuals(CLS)
 \code{\link{fitAR}} and \code{\link{fitAR_map}} for AR time series analyses.
 
 Other remoteTS: 
-\code{\link{fitAR_map}()},
 \code{\link{fitAR}()},
+\code{\link{fitAR_map}()},
 \code{\link{fitCLS_map}()}
 }
 \concept{remoteTS}

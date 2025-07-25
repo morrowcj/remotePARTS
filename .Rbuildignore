@@ -25,10 +25,15 @@ README\.Rmd
 data/ndvi_AK\.rda
 data/ndvi_AK3000\.rda
 
+# ignore builds folder
+builds/
+
 # ignore cran comments
 cran-comments\.md
 
+# README associated files
 README\.html
+README_cache
 
 # build pipeline
 build_pipeline/
@@ -37,3 +42,20 @@ figure/
 
 # unexported examples
 R/unexported_examples\.R
+R/scripts
+
+
+R/_example_combineGLS.R
+# R CMD Check results and build output
+check/
+vignettes/
+
+# additional code
+code_profiling/
+
+# JOSS paper
+paper.md
+paper.bib
+joss_checklist.md
+^codecov\.yml$
+^\.github$

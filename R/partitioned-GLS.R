@@ -98,13 +98,16 @@
 #' can occur simultaneously..
 #'
 #' When \code{parallel = FALSE} and \code{ncores > 1}, then most calculations
-#' are done on a single core but matrix opperations use multiple cores. In this
+#' are done on a single core but matrix operations use multiple cores. In this
 #' case, \code{ncores} is passed to fitGLS. In this option, it is suggested
 #' to not exceed the number of physical cores (not threads).
 #'
 #' When \code{ncores <= 1}, then the calculations are completely serialized
 #'
-#' When \code{ncores = NA} (the default), only one core is used.
+#' When \code{ncores = NA} (the default), only matrix multiplication is done in
+#' parallel and the number of cores determined by defaults used by \code{Eigen}.
+#' Typically, if \code{OpenMP} is available, all cores are used, otherwise only
+#' 1 is used. In this case, \code{parallel} is ignored (and treated as FALSE).
 #'
 #' In the parallel implementation of this function, a progress bar is not possible,
 #' so \code{progressbar} is ignored.
@@ -142,7 +145,7 @@
 #' \code{formula0} (optional) to determine which variables to select.
 #'
 #' Both functions also use \code{coord.names} to indicate which variables contain
-#' spatial coordinates. The name of the x-coordinate column should always preceed
+#' spatial coordinates. The name of the x-coordinate column should always precede
 #' the y-coordinate column: \code{c("x", "y")}.
 #'
 #' Users are encouraged to write their own \code{part_FUN} functions to meet their
@@ -170,7 +173,7 @@
 #' \describe{
 #'     \item{coefficients}{a numeric matrix of GLS coefficients for each partition}
 #'     \item{SEs}{a numeric matrix of coefficient standard errors}
-#'     \item{tstats}{a numeric matrix of coefficient t-statstitics}
+#'     \item{tstats}{a numeric matrix of coefficient t-statistics}
 #'     \item{pvals_t}{a numeric matrix of t-test pvalues}
 #'     \item{nuggets}{a numeric vector of nuggets for each partition}
 #'     \item{covar.pars}{\code{covar.pars} input vector}
@@ -244,6 +247,20 @@
 #'                                 data = df, nugget = NA))
 #' partGLS.opt$part$nuggets # ML nuggets
 #'
+#' ## Explicitly use multicore_fitGLS_partition()
+#' (multicore_fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm,
+#'                            data = df, nugget = 0, ncores = 2L))
+#' (multicore_fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, ncores = 2L,
+#'                             data = df, nugget = 0, do.chisqr.test = FALSE))
+#'
+#' ## fully parallel, using 2 cores
+#' (MC_GLSpart = fitGLS_partition(formula = CLS_coef ~ 0 + land, partmat = pm, data = df, nugget = 0,
+#'                  ncores = 2, parallel = TRUE, debug = FALSE))
+#' fitGLS_partition(formula = CLS_coef ~ lat, partmat = pm, data = df, nugget = 0,
+#'                  ncores = 2, parallel = TRUE, debug = FALSE)
+#' fitGLS_partition(formula = CLS_coef ~ 1, partmat = pm, data = df, nugget = 0,
+#'                  parallel = TRUE, ncores = 2, do.chisqr.test = FALSE)
+#'
 #' # Certain model structures may not be useful:
 #' ## 0 intercept with numeric predictor (produces NAs) and gives a warning in statistical tests
 #' fitGLS_partition(formula = CLS_coef ~ 0 + lat, partmat = pm, data = df, nugget = 0)
@@ -285,8 +302,8 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
     warning("formula and formula0 are identical, which prevents model comparison calulations.",
             "\ndo.chisqr.test set to FALSE")
     do.chisqr.test = FALSE
-  } else {
   }
+
   ## no right-hand side (i.e., formula(x ~ 0) or update(form, . ~ 0))
   if(formula[-2]=="~0" | formula0[-2]=="~0" | formula[-2]=="~1 - 1" | formula0[-2]=="~1 - 1"){
     stop("invalid formula: the right hand side may not be empty ('~0')")
@@ -295,7 +312,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 
   ## Decide if calculations should be parallelized
   if(!is.na(ncores) && parallel & ncores > 1){
-    if(debug){cat("Conducting parallel paritioned GLS\n")}
+    if(debug){cat("Conducting parallel partitioned GLS\n")}
     outlist = multicore_fitGLS_partition(formula = formula, partmat = partmat,
                                          formula0 = formula0, part_FUN = part_FUN,
                                          distm_FUN = distm_FUN, covar_FUN = covar_FUN,
@@ -307,7 +324,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
   } else {
     if(debug){cat("Conducting partitioned GLS\n")}
     if(is.na(ncores)){
-      ncores = 1L
+      ncores = 0L  # Tell C++ to use machine (OpenMP) configured cores
     } else {
       ncores = as.integer(ncores)
     }
@@ -326,9 +343,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
 
       ## Calculate GLS, if not already done
       if (is.null(partGLS[[i]])){
-        ## covariance of parition
+        ## covariance of partition
         Vi = do.call(covar.f, args = append(list(d = dist.f(idat$coords)), as.list(covar.pars)))
-        ## GLS of parition
+        ## GLS of partition
         partGLS[[i]] <- fitGLS(formula = formula, data = idat$data, V = Vi,
                                nugget = nugget, formula0 = formula0, save.xx = (i <= ncross),
                                no.F = FALSE, save.invchol = (i <= ncross), logLik.only= FALSE,
@@ -374,7 +391,7 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       }
       if (i < ncross) for (j in (i+1):ncross) {
         if (debug) {cat("j =", j, "\n")}
-        ## parition data
+        ## partition data
         jdat = part.f(partmat[, j], formula = formula, formula0 = formula0, ...)
 
         ## calculate GLS, if not already done
@@ -491,7 +508,9 @@ fitGLS_partition <- function(formula, partmat, formula0 = NULL,
       outlist$overall$t.test = test.output$p.t
       outlist$overall$covar_coef = test.output$covar_coef
     }
-    close(pb)
+    if (progressbar) {
+      close(pb)
+    }
   }
   ## final return statement
   return(outlist)
@@ -562,7 +581,7 @@ calc_dfpart <- function(partsize, p, p0){
 crosspart_GLS <- function(xxi, xxj, xxi0, xxj0, invChol_i, invChol_j, Vsub,
                           nug_i, nug_j, df1, df2, small = TRUE, ncores = NA){
   if(is.na(ncores)){
-    ncores = 1L
+    ncores = 0L
   } else {
     ncores = as.integer(ncores)
   }
@@ -659,7 +678,7 @@ part_data <- function(index, formula, data, formula0 = NULL, coord.names = c("ln
 #' ## part_csv examples - ## CAUTION: examples for part_csv() include manipulation side-effects:
 #' # first, create a .csv file from ndviAK
 #' data(ndvi_AK10000)
-#' file.path = file.path(tempdir(), "ndviAK10000-remotePARTS.csv")
+#' file.path = "ndviAK10000-remotePARTS.csv"
 #' write.csv(ndvi_AK10000, file = file.path)
 #'
 #' # build a partition from the first 30 pixels in the file
