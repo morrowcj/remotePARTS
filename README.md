@@ -74,6 +74,15 @@ Windows and C++11 is required for other systems.
 <!--- Now that the package is on CRAN, I am not 100% certain that the above statement
 is strictly true anymore, but I'm going to leave it for now until I learn more. --->
 
+## Citation
+
+To cite this package in publications, please use:
+
+Morrow CJ, Ives AR (2025). “remotePARTS: Spatiotemporal autoregression
+analyses for large data sets.” *Journal of Open Source Software*,
+*10*(109), 7937. <doi:10.21105/joss.07937>
+<https://doi.org/10.21105/joss.07937>.
+
 ## Contribution, bugs, and feature requests
 
 If you wish to contribute to this package, report bugs, suggest new
@@ -244,10 +253,10 @@ and temporal autocorrelation:
 ``` r
 part_GLS$overall$t.test
 #>                          Est          SE    t.stat       pval.t
-#> (Intercept)       0.30903199 0.007183905 43.017274 0.000000e+00
-#> coords.x          0.10325420 0.012208016  8.457902 3.104167e-17
-#> coords.y          0.19481642 0.012191460 15.979745 8.939526e-57
-#> coords.x:coords.y 0.03040168 0.020736468  1.466097 1.426533e-01
+#> (Intercept)       0.30626642 0.007117123 43.032336 0.000000e+00
+#> coords.x          0.09598428 0.012076984  7.947703 2.105658e-15
+#> coords.y          0.19475968 0.012106987 16.086552 1.673033e-57
+#> coords.x:coords.y 0.05523622 0.020571183  2.685126 7.262241e-03
 ```
 
 Note that these are are not direct estimates of the parameters used to
@@ -273,11 +282,11 @@ part_GLS1 <- fitGLS_partition(
 
 ``` r
 part_GLS1$overall$t.test
-#>                            Est          SE     t.stat        pval.t
-#> (Intercept)       -0.009579372 0.009646895 -0.9930006  3.207338e-01
-#> coords.x           0.511682046 0.016403397 31.1936634 6.595125e-204
-#> coords.y           1.013086002 0.016372503 61.8772838  0.000000e+00
-#> coords.x:coords.y  0.089135553 0.027859701  3.1994439  1.381240e-03
+#>                            Est         SE     t.stat        pval.t
+#> (Intercept)       -0.005677504 0.01282505 -0.4426885  6.580007e-01
+#> coords.x           0.503970052 0.02145689 23.4875584 8.834878e-119
+#> coords.y           1.007575874 0.02153613 46.7853715  0.000000e+00
+#> coords.x:coords.y  0.090887894 0.03606875  2.5198518  1.175592e-02
 ```
 
 In this case, the coefficients *are* direct estimates of the spatial

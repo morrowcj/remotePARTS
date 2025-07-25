@@ -77,6 +77,13 @@ is required for Windows and C++11 is required for other systems.
 <!--- Now that the package is on CRAN, I am not 100% certain that the above statement
 is strictly true anymore, but I'm going to leave it for now until I learn more. --->
 
+## Citation
+
+To cite this package in publications, please use:
+
+  Morrow CJ, Ives AR (2025). “remotePARTS: Spatiotemporal autoregression analyses for large data sets.” _Journal of Open Source
+  Software_, *10*(109), 7937. doi:10.21105/joss.07937 <https://doi.org/10.21105/joss.07937>.
+
 ## Contribution, bugs, and feature requests
 
 If you wish to contribute to this package, report bugs, suggest new features, tests,
