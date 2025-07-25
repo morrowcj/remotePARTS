@@ -15,7 +15,16 @@ data-raw
 /Meta/
 
 README.html
+README_cache
 
 # built versions of the package
 builds/
 figure/
+
+# files created by the build process
+check/
+vignettes/
+inst/doc
+
+# OS files
+.DS_store

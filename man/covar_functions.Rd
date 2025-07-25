@@ -18,7 +18,8 @@ covar_exppow(d, range, shape)
 \item{theta}{distance beyond which covariances are forced to 0.}
 
 \item{cor}{optional correlation parameter. If included, the covariance is
-subtracted from \code{cor}.}
+subtracted from \code{cor} and \code{theta} becomes \code{exp(-theta)}
+(i.e., a tapered spherical difference covariance function).}
 
 \item{range}{range parameter}
 

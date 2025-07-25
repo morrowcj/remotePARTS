@@ -67,7 +67,8 @@ distm_scaled <- function(coords, coords2 = NULL, distm_FUN = "distm_km"){
 #' @param d a numeric vector or matrix of distances
 #' @param theta distance beyond which covariances are forced to 0.
 #' @param cor optional correlation parameter. If included, the covariance is
-#' subtracted from \code{cor}.
+#' subtracted from \code{cor} and \code{theta} becomes \code{exp(-theta)}
+#' (i.e., a tapered spherical difference covariance function).
 #'
 #' @details \code{covar_taper} calculates covariance v as follows:
 #'

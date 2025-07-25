@@ -22,7 +22,7 @@
 #' For accurate results, \code{resids} and \code{coords} must be paired matrices.
 #' Rows of both matrices should correspond to the same pixels.
 #'
-#' Distances between sapmled pixels are calculated with the function specified by
+#' Distances between sampled pixels are calculated with the function specified by
 #' \code{distm_FUN}. This function can be any that takes a coordinate
 #' matrix as input and returns a distance matrix between points. Some options
 #' provided by \code{remotePARTS} are \code{distm_km()}, which returns distances
@@ -210,24 +210,4 @@ print.remoteCor <- function(x, ...){
   cat("\nMax distance:", x$max.distance,"\n")
   cat("\nLog-likelihood:\n")
   print(x$logLik, ...)
-}
-
-## test function ----
-#' @title Test passing a covariance function and arguments
-#'
-#' @param d numeric vector or matrix of distances
-#' @param covar_FUN distance-based covariance function to use,
-#' which must take \code{d} as its first argument
-#' @param covar.pars vector or list of parameters (other than d) passed to the
-#' covar function
-#'
-test_covar_fun <- function(d, covar_FUN = "covar_exppow", covar.pars = list(range = .5)){
-  cov_f <- match.fun(covar_FUN)
-  # covar.pars$d = d
-  if (is.null(covar.pars)){
-    covar.pars = list(d)
-  } else {
-    covar.pars = as.list(append(list(d), covar.pars))
-  }
-  return(do.call(cov_f, covar.pars))
 }

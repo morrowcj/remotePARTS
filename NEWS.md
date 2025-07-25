@@ -1,3 +1,19 @@
+# v1.1
+
+* completely updated README file
+
+* added tests to major functions
+
+* fixed bug with parallel operations
+
+* fixed small bug in fitGLS_partition regarding the progress bar
+
+* updated error handling for some minor functions
+
+* updated the logLik functionality for AR and CLS objects
+
+* updated the Alaska Vignette.
+
 # v1.0.4.2
 
 * updated the parallel defaults for all functions. Now, `ncores=NA` is equivalent to `ncores=1` instead of using

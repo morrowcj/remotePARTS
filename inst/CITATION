@@ -1,0 +1,11 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "remotePARTS: Spatiotemporal autoregression analyses for large data sets",
+  author   = "Clay J Morrow, Anthony R Ives",
+  journal  = "Journal of Open Source Software",
+  year     = 2025,
+  volume   = 10,
+  number   = 109,
+  pages    = 7937,
+  doi      = "10.21105/joss.07937"
+)
