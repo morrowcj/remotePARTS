@@ -1,12 +1,18 @@
-# v1.0.4.3 (not yet tagged)
+# v1.1
 
-* added tests to major functions (Jan 2025)
+* completely updated README file
+
+* added tests to major functions
+
+* fixed bug with parallel operations
 
 * fixed small bug in fitGLS_partition regarding the progress bar
 
+* updated error handling for some minor functions
+
 * updated the logLik functionality for AR and CLS objects
 
-* added files for JOSS submission, including paper.bib and paper.md
+* updated the Alaska Vignette.
 
 # v1.0.4.2
 
