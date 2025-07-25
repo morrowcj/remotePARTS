@@ -42,7 +42,10 @@ figure/
 
 # unexported examples
 R/unexported_examples\.R
+R/scripts
 
+
+R/_example_combineGLS.R
 # R CMD Check results and build output
 check/
 vignettes/
